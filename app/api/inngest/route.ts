@@ -1,7 +1,7 @@
 import { Inngest } from 'inngest'
 import { serve } from 'inngest/next'
 
-export const inngest = new Inngest({ name: 'Togusa' })
+const inngest = new Inngest({ name: 'Togusa' })
 
 const howdy = inngest.createFunction(
   { name: 'Howdy' },
@@ -11,4 +11,4 @@ const howdy = inngest.createFunction(
   }
 )
 
-export default serve(inngest, [howdy])
+export const { GET, POST, PUT } = serve(inngest, [howdy])
