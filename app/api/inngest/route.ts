@@ -1,7 +1,5 @@
-import { Inngest } from 'inngest'
+import { inngest } from './client'
 import { serve } from 'inngest/next'
-
-const inngest = new Inngest({ name: 'Togusa' })
 
 const howdy = inngest.createFunction(
   { name: 'Howdy' },
@@ -11,4 +9,6 @@ const howdy = inngest.createFunction(
   }
 )
 
-export const { GET, POST, PUT } = serve(inngest, [howdy])
+export const { GET, POST, PUT } = serve(inngest, [
+  howdy
+])
