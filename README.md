@@ -35,7 +35,13 @@ database setup
 psql --host=localhost --port=5432 --username=postgres
 \c togusa
 
-CREATE TABLE prices (
+CREATE TABLE howdy (
+  timestamp_sent TIMESTAMP NOT NULL,
+  timestamp_saved TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (timestamp_sent, timestamp_saved)
+);
+
+CREATE TABLE price (
   network INTEGER NOT NULL,
   address VARCHAR(42) NOT NULL,
   symbol VARCHAR(256) NOT NULL,
@@ -46,5 +52,5 @@ CREATE TABLE prices (
   PRIMARY KEY (network, address, block_height)
 );
 
-CREATE INDEX symbol_index ON prices(symbol);
+CREATE INDEX symbol_index ON price(symbol);
 ```

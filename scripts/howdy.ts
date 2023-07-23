@@ -5,11 +5,11 @@ dotenv.config({ path: '.env.development.local' })
 const inngest = new Inngest({ name: 'Togusa' })
 
 async function main() {
-  console.log('say howdy..')
   await inngest.send({
     name: 'howdy',
-    data: {}
+    data: { now: new Date().toISOString() }
   })
+  console.log('🤠 Howdy !!')
 }
 
 main()
