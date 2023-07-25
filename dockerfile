@@ -8,6 +8,6 @@ EXPOSE 5432
 CMD ["postgres"]
 
 # Set the environment variable to let the container know where to store the database
-ENV POSTGRES_DB=togusa
+ENV POSTGRES_DB=kong
 ENV POSTGRES_USER=postgres
 ENV POSTGRES_PASSWORD=postgres

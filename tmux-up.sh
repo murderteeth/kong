@@ -15,7 +15,7 @@ tmux selectp -t 0
 tmux splitw -h -p 50
 
 # Run your commands in the three top panes
-tmux send-keys -t work:0.0 'docker start togusa_container && docker logs -f togusa_container' C-m
+tmux send-keys -t work:0.0 'docker start kong_container && docker logs -f kong_container' C-m
 tmux send-keys -t work:0.1 'yarn dev' C-m
 tmux send-keys -t work:0.2 'yarn inngest-dev' C-m
 

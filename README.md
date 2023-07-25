@@ -1,4 +1,4 @@
-# Batou
+# Kong
 Real-time and historical ZooTroop GraphQL API
 
 ## Dev environment
@@ -24,16 +24,16 @@ Use `ctrl-b :` then `kill-session` to exit tmux.
 ## postgres dev
 docker commands
 ```
-docker build -t togusa_image .
-docker run --name togusa_container -p 5432:5432 -d togusa_image
-docker stop togusa_container
-docker start togusa_container
+docker build -t kong_image .
+docker run --name kong_container -p 5432:5432 -d kong_image
+docker stop kong_container
+docker start kong_container
 ```
 
 database setup
 ```
 psql --host=localhost --port=5432 --username=postgres
-\c togusa
+\c kong
 
 CREATE TABLE howdy (
   timestamp_sent TIMESTAMP NOT NULL,

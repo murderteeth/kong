@@ -45,11 +45,11 @@ export default function Home() {
     .reduce((a, b) => a + b, 0) / prices.length
   }, [prices])
 
-  return <main className="w-full min-h-screen flex items-center justify-center gap-16">
-    <div className="relative w-1/2 min-h-screen">
+  return <main className="w-full min-h-screen flex items-center justify-center sm:gap-16">
+    <div className="hidden sm:block relative w-1/2 min-h-screen">
       <Image src="/kong.png" fill={true} alt="Kong" />
     </div>
-    <div className="w-1/2 flex flex-col items-start justify-center gap-2">
+    <div className="w-full sm:w-1/2 p-4 sm:p-0 flex flex-col items-start justify-center gap-2">
       <div className="pb-2 text-8xl text-yellow-500 font-bold">Kong</div>
       <div className="text-xl">Real-time and historical ZooTroop GraphQL API</div>
       <a href="https://github.com/murderteeth/kong">https://github.com/murderteeth/kong</a>
