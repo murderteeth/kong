@@ -1,3 +1,4 @@
+previewsEnabled: true
 services:
   # - type: worker
   #   name: queue-worker
