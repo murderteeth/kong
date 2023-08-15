@@ -31,9 +31,9 @@ services:
   #         name: redis
   #         property: connectionString
 
-  # - type: redis
-  #   name: redis
-  #   region: ohio
-  #   plan: starter # choose a plan with persistence to ensure tasks are not lost upon restart
-  #   maxmemoryPolicy: noeviction # recommended policy for queues
-  #   ipAllowList: [] # only allow internal connections
+  - type: redis
+    name: redis
+    region: ohio
+    plan: starter # choose a plan with persistence to ensure tasks are not lost upon restart
+    maxmemoryPolicy: noeviction # recommended policy for queues
+    ipAllowList: [] # only allow internal connections
