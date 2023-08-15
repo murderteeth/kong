@@ -1,0 +1,68 @@
+version: '3.1'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  ingest-extractor:
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    build:
+      context: ./ingest/extractor
+      dockerfile: dockerfile
+
+  ingest-loader:
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    build:
+      context: ./ingest/loader
+      dockerfile: dockerfile
+
+  gql:
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    build:
+      context: ./gql
+      dockerfile: dockerfile
+    ports:
+      - "3000:3000"
+
+  bullmq-dash:
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    build:
+      context: ./queue
+      dockerfile: dockerfile
+    ports:
+      - "3001:3001"
