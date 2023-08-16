@@ -76,7 +76,8 @@ const resolvers = {
 const server = new ApolloServer({ 
   typeDefs, 
   resolvers,
-  introspection: true
+  introspection: true,
+  cache: 'bounded'
 })
 
 server.start().then(() => {
