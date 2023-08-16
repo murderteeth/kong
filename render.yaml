@@ -85,6 +85,8 @@ services:
     buildCommand: yarn && yarn build
     startCommand: yarn start
     envVars:
+      - key: PORT
+        value: 80
       - key: NODE_VERSION
         value: lts
       - key: POSTGRES_HOST
