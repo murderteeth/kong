@@ -21,8 +21,8 @@ services:
     rootDir: ingest/extractor
     buildCommand: yarn
     startCommand: yarn start
-    fromGroup: kong
     envVars:
+      - fromGroup: kong
       - key: REDIS_HOST
         fromService:
           type: redis
