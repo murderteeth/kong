@@ -46,7 +46,6 @@ services:
     envVars:
       - key: NODE_VERSION
         value: lts
-      - fromGroup: kong
       - key: REDIS_HOST
         fromService:
           type: redis
@@ -57,6 +56,37 @@ services:
           type: redis
           name: redis
           property: port
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: postgres
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: postgres
+          property: port
+      - key: POSTGRES_DATABASE
+        fromDatabase:
+          name: postgres
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: postgres
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: postgres
+          property: password
+
+  - type: web
+    name: gql
+    region: ohio
+    runtime: node
+    rootDir: gql
+    buildCommand: yarn && yarn build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_VERSION
+        value: lts
       - key: POSTGRES_HOST
         fromDatabase:
           name: postgres
