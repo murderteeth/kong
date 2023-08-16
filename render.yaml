@@ -1,4 +1,11 @@
 previewsEnabled: true
+
+databases:
+  - name: postgres
+    region: ohio
+    plan: starter
+    ipAllowList: []
+
 services:
   # - type: worker
   #   name: queue-worker
