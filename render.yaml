@@ -22,6 +22,8 @@ services:
     buildCommand: yarn
     startCommand: yarn start
     envVars:
+      - key: NODE_VERSION
+        value: lts
       - fromGroup: kong
       - key: REDIS_HOST
         fromService:
