@@ -16,10 +16,10 @@ const bull = { connection: {
 const pool = new Pool({
   host: process.env.POSTGRES_HOST || 'localhost',
   port: (process.env.POSTGRES_PORT || 5432) as number,
-  database: 'user',
+  database: process.env.POSTGRES_DATABASE || 'user',
   user: process.env.POSTGRES_USER || 'user',
   password: process.env.POSTGRES_PASSWORD || 'password',
-  max: 20,
+  max: 10,
   idleTimeoutMillis: 30_000,
 })
 
