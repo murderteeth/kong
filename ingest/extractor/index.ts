@@ -31,11 +31,11 @@ rpc.watchBlocks({
   }
 })
 
-console.log('🦍 evm extractor up')
+console.log('🦍 extractor up')
 
 function shutdown() {
   blockQueue.close().then(() => {
-    console.log('🦍 evm extractor down')
+    console.log('🦍 extractor down')
     process.exit(0)
   })
 }

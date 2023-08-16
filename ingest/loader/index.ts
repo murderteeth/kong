@@ -27,7 +27,7 @@ const blockWorker = new Worker('block', async job => {
   const block = job.data
   try {
     await upsert(pool, block)
-    console.log('💪 block', block)
+    console.log('📀 block', block)
     return true
   } catch(error) {
     console.error('🤬 block', block, error)
