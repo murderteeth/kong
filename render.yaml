@@ -19,7 +19,7 @@ services:
     region: ohio
     env: node
     buildCommand: yarn
-    startCommand: cd extractor && yarn start
+    startCommand: yarn workspace extractor start
     envVars:
       - key: NODE_VERSION
         value: lts
@@ -40,7 +40,7 @@ services:
     region: ohio
     env: node
     buildCommand: yarn
-    startCommand: cd extractor && yarn start
+    startCommand: yarn workspace loader start
     envVars:
       - key: NODE_VERSION
         value: lts
@@ -79,8 +79,8 @@ services:
     name: gql
     region: ohio
     runtime: node
-    buildCommand: yarn && cd gql && yarn build
-    startCommand: yarn start
+    buildCommand: yarn && yarn workspace gql build
+    startCommand: yarn workspace gql start
     envVars:
       - key: PORT
         value: 80
