@@ -1,4 +1,8 @@
 {
+  "name": "bullboard",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",

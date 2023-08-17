@@ -15,12 +15,11 @@ services:
     ipAllowList: [] # only allow internal connections
 
   - type: worker
-    name: ingest-extractor
+    name: extractor
     region: ohio
     env: node
-    rootDir: ingest/extractor
     buildCommand: yarn
-    startCommand: yarn start
+    startCommand: yarn workspace extractor start
     envVars:
       - key: NODE_VERSION
         value: lts
@@ -37,12 +36,11 @@ services:
           property: port
 
   - type: worker
-    name: ingest-loader
+    name: loader
     region: ohio
     env: node
-    rootDir: ingest/loader
     buildCommand: yarn
-    startCommand: yarn start
+    startCommand: yarn workspace loader start
     envVars:
       - key: NODE_VERSION
         value: lts
@@ -81,9 +79,8 @@ services:
     name: gql
     region: ohio
     runtime: node
-    rootDir: gql
-    buildCommand: yarn && yarn build
-    startCommand: yarn start
+    buildCommand: yarn && yarn workspace gql build
+    startCommand: yarn workspace gql start
     envVars:
       - key: PORT
         value: 80

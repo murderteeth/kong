@@ -1,6 +1,14 @@
 {
+  "name": "loader",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
   "scripts": {
     "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "cross-env": "5.0.5",
+    "lib": "^1.0.0"
   },
   "devDependencies": {
     "@types/pg": "^8.10.2",

@@ -32,7 +32,7 @@ app.listen(port, () => {
 
 function shutdown() {
   blockQueue.close().then(() => {
-    console.log('🦍 evm extractor down')
+    console.log('🦍 bullmq dashboard down')
     process.exit(0)
   })
 }

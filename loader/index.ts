@@ -2,6 +2,7 @@ import { Worker } from 'bullmq'
 import { Pool } from 'pg'
 import dotenv from 'dotenv'
 import { upsert } from './sql/block';
+import { LatestBlock } from 'lib'
 dotenv.config()
 
 ;(BigInt as any).prototype["toJSON"] = function () {
@@ -24,10 +25,10 @@ const pool = new Pool({
 })
 
 const blockWorker = new Worker('block', async job => {
-  const block = job.data
+  const block = job.data as LatestBlock
   try {
     await upsert(pool, block)
-    console.log('📀 block', block)
+    console.log('📀 block', block.networkId, block.blockNumber)
     return true
   } catch(error) {
     console.error('🤬 block', block, error)

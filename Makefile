@@ -1,10 +1,10 @@
 
 build:
-	@docker compose -f dev.yaml build
+	@docker compose build
 
 dev:
-	@docker compose -f dev.yaml up -d redis
-	@docker compose -f dev.yaml up -d postgres
+	@docker compose up -d redis
+	@docker compose up -d postgres
 	@tmux new-session -d -s devenv
 
 	# Split the window into two equal horizontal panes
@@ -19,34 +19,37 @@ dev:
 	@tmux splitw -h -p 50
 
 	# Run commands in the three top panes
-	@tmux send-keys -t devenv:0.0 'docker compose -f dev.yaml up ingest-extractor --build' C-m
-	@tmux send-keys -t devenv:0.1 'docker compose -f dev.yaml up ingest-loader --build' C-m
-	@tmux send-keys -t devenv:0.2 'docker compose -f dev.yaml up gql --build' C-m
+	@tmux send-keys -t devenv:0.0 'docker compose up extractor --build' C-m
+	@tmux send-keys -t devenv:0.1 'docker compose up loader --build' C-m
+	@tmux send-keys -t devenv:0.2 'docker compose up gql --build' C-m
 
 	# Select bottom pane (interactive terminal)
 	@tmux selectp -t 3
 
 	@tmux attach-session -t devenv
-	@docker compose -f dev.yaml down
+	@docker compose down
 
 redis:
-	@docker compose -f dev.yaml up -d redis --build
+	@docker compose up -d redis --build
 
 postgres:
-	@docker compose -f dev.yaml up -d postgres --build
+	@docker compose up -d postgres --build
 
-ingest-extractor:
-	@docker compose -f dev.yaml up ingest-extractor --build
+.PHONY: extractor
+extractor:
+	@docker compose up extractor --build
 
-ingest-loader:
-	@docker compose -f dev.yaml up ingest-loader --build
+.PHONY: loader
+loader:
+	@docker compose up loader --build
 
-gql-api:
-	@docker compose -f dev.yaml up gql --build
+.PHONY: gql
+gql:
+	@docker compose up gql --build
 
 bullmq-dash:
-	@docker compose -f dev.yaml up bullmq-dash --build
+	@docker compose up bullmq-dash --build
 
 tidy:
-	@docker compose -f dev.yaml down
+	@docker compose down
 	-@tmux kill-server
