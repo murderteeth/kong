@@ -1,9 +1,12 @@
+import path from 'path'
 import { Queue } from 'bullmq'
 import { createPublicClient, webSocket } from 'viem'
 import { mainnet } from 'viem/chains'
 import dotenv from 'dotenv'
 import { LatestBlock } from 'lib'
-dotenv.config()
+
+const envPath = path.join(__dirname, '..', '.env')
+dotenv.config({ path: envPath })
 
 const bull = { connection: {
   host: process.env.REDIS_HOST || 'localhost',

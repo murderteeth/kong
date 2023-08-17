@@ -1,9 +1,7 @@
 import { Worker } from 'bullmq'
 import { Pool } from 'pg'
-import dotenv from 'dotenv'
 import { upsert } from './sql/block';
 import { LatestBlock } from 'lib'
-dotenv.config()
 
 ;(BigInt as any).prototype["toJSON"] = function () {
   return this.toString()
