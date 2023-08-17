@@ -15,10 +15,10 @@ services:
     ipAllowList: [] # only allow internal connections
 
   - type: worker
-    name: ingest-extractor
+    name: extractor
     region: ohio
     env: node
-    rootDir: ingest/extractor
+    rootDir: extractor
     buildCommand: yarn
     startCommand: yarn start
     envVars:
@@ -37,10 +37,10 @@ services:
           property: port
 
   - type: worker
-    name: ingest-loader
+    name: loader
     region: ohio
     env: node
-    rootDir: ingest/loader
+    rootDir: loader
     buildCommand: yarn
     startCommand: yarn start
     envVars:
