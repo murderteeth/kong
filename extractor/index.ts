@@ -6,7 +6,6 @@ import dotenv from 'dotenv'
 import { LatestBlock } from 'lib'
 
 const envPath = path.join(__dirname, '..', '.env')
-console.log('envPath', envPath)
 dotenv.config({ path: envPath })
 
 const bull = { connection: {
