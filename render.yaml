@@ -18,9 +18,8 @@ services:
     name: extractor
     region: ohio
     env: node
-    rootDir: extractor
     buildCommand: yarn
-    startCommand: yarn start
+    startCommand: cd extractor && yarn start
     envVars:
       - key: NODE_VERSION
         value: lts
@@ -40,9 +39,8 @@ services:
     name: loader
     region: ohio
     env: node
-    rootDir: loader
     buildCommand: yarn
-    startCommand: yarn start
+    startCommand: cd extractor && yarn start
     envVars:
       - key: NODE_VERSION
         value: lts
@@ -81,8 +79,7 @@ services:
     name: gql
     region: ohio
     runtime: node
-    rootDir: gql
-    buildCommand: yarn && yarn build
+    buildCommand: yarn && cd gql && yarn build
     startCommand: yarn start
     envVars:
       - key: PORT

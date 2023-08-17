@@ -2,7 +2,7 @@ import { Queue } from 'bullmq'
 import { createPublicClient, webSocket } from 'viem'
 import { mainnet } from 'viem/chains'
 import dotenv from 'dotenv'
-import { LatestBlock } from './lib'
+import { LatestBlock } from 'lib'
 dotenv.config()
 
 const bull = { connection: {
@@ -20,7 +20,7 @@ const rpc = createPublicClient({
 // using message keys for auto-deduplication
 const unwatchBlocks = rpc.watchBlocks({
   onBlock: async (block) => {
-    console.log('👀 block', block.number, block.timestamp)
+    console.log('👀 block', rpc.chain.id, block.number)
     await blockQueue.add('block', {
       networkId: rpc.chain.id,
       blockNumber: block.number.toString(),

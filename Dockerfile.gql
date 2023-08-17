@@ -8,6 +8,8 @@ RUN yarn install
 
 COPY . .
 
+WORKDIR /app/gql
+
 RUN yarn build
 
 CMD ["node", "build/index.js"]

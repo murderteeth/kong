@@ -23,8 +23,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
     build:
-      context: ./extractor
-      dockerfile: dockerfile
+      dockerfile: Dockerfile.extractor
 
   loader:
     depends_on:
@@ -38,8 +37,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     build:
-      context: ./loader
-      dockerfile: dockerfile
+      dockerfile: Dockerfile.loader
 
   gql:
     depends_on:
@@ -50,8 +48,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     build:
-      context: ./gql
-      dockerfile: dockerfile
+      dockerfile: Dockerfile.gql
     ports:
       - "3000:3000"
 

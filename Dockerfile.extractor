@@ -8,4 +8,6 @@ RUN yarn install
 
 COPY . .
 
+WORKDIR /app/extractor
+
 CMD ["yarn", "start"]
