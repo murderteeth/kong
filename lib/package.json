@@ -7,6 +7,7 @@
     "build": "tsc"
   },
   "devDependencies": {
+    "bullmq": "^4.7.3",
     "typescript": "^5.1.6"
   }
 }

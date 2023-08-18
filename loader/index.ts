@@ -1,49 +1,34 @@
-import { Worker } from 'bullmq'
-import { Pool } from 'pg'
-import { upsert } from './sql/block';
-import { LatestBlock } from 'lib'
+import { types } from 'lib'
+import pool from './pool'
+import { BlockLoader } from './block'
+import { VaultLoader } from './vault'
 
-;(BigInt as any).prototype["toJSON"] = function () {
-  return this.toString()
-}
+const loaders = [
+  new BlockLoader(),
+  new VaultLoader()
+] as types.Processor[]
 
-const bull = { connection: {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: (process.env.REDIS_PORT || 6379) as number,
-}}
-
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST || 'localhost',
-  port: (process.env.POSTGRES_PORT || 5432) as number,
-  database: process.env.POSTGRES_DATABASE || 'user',
-  user: process.env.POSTGRES_USER || 'user',
-  password: process.env.POSTGRES_PASSWORD || 'password',
-  max: 10,
-  idleTimeoutMillis: 30_000,
+Promise.all([...
+  loaders.map(loader => loader.up())
+]).then(() => {
+  console.log('🦍 loader up')
+}).catch(error => {
+  console.error('🤬', error)
+  process.exit(1)
 })
 
-const blockWorker = new Worker('block', async job => {
-  const block = job.data as LatestBlock
-  try {
-    await upsert(pool, block)
-    console.log('📀 block', block.networkId, block.blockNumber)
-    return true
-  } catch(error) {
-    console.error('🤬 block', block, error)
-    return false
-  }
-}, bull)
-
-console.log('🦍 loader up')
-
-function shutdown() {
-  blockWorker.close().then(() => {
-    pool.end().then(() => {
-      console.log('🦍 loader down')
-      process.exit(0)
-    })
+function down() {
+  Promise.all([...
+    loaders.map(loader => loader.down(),
+    pool.end())
+  ]).then(() => {
+    console.log('🦍 loader down')
+    process.exit(0)
+  }).catch(error => {
+    console.error('🤬', error)
+    process.exit(1)
   })
 }
 
-process.on('SIGINT', shutdown)
-process.on('SIGTERM', shutdown)
+process.on('SIGINT', down)
+process.on('SIGTERM', down)

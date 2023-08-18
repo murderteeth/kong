@@ -10,9 +10,11 @@ CREATE TABLE public.latest_block (
 CREATE TABLE public.vault (
 	network_id int4 NOT NULL,
 	address text NOT NULL,
-	symbol text NULL,
 	version text NULL,
+	symbol text NULL,
 	name text NULL,
+	decimals int4 NULL,
+	total_assets text NULL,
 	base_asset_address text NULL,
 	base_asset_name text NULL,
 	base_asset_symbol text NULL,

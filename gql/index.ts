@@ -14,8 +14,6 @@ export const pool = new Pool({
   idleTimeoutMillis: 30_000,
 })
 
-
-
 const typeDefs = gql`
   type Latency {
     blockToQueue: Int!
@@ -32,15 +30,60 @@ const typeDefs = gql`
     latency: Latency!
   }
 
+  type Vault {
+    networkId: Int!
+    address: String!
+    version: String!
+    symbol: String
+    name: String
+    decimals: Int
+    totalAssets: String
+    baseAssetAddress: String
+    baseAssetSymbol: String
+    baseAssetName: String
+    asOfBlockNumber: String
+  }
+
   type Query {
-    ahoy: String,
-    latestBlock(networkId: Int!): LatestBlock
+    bananas: String,
+    latestBlock(networkId: Int!): LatestBlock,
+    vaults(networkId: Int): [Vault]
   }
 `
 
 const resolvers = {
   Query: {
-    ahoy: () => 'Ahoy!',
+    bananas: () => '🍌'.repeat(1 + Math.floor(Math.random() * 32)),
+
+    vaults: async (_: any, args: { networkId?: number }) => {
+      const { networkId } = args
+      const query = `
+        SELECT 
+          network_id as "networkId",
+          address, 
+          version, 
+          symbol, 
+          name, 
+          decimals, 
+          total_assets as "totalAssets", 
+          base_asset_address as "baseAssetAddress", 
+          base_asset_name as "baseAssetName", 
+          base_asset_symbol as "baseAssetSymbol", 
+          as_of_block_number as "asOfBlockNumber" 
+        FROM public.vault 
+        WHERE network_id = $1 OR $1 IS NULL
+      `
+      const values = [networkId]
+
+      try {
+        const res = await pool.query(query, values)
+        return res.rows
+      } catch (err) {
+        console.error(err)
+        throw new Error('Failed to fetch vaults')
+      }
+    },
+
     latestBlock: async (_: any, args: { networkId: number }) => {
       const { networkId } = args
       const query = `SELECT 
@@ -84,16 +127,16 @@ server.start().then(() => {
   const app = express()
   server.applyMiddleware({ app })
   app.listen(port, () => {
-    console.log(`🦍 gql api listening on ${port}`)
+    console.log(`🦍 gql api up on ${port}`)
   })
 })
 
-function shutdown() {
+function down() {
   pool.end().then(() => {
     console.log('🦍 gql api down')
     process.exit(0)
   })
 }
 
-process.on('SIGINT', shutdown)
-process.on('SIGTERM', shutdown)
+process.on('SIGINT', down)
+process.on('SIGTERM', down)

@@ -1,6 +1,2 @@
-export interface LatestBlock {
-  networkId: number
-  blockNumber: string
-  blockTimestamp: string
-  queueTimestamp: string
-}
+export * as types from './types'
+export * as mq from './mq'
