@@ -8,6 +8,6 @@ RUN yarn install
 
 COPY . .
 
-WORKDIR /app/loader
+WORKDIR /app/ingest
 
 CMD ["yarn", "start"]

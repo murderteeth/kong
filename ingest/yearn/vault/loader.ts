@@ -1,6 +1,24 @@
 import { mq, types } from 'lib'
-import pool from './pool'
+import db from '../../db'
 import { Worker } from 'bullmq'
+import { Processor } from '../../processor'
+
+export class VaultLoader implements Processor {
+  worker: Worker | undefined
+
+  async up() {
+    this.worker = mq.worker(mq.q.vault.n, async job => {
+      if(job.name !== mq.q.vault.load) return
+      const vault = job.data as types.Vault
+      console.log('📀', mq.q.vault.n, vault.networkId, vault.address, vault.asOfBlockNumber)
+      await upsert(vault)
+    })
+  }
+
+  async down() {
+    await this.worker?.close()
+  }
+}
 
 export async function upsert(vault: types.Vault) {
   const query = `
@@ -38,27 +56,5 @@ export async function upsert(vault: types.Vault) {
     vault.asOfBlockNumber
   ]
 
-  await pool.query(query, values)
-}
-
-export class VaultLoader implements types.Processor {
-  worker: Worker | undefined
-
-  async up() {
-    this.worker = mq.worker(mq.n.load.vault, async job => {
-      const vault = job.data as types.Vault
-      try {
-        console.log('📀', mq.n.load.vault, vault.networkId, vault.asOfBlockNumber)
-        await upsert(vault)
-        return true
-      } catch(error) {
-        console.error('🤬', mq.n.load.vault, vault, error)
-        return false
-      }
-    })
-  }
-
-  async down() {
-    await this.worker?.close()
-  }
+  await db.query(query, values)
 }

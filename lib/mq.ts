@@ -5,16 +5,6 @@ const bull = { connection: {
   port: (process.env.REDIS_PORT || 6379) as number,
 }}
 
-export const n = {
-  extract: {
-    registry: 'extract-registry',
-    vault: 'extract-vault'
-  }, load: {
-    block: 'load-block',
-    vault: 'load-vault'
-  }
-}
-
 export const q = {
   block: {
     n: 'block',
@@ -38,7 +28,7 @@ export function worker(name: string, handler: (job: any) => Promise<any>) {
       try {
         return await handler(job)
       } catch(error) {
-        console.error('🤬', 'worker', name, error)
+        console.error('🤬', job.queueName, 'worker', name, error)
         throw error
       }
     }, {

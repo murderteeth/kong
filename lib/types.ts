@@ -1,8 +1,3 @@
-export interface Processor {
-  up(): Promise<void>
-  down(): Promise<void>
-}
-
 export interface LatestBlock {
   networkId: number
   blockNumber: string

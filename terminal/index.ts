@@ -14,8 +14,8 @@ async function sleep(ms: number) {
 export async function indexLatestFactoryVault() {
   console.log('🗂️ ', 'index latest factory vault')
   const blockRange = { fromBlock: 17895499, toBlock: 17895499 }
-  const queue = mq.queue(mq.n.extract.registry)
-  await queue.add(mq.n.extract.registry, blockRange)
+  const queue = mq.queue(mq.q.registry.n)
+  await queue.add(mq.q.registry.extract, blockRange)
   await queue.close()
 }
 
@@ -24,7 +24,7 @@ export async function indexRegistry() {
   const rpc = createPublicClient({
     chain: mainnet, transport: webSocket(process.env.WSS_NETWORK_1)
   })
-  const queue = mq.queue(mq.n.extract.registry)
+  const queue = mq.queue(mq.q.registry.n)
 
   const inceptBlock = 16215519n
   const latestBlock = await rpc.getBlockNumber()
@@ -34,7 +34,7 @@ export async function indexRegistry() {
   for (let block = inceptBlock; block <= latestBlock; block += stride) {
     const toBlock = block + stride - 1n < latestBlock ? block + stride - 1n : latestBlock
     const blockRange = { fromBlock: block.toString(), toBlock: toBlock.toString() }
-    queue.add(mq.n.extract.registry, blockRange)
+    queue.add(mq.q.registry.extract, blockRange)
     console.log('📇 ', blockRange)
     await sleep(50)
   }

@@ -16,16 +16,7 @@ services:
     volumes:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  extractor:
-    depends_on:
-      - redis
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    build:
-      dockerfile: Dockerfile.extractor
-
-  loader:
+  ingest:
     depends_on:
       - redis
       - postgres
@@ -37,7 +28,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     build:
-      dockerfile: Dockerfile.loader
+      dockerfile: Dockerfile.ingest
 
   gql:
     depends_on:

@@ -4,7 +4,7 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "main": "ts-node index.ts"
+    "start": "ts-node index.ts"
   },
   "dependencies": {
     "cross-env": "5.0.5",

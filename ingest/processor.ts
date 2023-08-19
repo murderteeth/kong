@@ -18,7 +18,7 @@ export class ProcessorPool<T extends Processor> implements Processor {
     await Promise.all(this.pool.map(p => p.up()))
     if(this.pool.length < 2) return
     this.interval = setInterval(async () => {
-      console.log('♻️ ', this.Type.name, 'recycle', this.pointer)
+      console.log('♻️ ', this.Type.name, this.pointer)
       await this.pool[this.pointer].down()
       this.pool[this.pointer] = new this.Type()
       await this.pool[this.pointer].up()
