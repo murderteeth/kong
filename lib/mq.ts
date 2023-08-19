@@ -15,10 +15,35 @@ export const n = {
   }
 }
 
+export const q = {
+  block: {
+    n: 'block',
+    load: 'load'
+  }, registry: {
+    n: 'registry',
+    extract: 'extract'
+  }, vault: {
+    n: 'vault',
+    extract: 'extract',
+    load: 'load'
+  }
+}
+
 export function queue(name: string) {
   return new Queue(name, bull)
 }
 
 export function worker(name: string, handler: (job: any) => Promise<any>) {
-  return new Worker(name, handler, bull)
+  return new Worker(name, async job => {
+      try {
+        return await handler(job)
+      } catch(error) {
+        console.error('🤬', 'worker', name, error)
+        throw error
+      }
+    }, {
+    ...bull,
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 100 }
+  })
 }

@@ -9,6 +9,7 @@
     "terminal",
     "extractor",
     "gql",
+    "ingest",
     "lib",
     "loader"
   ]
