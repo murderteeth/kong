@@ -1,10 +1,11 @@
-import { PublicClient, createPublicClient, parseAbi, webSocket } from 'viem'
+import { PublicClient } from 'viem'
 import { mainnet } from 'viem/chains'
 import { Worker } from 'bullmq'
 import { Processor } from '../../processor'
 import { LogsHandler } from './handler'
 import { contracts } from 'lib/contracts/yearn/registries'
 import { mq } from 'lib'
+import { rpcs } from '../../rpcs'
 
 export class RegistryExtractor implements Processor {
   rpc: PublicClient
@@ -12,9 +13,7 @@ export class RegistryExtractor implements Processor {
   worker: Worker | undefined
 
   constructor() {
-    this.rpc = createPublicClient({
-      chain: mainnet, transport: webSocket(process.env.WSS_NETWORK_1)
-    })
+    this.rpc = rpcs.next(mainnet.id)
     this.handler = new LogsHandler()
   }
 

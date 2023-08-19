@@ -1,8 +1,9 @@
-import { PublicClient, createPublicClient, webSocket } from 'viem'
+import { PublicClient } from 'viem'
 import { mainnet } from 'viem/chains'
 import { mq, types } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from '../processor'
+import { rpcs } from '../rpcs'
 
 export class BlockWatcher implements Processor {
   queue: Queue
@@ -11,9 +12,7 @@ export class BlockWatcher implements Processor {
 
   constructor() {
     this.queue = mq.queue(mq.q.block.n)
-    this.rpc = createPublicClient({
-      chain: mainnet, transport: webSocket(process.env.WSS_NETWORK_1)
-    })
+    this.rpc = rpcs.next(mainnet.id)
   }
 
   async up() {

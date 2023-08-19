@@ -7,12 +7,14 @@ import { RegistryWatcher } from './yearn/registry/watcher'
 import { RegistryExtractor } from './yearn/registry/extractor'
 import { VaultExtractor } from './yearn/vault/extractor'
 import { VaultLoader } from './yearn/vault/loader'
+import { rpcs } from './rpcs'
 
 const envPath = path.join(__dirname, '..', '.env')
 dotenv.config({ path: envPath })
 
 
 
+rpcs.up()
 const processors = [
   new ProcessorPool<BlockWatcher>(BlockWatcher, 1),
   new ProcessorPool<BlockLoader>(BlockLoader, 1),
@@ -27,7 +29,9 @@ const processors = [
 Promise.all([...
   processors.map(process => process.up()),
 ]).then(() => {
+
   console.log('🦍 ingest up')
+
 }).catch(error => {
   console.error('🤬', error)
   process.exit(1)
@@ -37,6 +41,7 @@ function down() {
   Promise.all([...
     processors.map(process => process.down())
   ]).then(() => {
+    rpcs.down()
     console.log('🦍 ingest down')
     process.exit(0)
   }).catch(error => {

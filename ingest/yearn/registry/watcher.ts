@@ -1,8 +1,9 @@
-import { PublicClient, createPublicClient, parseAbi, webSocket } from 'viem'
+import { PublicClient } from 'viem'
 import { mainnet } from 'viem/chains'
 import { Processor } from '../../processor'
 import { LogsHandler } from './handler'
 import { contracts } from 'lib/contracts/yearn/registries'
+import { rpcs } from '../../rpcs'
 
 export class RegistryWatcher implements Processor {
   rpc: PublicClient
@@ -10,9 +11,7 @@ export class RegistryWatcher implements Processor {
   watchers: (() => void)[] = []
 
   constructor() {
-    this.rpc = createPublicClient({
-      chain: mainnet, transport: webSocket(process.env.WSS_NETWORK_1)
-    })
+    this.rpc = rpcs.next(mainnet.id)
     this.handler = new LogsHandler()
   }
 

@@ -1,8 +1,9 @@
 import { Queue, Worker } from 'bullmq'
 import { mq, types } from 'lib'
-import { PublicClient, createPublicClient, parseAbi, webSocket } from 'viem'
+import { PublicClient, parseAbi } from 'viem'
 import { mainnet } from 'viem/chains'
 import { Processor } from '../../processor'
+import { rpcs } from '../../rpcs'
 
 export class VaultExtractor implements Processor {
   queue: Queue
@@ -11,9 +12,7 @@ export class VaultExtractor implements Processor {
 
   constructor() {
     this.queue = mq.queue(mq.q.vault.n)
-    this.rpc = createPublicClient({
-      chain: mainnet, transport: webSocket(process.env.WSS_NETWORK_1)
-    })
+    this.rpc = rpcs.next(mainnet.id)
   }
 
   async up() {
