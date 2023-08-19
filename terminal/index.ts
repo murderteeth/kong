@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import { mainnet } from 'viem/chains'
 import { mq } from 'lib'
 import path from 'path'
+import { contracts } from 'lib/contracts/yearn/registries'
 
 const envPath = path.join(__dirname, '..', '.env')
 dotenv.config({ path: envPath })
@@ -26,17 +27,19 @@ export async function indexRegistry() {
   })
   const queue = mq.queue(mq.q.registry.n)
 
-  const inceptBlock = 16215519n
-  const latestBlock = await rpc.getBlockNumber()
+  const key = 'yearn-registry-2'
   const stride = 1000n
-  console.log('blocks', latestBlock - inceptBlock, (latestBlock - inceptBlock) / stride)
+  const incept = contracts[key].incept
+  const latest = await rpc.getBlockNumber()
 
-  for (let block = inceptBlock; block <= latestBlock; block += stride) {
-    const toBlock = block + stride - 1n < latestBlock ? block + stride - 1n : latestBlock
-    const blockRange = { fromBlock: block.toString(), toBlock: toBlock.toString() }
-    queue.add(mq.q.registry.extract, blockRange)
-    console.log('📇 ', blockRange)
-    await sleep(50)
+  console.log('blocks', latest - incept, (latest - incept) / stride)
+
+  for (let block = incept; block <= latest; block += stride) {
+    const toBlock = block + stride - 1n < latest ? block + stride - 1n : latest
+    const options = { key, fromBlock: block.toString(), toBlock: toBlock.toString() }
+    console.log('📇 ', options)
+    await queue.add(mq.q.registry.extract, options)
+    await sleep(16)
   }
 
   await queue.close()

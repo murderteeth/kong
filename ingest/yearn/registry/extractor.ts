@@ -1,9 +1,10 @@
 import { PublicClient, createPublicClient, parseAbi, webSocket } from 'viem'
 import { mainnet } from 'viem/chains'
-import { addresses, mq, types } from 'lib'
 import { Worker } from 'bullmq'
 import { Processor } from '../../processor'
-import { LogsHandler, events } from './events'
+import { LogsHandler } from './handler'
+import { contracts } from 'lib/contracts/yearn/registries'
+import { mq } from 'lib'
 
 export class RegistryExtractor implements Processor {
   rpc: PublicClient
@@ -20,13 +21,15 @@ export class RegistryExtractor implements Processor {
   async up() {
     this.worker = mq.worker(mq.q.registry.n, async job => {
       if(job.name !== mq.q.registry.extract) return
-      const { fromBlock, toBlock } = job.data
-      console.log('⬇️ ', job.queueName, job.name, fromBlock, toBlock)
+      const { key, fromBlock, toBlock } = job.data
+      const contract = contracts[key as keyof typeof contracts]
+      console.log('⬇️ ', job.queueName, job.name, key, fromBlock, toBlock)
       const logs = await this.rpc.getLogs({
-        address: addresses.yearn[mainnet.id].registries[2].address,
-        events, fromBlock, toBlock
+        address: contract.address,
+        events: contract.events as any,
+        fromBlock, toBlock
       })
-      await this.handler.handle(this.rpc.chain?.id || 0, logs)
+      await this.handler.handle(key, this.rpc.chain?.id || 0, logs)
     })
   }
 

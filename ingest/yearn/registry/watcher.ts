@@ -1,13 +1,13 @@
 import { PublicClient, createPublicClient, parseAbi, webSocket } from 'viem'
 import { mainnet } from 'viem/chains'
-import { addresses } from 'lib'
 import { Processor } from '../../processor'
-import { LogsHandler, events } from './events'
+import { LogsHandler } from './handler'
+import { contracts } from 'lib/contracts/yearn/registries'
 
 export class RegistryWatcher implements Processor {
   rpc: PublicClient
   handler: LogsHandler
-  unwatch: (() => void) | undefined
+  watchers: (() => void)[] = []
 
   constructor() {
     this.rpc = createPublicClient({
@@ -16,21 +16,28 @@ export class RegistryWatcher implements Processor {
     this.handler = new LogsHandler()
   }
 
-  async up() {
-    this.unwatch = this.rpc.watchEvent({
-      events,
-      address: addresses.yearn[mainnet.id].registries[2].address,
+  watch(key: keyof typeof contracts) {
+    const contract = contracts[key]
+    return this.rpc.watchEvent({
+      address: contract.address, 
+      events: contract.events as any,
       onLogs: async (logs) => {
-        await this.handler.handle(this.rpc.chain?.id || 0, logs)
+        await this.handler.handle(key as keyof typeof contracts, this.rpc.chain?.id || 0, logs)
       },
       onError: (error) => {
         console.error('🤬', error)
       }
+    })    
+  }
+
+  async up() {
+    Object.keys(contracts).forEach(key => {
+      this.watchers.push(this.watch(key as keyof typeof contracts))
     })
   }
 
   async down() {
-    if(this.unwatch) this.unwatch()
+    this.watchers.forEach(unwatch => unwatch())
     await this.handler.down()
   }
 }

@@ -23,32 +23,32 @@ export class VaultExtractor implements Processor {
       const result = await this.rpc.multicall({
         contracts: [
           {
-            address: vault.address as `0x${string}`,
+            address: vault.address,
             abi: parseAbi(['function name() returns (string)']),
             functionName: 'name'
           },
           {
-            address: vault.address as `0x${string}`,
+            address: vault.address,
             abi: parseAbi(['function symbol() returns (string)']),
             functionName: 'symbol'
           },
           {
-            address: vault.address as `0x${string}`,
+            address: vault.address,
             abi: parseAbi(['function decimals() returns (uint32)']),
             functionName: 'decimals'
           },
           {
-            address: vault.address as `0x${string}`,
+            address: vault.address,
             abi: parseAbi(['function totalAssets() returns (uint256)']),
             functionName: 'totalAssets'
           },
           {
-            address: vault.baseAssetAddress as `0x${string}`,
+            address: vault.baseAssetAddress,
             abi: parseAbi(['function name() returns (string)']),
             functionName: 'name'
           },
           {
-            address: vault.baseAssetAddress as `0x${string}`,
+            address: vault.baseAssetAddress,
             abi: parseAbi(['function symbol() returns (string)']),
             functionName: 'symbol'
           },
