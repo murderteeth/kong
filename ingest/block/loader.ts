@@ -10,7 +10,7 @@ export class BlockLoader implements Processor {
     this.worker = mq.worker(mq.q.block.n, async job => {
       if(job.name !== mq.q.block.load) return
       const block = job.data as types.LatestBlock
-      console.log('📀', mq.q.block.n, block.networkId, block.blockNumber)
+      console.log('📀', mq.q.block.n, block.chainId, block.blockNumber)
       await upsert(block)
     })
   }
@@ -33,7 +33,7 @@ export async function upsert(block: types.LatestBlock) {
     WHERE latest_block.block_number < EXCLUDED.block_number;
   `
   const values = [
-    block.networkId, 
+    block.chainId, 
     block.blockNumber, 
     block.blockTimestamp, 
     block.queueTimestamp

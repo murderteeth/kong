@@ -14,10 +14,10 @@ CREATE TABLE public.vault (
 	symbol text NULL,
 	name text NULL,
 	decimals int4 NULL,
+	asset_address text NULL,
+	asset_name text NULL,
+	asset_symbol text NULL,
 	total_assets text NULL,
-	base_asset_address text NULL,
-	base_asset_name text NULL,
-	base_asset_symbol text NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT vault_pkey PRIMARY KEY (network_id, address)

@@ -1,20 +1,23 @@
 export interface LatestBlock {
-  networkId: number
+  chainId: number
   blockNumber: string
   blockTimestamp: string
   queueTimestamp: string
 }
 
 export interface Vault {
-  networkId: number
-  address: `0x${string}`
+  chainId: number
+  registry: `0x${string}`
+  endorsed: boolean
+  type: 'vault' | 'strategy'
   apiVersion: string
+  address: `0x${string}`
   name?: string,
   symbol?: string,
   decimals?: number,
   totalAssets?: string,
-  baseAssetAddress: `0x${string}`
-  baseAssetName?: string,
-  baseAssetSymbol?: string,
+  assetAddress: `0x${string}`
+  assetName?: string,
+  assetSymbol?: string,
   asOfBlockNumber: string
 }

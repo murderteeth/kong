@@ -1,11 +1,17 @@
 import { PublicClient, createPublicClient, webSocket } from 'viem'
-import { mainnet } from 'viem/chains'
+import { mainnet, polygon } from 'viem/chains'
+
+export interface RpcClients { [chaindId: number]: PublicClient }
 
 class pool {
   private recycle = 10 * 60 * 1000
   private interval: NodeJS.Timeout | undefined
   private rpcs = {
     [mainnet.id as number]: {
+      clients: [] as PublicClient[],
+      pointers: { next: 0, recycle: 0 }
+    },
+    [polygon.id as number]: {
       clients: [] as PublicClient[],
       pointers: { next: 0, recycle: 0 }
     }
@@ -16,6 +22,11 @@ class pool {
       chain: mainnet,
       name: process.env.WSS_NETWORK_1, // stash url in name for later use
       transport: webSocket(process.env.WSS_NETWORK_1)
+    })),
+    this.rpcs[polygon.id].clients = Array(2).fill(createPublicClient({
+      chain: polygon,
+      name: process.env.WSS_NETWORK_137, // stash url in name for later use
+      transport: webSocket(process.env.WSS_NETWORK_137)
     }))
   }
 
@@ -37,9 +48,17 @@ class pool {
     this.setInterval()
   }
 
-  next(chainId: number) {
+  private _next(chainId: number) {
     const result = this.rpcs[chainId].clients[this.rpcs[chainId].pointers.next]
     this.rpcs[chainId].pointers.next = (this.rpcs[chainId].pointers.next + 1) % this.rpcs[chainId].clients.length
+    return result
+  }
+
+  next() {
+    const result = {} as RpcClients
+    Object.keys(this.rpcs).forEach(chainId => {
+      result[parseInt(chainId)] = this._next(parseInt(chainId))
+    })
     return result
   }
 

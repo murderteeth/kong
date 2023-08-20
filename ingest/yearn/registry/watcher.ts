@@ -1,27 +1,26 @@
 import { PublicClient } from 'viem'
-import { mainnet } from 'viem/chains'
 import { Processor } from '../../processor'
 import { LogsHandler } from './handler'
 import { contracts } from 'lib/contracts/yearn/registries'
-import { rpcs } from '../../rpcs'
+import { RpcClients, rpcs } from '../../rpcs'
 
 export class RegistryWatcher implements Processor {
-  rpc: PublicClient
+  rpcs: RpcClients
   handler: LogsHandler
   watchers: (() => void)[] = []
 
   constructor() {
-    this.rpc = rpcs.next(mainnet.id)
+    this.rpcs = rpcs.next()
     this.handler = new LogsHandler()
   }
 
-  watch(key: keyof typeof contracts) {
-    const contract = contracts[key]
-    return this.rpc.watchEvent({
+  watch(rpc: PublicClient, key: string) {
+    const contract = contracts.at(rpc.chain?.id, key)
+    return rpc.watchEvent({
       address: contract.address, 
       events: contract.events as any,
       onLogs: async (logs) => {
-        await this.handler.handle(key as keyof typeof contracts, this.rpc.chain?.id || 0, logs)
+        await this.handler.handle(rpc.chain?.id as number, key, logs)
       },
       onError: (error) => {
         console.error('🤬', error)
@@ -30,8 +29,12 @@ export class RegistryWatcher implements Processor {
   }
 
   async up() {
-    Object.keys(contracts).forEach(key => {
-      this.watchers.push(this.watch(key as keyof typeof contracts))
+    Object.values(this.rpcs).forEach((rpc: PublicClient) => {
+      Object.keys(contracts.for(rpc.chain?.id)).forEach(key => {
+        this.watchers.push(
+          this.watch(rpc, key)
+        )
+      })
     })
   }
 

@@ -22,7 +22,7 @@ const typeDefs = gql`
   }
 
   type LatestBlock {
-    networkId: Int!
+    chainId: Int!
     blockNumber: Int!
     blockTimestamp: String!
     queueTimestamp: String!
@@ -31,23 +31,23 @@ const typeDefs = gql`
   }
 
   type Vault {
-    networkId: Int!
+    chainId: Int!
     address: String!
     version: String!
     symbol: String
     name: String
     decimals: Int
     totalAssets: String
-    baseAssetAddress: String
-    baseAssetSymbol: String
-    baseAssetName: String
+    assetAddress: String
+    assetSymbol: String
+    assetName: String
     asOfBlockNumber: String
   }
 
   type Query {
     bananas: String,
-    latestBlock(networkId: Int!): LatestBlock,
-    vaults(networkId: Int): [Vault]
+    latestBlock(chainId: Int!): LatestBlock,
+    vaults(chainId: Int): [Vault]
   }
 `
 
@@ -55,25 +55,25 @@ const resolvers = {
   Query: {
     bananas: () => '🍌'.repeat(1 + Math.floor(Math.random() * 32)),
 
-    vaults: async (_: any, args: { networkId?: number }) => {
-      const { networkId } = args
+    vaults: async (_: any, args: { chainId?: number }) => {
+      const { chainId } = args
       const query = `
         SELECT 
-          network_id as "networkId",
+          network_id as "chainId",
           address, 
           version, 
           symbol, 
           name, 
           decimals, 
           total_assets as "totalAssets", 
-          base_asset_address as "baseAssetAddress", 
-          base_asset_name as "baseAssetName", 
-          base_asset_symbol as "baseAssetSymbol", 
+          asset_address as "assetAddress", 
+          asset_name as "assetName", 
+          asset_symbol as "assetSymbol", 
           as_of_block_number as "asOfBlockNumber" 
         FROM public.vault 
         WHERE network_id = $1 OR $1 IS NULL
       `
-      const values = [networkId]
+      const values = [chainId]
 
       try {
         const res = await pool.query(query, values)
@@ -84,10 +84,10 @@ const resolvers = {
       }
     },
 
-    latestBlock: async (_: any, args: { networkId: number }) => {
-      const { networkId } = args
+    latestBlock: async (_: any, args: { chainId: number }) => {
+      const { chainId } = args
       const query = `SELECT 
-        network_id as "networkId", 
+        network_id as "chainId", 
         block_number as "blockNumber", 
         EXTRACT(EPOCH FROM block_timestamp) * 1000 as "blockTimestamp", 
         EXTRACT(EPOCH FROM queue_timestamp) * 1000 as "queueTimestamp",
@@ -95,7 +95,7 @@ const resolvers = {
         FROM public.latest_block 
         WHERE network_id = $1
       `
-      const values = [networkId]
+      const values = [chainId]
 
       try {
         const res = await pool.query(query, values)

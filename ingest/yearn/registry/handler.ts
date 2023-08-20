@@ -8,16 +8,16 @@ export class LogsHandler {
     this.queue = mq.queue(mq.q.vault.n)
   }
 
-  async handle(key: keyof typeof contracts, networkId: number, logs: any[]) {
-    const contract = contracts[key]
+  async handle(chainId: number, key: string, logs: any[]) {
+    const contract = contracts.at(chainId, key)
     for(const log of logs) {
-      if(log.eventName === 'NewVault') {
-        console.log('🪵', networkId, log.blockNumber, log.eventName)
+      if(log.eventName === 'NewVault' || log.eventName === 'NewEndorsedVault') {
+        console.log('🪵', chainId, log.blockNumber, log.eventName)
         await this.queue.add(mq.q.vault.extract, {
           ...contract.parser.NewVault(log),
-          networkId
+          chainId
         } as types.Vault, {
-          jobId: `${networkId}-${log.blockNumber}-${log.args.vault.toString()}`
+          jobId: `${chainId}-${log.blockNumber}-${log.args.vault.toString()}`
         })
       }
     }

@@ -12,32 +12,35 @@ async function sleep(ms: number) {
   return new Promise<void>(resolve => setTimeout(resolve, ms))
 }
 
-export async function indexLatestFactoryVault() {
-  console.log('🗂️ ', 'index latest factory vault')
-  const blockRange = { fromBlock: 17895499, toBlock: 17895499 }
-  const queue = mq.queue(mq.q.registry.n)
-  await queue.add(mq.q.registry.extract, blockRange)
-  await queue.close()
-}
+// export async function indexLatestFactoryVault() {
+//   console.log('🗂️ ', 'index latest factory vault')
+//   const blockRange = { fromBlock: 17895499, toBlock: 17895499 }
+//   const queue = mq.queue(mq.q.registry.n)
+//   await queue.add(mq.q.registry.extract, blockRange)
+//   await queue.close()
+// }
 
 export async function indexRegistry() {
   console.log('🗂️ ', 'index registry')
+
   const rpc = createPublicClient({
     chain: mainnet, transport: webSocket(process.env.WSS_NETWORK_1)
   })
   const queue = mq.queue(mq.q.registry.n)
 
-  const key = 'yearn-registry-2'
+  const key = 'registry-2'
   const stride = 1000n
-  const incept = contracts[key].incept
+  
+  const contract = contracts.at(mainnet.id, key)
+  const incept = contract.incept
   const latest = await rpc.getBlockNumber()
 
   console.log('blocks', latest - incept, (latest - incept) / stride)
 
   for (let block = incept; block <= latest; block += stride) {
     const toBlock = block + stride - 1n < latest ? block + stride - 1n : latest
-    const options = { key, fromBlock: block.toString(), toBlock: toBlock.toString() }
-    console.log('📇 ', options)
+    const options = { chainId: mainnet.id, key, fromBlock: block.toString(), toBlock: toBlock.toString() }
+    console.log('📇', options.chainId, options.key, options.fromBlock, options.toBlock)
     await queue.add(mq.q.registry.extract, options)
     await sleep(16)
   }
