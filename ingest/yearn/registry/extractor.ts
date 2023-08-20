@@ -20,16 +20,14 @@ export class RegistryExtractor implements Processor {
       if(job.name !== mq.q.registry.extract) return
 
       const { chainId, key, fromBlock, toBlock } = job.data
-
       const rpc = this.rpcs[chainId]
       const contract = contracts.at(chainId, key)
-
       console.log('⬇️ ', job.queueName, job.name, chainId, key, fromBlock, toBlock)
 
       const logs = await rpc.getLogs({
         address: contract.address,
         events: contract.events as any,
-        fromBlock, toBlock
+        fromBlock: BigInt(fromBlock), toBlock: BigInt(toBlock)
       })
 
       await this.handler.handle(chainId, key, logs)

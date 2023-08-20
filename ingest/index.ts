@@ -16,12 +16,12 @@ dotenv.config({ path: envPath })
 
 rpcs.up()
 const processors = [
-  new ProcessorPool<BlockWatcher>(BlockWatcher, 1),
-  new ProcessorPool<BlockLoader>(BlockLoader, 1),
-  new ProcessorPool<RegistryWatcher>(RegistryWatcher, 1),
-  new ProcessorPool<RegistryExtractor>(RegistryExtractor, 1),
-  new ProcessorPool<VaultExtractor>(VaultExtractor, 1),
-  new ProcessorPool<VaultLoader>(VaultLoader, 1)
+  new ProcessorPool<BlockWatcher>(BlockWatcher, 2),
+  new ProcessorPool<BlockLoader>(BlockLoader, 2),
+  new ProcessorPool<RegistryWatcher>(RegistryWatcher, 2),
+  new ProcessorPool<RegistryExtractor>(RegistryExtractor, 4),
+  new ProcessorPool<VaultExtractor>(VaultExtractor, 2),
+  new ProcessorPool<VaultLoader>(VaultLoader, 2)
 ] as Processor[]
 
 
