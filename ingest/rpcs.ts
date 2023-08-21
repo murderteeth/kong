@@ -1,5 +1,5 @@
 import { PublicClient, createPublicClient, webSocket } from 'viem'
-import { arbitrum, fantom, mainnet, optimism, polygon } from 'viem/chains'
+import { Chain, arbitrum, fantom, mainnet, optimism, polygon } from 'viem/chains'
 
 export interface RpcClients { [chaindId: number]: PublicClient }
 
@@ -13,13 +13,15 @@ class pool {
     pointers: { next: number, recycle: number } 
   }}
 
+  private wss(chain: Chain) {
+    return process.env[`WSS_NETWORK_${chain.id}`] as string
+  }
+
   private setupRpcs() {
     for(const chain of chains) {
-      const wss = process.env[`WSS_NETWORK_${chain.id}`] as string
       this.rpcs[chain.id] = {
         clients: Array(2).fill(createPublicClient({
-          chain, name: wss, // stash url in name for later use
-          transport: webSocket(wss)
+          chain, transport: webSocket(this.wss(chain))
         })),
         pointers: { next: 0, recycle: 0 }
       }      
@@ -35,7 +37,7 @@ class pool {
         const rpc = clients[pointer]
         console.log('♻️ ', 'rpc', chainId, pointer)
         clients[pointer] = createPublicClient({
-          chain: rpc.chain, transport: webSocket(rpc.name)
+          chain: rpc.chain, transport: webSocket(this.wss(rpc.chain as Chain))
         })
         forChain.pointers.recycle = (pointer + 1) % clients.length
       })

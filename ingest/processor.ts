@@ -14,9 +14,7 @@ export class ProcessorPool<T extends Processor> implements Processor {
     }
   }
 
-  async up() {
-    await Promise.all(this.pool.map(p => p.up()))
-    if(this.pool.length < 2) return
+  private startRecycling() {
     this.interval = setInterval(async () => {
       console.log('♻️ ', this.Type.name, this.pointer)
       await this.pool[this.pointer].down()
@@ -24,6 +22,12 @@ export class ProcessorPool<T extends Processor> implements Processor {
       await this.pool[this.pointer].up()
       this.pointer = (this.pointer + 1) % this.pool.length
     }, this.recycle / this.pool.length)
+  }
+
+  async up() {
+    await Promise.all(this.pool.map(p => p.up()))
+    if(this.pool.length < 2) return
+    this.startRecycling()
   }
 
   async down() {

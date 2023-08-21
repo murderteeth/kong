@@ -127,13 +127,13 @@ server.start().then(() => {
   const app = express()
   server.applyMiddleware({ app })
   app.listen(port, () => {
-    console.log(`🦍 gql api up on ${port}`)
+    console.log(`🦍 gql up (${port})`)
   })
 })
 
 function down() {
   pool.end().then(() => {
-    console.log('🦍 gql api down')
+    console.log('🦍 gql down')
     process.exit(0)
   })
 }
