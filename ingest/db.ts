@@ -11,3 +11,12 @@ const db = new Pool({
 })
 
 export default db
+
+export async function latestBlock(chainId: number) {
+  const result = await db.query(`
+    SELECT block_number
+    FROM latest_block
+    WHERE chain_id = $1
+  `, [chainId])
+  return result.rows[0]?.block_number as bigint
+}

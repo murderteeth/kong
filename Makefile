@@ -43,6 +43,10 @@ ingest:
 gql:
 	@docker compose up gql --build
 
+.PHONY: terminal
+terminal:
+	@yarn workspace terminal start
+
 bullmq-dash:
 	@docker compose up bullmq-dash --build
 

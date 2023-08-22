@@ -7,15 +7,19 @@ const bull = { connection: {
 
 export const q = {
   block: {
-    n: 'block',
-    load: 'load'
-  }, registry: {
-    n: 'registry',
-    extract: 'extract'
-  }, vault: {
-    n: 'vault',
-    extract: 'extract',
-    load: 'load'
+    load: 'load-block'
+  }, yearn: {
+    index: 'yearn-index',
+    indexJobs: {
+      registry: 'registry'
+    }, registry: {
+      extract: 'extract-yearn-registry',
+      extractJobs: { logs: 'logs' },
+    }, vault: {
+      extract: 'extract-yearn-vault',
+      extractJobs: { logs: 'logs', state: 'state' },
+      load: 'load-yearn-vault'
+    }
   }
 }
 
@@ -28,8 +32,7 @@ export function worker(name: string, handler: (job: any) => Promise<any>) {
       try {
         return await handler(job)
       } catch(error) {
-        console.error('🤬', job.queueName, 'worker', name, error)
-        throw error
+        console.error('🤬', name, 'worker', error)
       }
     }, {
     ...bull,

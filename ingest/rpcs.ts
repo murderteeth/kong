@@ -3,7 +3,13 @@ import { Chain, arbitrum, fantom, mainnet, optimism, polygon } from 'viem/chains
 
 export interface RpcClients { [chaindId: number]: PublicClient }
 
-export const chains = [mainnet, optimism, polygon, fantom, arbitrum]
+export const chains = [
+  mainnet, 
+  optimism, 
+  polygon, 
+  fantom, 
+  arbitrum
+]
 
 class pool {
   private recycle = 10 * 60 * 1000

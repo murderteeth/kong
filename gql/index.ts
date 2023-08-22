@@ -59,7 +59,7 @@ const resolvers = {
       const { chainId } = args
       const query = `
         SELECT 
-          network_id as "chainId",
+          chain_id as "chainId",
           address, 
           version, 
           symbol, 
@@ -71,7 +71,7 @@ const resolvers = {
           asset_symbol as "assetSymbol", 
           as_of_block_number as "asOfBlockNumber" 
         FROM public.vault 
-        WHERE network_id = $1 OR $1 IS NULL
+        WHERE chain_id = $1 OR $1 IS NULL
       `
       const values = [chainId]
 
@@ -87,13 +87,13 @@ const resolvers = {
     latestBlock: async (_: any, args: { chainId: number }) => {
       const { chainId } = args
       const query = `SELECT 
-        network_id as "chainId", 
+        chain_id as "chainId", 
         block_number as "blockNumber", 
         EXTRACT(EPOCH FROM block_timestamp) * 1000 as "blockTimestamp", 
         EXTRACT(EPOCH FROM queue_timestamp) * 1000 as "queueTimestamp",
         EXTRACT(EPOCH FROM updated_at) * 1000 as "updatedAt" 
         FROM public.latest_block 
-        WHERE network_id = $1
+        WHERE chain_id = $1
       `
       const values = [chainId]
 

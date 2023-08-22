@@ -3,11 +3,12 @@ import dotenv from 'dotenv'
 import { BlockWatcher } from './block/watcher'
 import { BlockLoader } from './block/loader'
 import { Processor, ProcessorPool } from './processor'
-import { RegistryWatcher } from './yearn/registry/watcher'
-import { RegistryExtractor } from './yearn/registry/extractor'
-import { VaultExtractor } from './yearn/vault/extractor'
-import { VaultLoader } from './yearn/vault/loader'
+import { YearnRegistryWatcher } from './yearn/registry/watcher'
+import { YearnVaultLoader } from './yearn/vault/loader'
 import { rpcs } from './rpcs'
+import { YearnIndexer } from './yearn/indexer'
+import { YearnRegistryExtractor } from './yearn/registry/extractor'
+import { VaultExtractor } from './yearn/vault/extractor'
 
 const envPath = path.join(__dirname, '..', '.env')
 dotenv.config({ path: envPath })
@@ -18,10 +19,11 @@ rpcs.up()
 const processors = [
   new ProcessorPool<BlockWatcher>(BlockWatcher, 2),
   new ProcessorPool<BlockLoader>(BlockLoader, 2),
-  new ProcessorPool<RegistryWatcher>(RegistryWatcher, 2),
-  new ProcessorPool<RegistryExtractor>(RegistryExtractor, 4),
+  new ProcessorPool<YearnIndexer>(YearnIndexer, 4),
+  new ProcessorPool<YearnRegistryExtractor>(YearnRegistryExtractor, 4),
+  new ProcessorPool<YearnRegistryWatcher>(YearnRegistryWatcher, 2),
   new ProcessorPool<VaultExtractor>(VaultExtractor, 2),
-  new ProcessorPool<VaultLoader>(VaultLoader, 2)
+  new ProcessorPool<YearnVaultLoader>(YearnVaultLoader, 2)
 ] as Processor[]
 
 

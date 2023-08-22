@@ -10,7 +10,7 @@ export class BlockWatcher implements Processor {
   watchers: (() => void)[] = []
 
   constructor() {
-    this.queue = mq.queue(mq.q.block.n)
+    this.queue = mq.queue(mq.q.block.load)
     this.rpcs = rpcs.next()
   }
 
@@ -18,8 +18,8 @@ export class BlockWatcher implements Processor {
     Object.values(this.rpcs).forEach((rpc: PublicClient) => {
       this.watchers.push(rpc.watchBlocks({
         onBlock: async (block) => {
-          console.log('👀', mq.q.block.n, rpc.chain?.id, block.number)
-          await this.queue.add(mq.q.block.load, {
+          console.log('👀', 'block', rpc.chain?.id, block.number)
+          await this.queue.add('', {
             chainId: rpc.chain?.id,
             blockNumber: block.number.toString(),
             blockTimestamp: block.timestamp.toString(),
@@ -28,7 +28,7 @@ export class BlockWatcher implements Processor {
             jobId: `${rpc.chain?.id}-${block.number}`,
           })
         }, onError: (error) => {
-          console.error('🤬', mq.q.block.n, error)
+          console.error('🤬', 'block watcher', error)
         }
       }))
     })

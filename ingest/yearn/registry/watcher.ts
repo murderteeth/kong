@@ -1,10 +1,10 @@
 import { PublicClient } from 'viem'
 import { Processor } from '../../processor'
-import { LogsHandler } from './handler'
+import { LogsHandler } from './logsHandler'
 import { contracts } from 'lib/contracts/yearn/registries'
 import { RpcClients, rpcs } from '../../rpcs'
 
-export class RegistryWatcher implements Processor {
+export class YearnRegistryWatcher implements Processor {
   rpcs: RpcClients
   handler: LogsHandler
   watchers: (() => void)[] = []

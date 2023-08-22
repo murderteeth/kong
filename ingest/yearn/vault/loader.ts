@@ -3,14 +3,13 @@ import db from '../../db'
 import { Worker } from 'bullmq'
 import { Processor } from '../../processor'
 
-export class VaultLoader implements Processor {
+export class YearnVaultLoader implements Processor {
   worker: Worker | undefined
 
   async up() {
-    this.worker = mq.worker(mq.q.vault.n, async job => {
-      if(job.name !== mq.q.vault.load) return
+    this.worker = mq.worker(mq.q.yearn.vault.load, async job => {
       const vault = job.data as types.Vault
-      console.log('📀', mq.q.vault.n, vault.chainId, vault.address, vault.asOfBlockNumber)
+      console.log('📀', 'vault', vault.chainId, vault.address, vault.asOfBlockNumber)
       await upsert(vault)
     })
   }
@@ -23,12 +22,12 @@ export class VaultLoader implements Processor {
 export async function upsert(vault: types.Vault) {
   const query = `
     INSERT INTO public.vault (
-      network_id, address, version, symbol, name, decimals, total_assets,
+      chain_id, address, version, symbol, name, decimals, total_assets,
       asset_address, asset_name, asset_symbol, 
       as_of_block_number, updated_at
     )
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
-    ON CONFLICT (network_id, address) 
+    ON CONFLICT (chain_id, address) 
     DO UPDATE SET
       version = $3,
       symbol = $4,

@@ -7,10 +7,9 @@ export class BlockLoader implements Processor {
   worker: Worker | undefined
 
   async up() {
-    this.worker = mq.worker(mq.q.block.n, async job => {
-      if(job.name !== mq.q.block.load) return
+    this.worker = mq.worker(mq.q.block.load, async job => {
       const block = job.data as types.LatestBlock
-      console.log('📀', mq.q.block.n, block.chainId, block.blockNumber)
+      console.log('📀', 'block', block.chainId, block.blockNumber)
       await upsert(block)
     })
   }
@@ -22,9 +21,9 @@ export class BlockLoader implements Processor {
 
 export async function upsert(block: types.LatestBlock) {
   const query = `
-    INSERT INTO public.latest_block (network_id, block_number, block_timestamp, queue_timestamp, updated_at)
+    INSERT INTO public.latest_block (chain_id, block_number, block_timestamp, queue_timestamp, updated_at)
     VALUES ($1, $2, to_timestamp($3::double precision), to_timestamp($4::double precision), NOW())
-    ON CONFLICT (network_id)
+    ON CONFLICT (chain_id)
     DO UPDATE SET 
       block_number = EXCLUDED.block_number,
       block_timestamp = EXCLUDED.block_timestamp,
