@@ -27,12 +27,12 @@ const app = express()
 app.use('/', serverAdapter.getRouter())
 
 app.listen(port, () => {
-  console.log(`🦍 bullmq dashboard listening on ${port}`)
+  console.log(`🐒 bullmq dashboard listening on ${port}`)
 })
 
 function shutdown() {
   blockQueue.close().then(() => {
-    console.log('🦍 bullmq dashboard down')
+    console.log('🐒 bullmq dashboard down')
     process.exit(0)
   })
 }

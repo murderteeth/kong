@@ -4,7 +4,14 @@ CREATE TABLE public.latest_block (
 	block_timestamp timestamp NOT NULL,
 	queue_timestamp timestamp NOT NULL,
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT block_pkey PRIMARY KEY (chain_id)
+	CONSTRAINT latest_block_pkey PRIMARY KEY (chain_id)
+);
+
+CREATE TABLE public.archive_node_pointer (
+	chain_id int4 NOT NULL,
+	block_number int8 NOT NULL,
+	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT archive_node_pointers_pkey PRIMARY KEY (chain_id)
 );
 
 CREATE TABLE public.vault (

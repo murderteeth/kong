@@ -8,6 +8,9 @@ const bull = { connection: {
 export const q = {
   block: {
     load: 'load-block'
+  }, archive: {
+    pointer: 'archive-pointer',
+    pointerJobs: { catchup: 'catchup' }
   }, yearn: {
     index: 'yearn-index',
     indexJobs: {

@@ -2,16 +2,16 @@ import { setTimeout } from 'node:timers/promises'
 import { Queue } from 'bullmq'
 import { contracts } from 'lib/contracts/yearn/registries'
 import { mq } from 'lib'
-import { latestBlock } from '../../db'
+import { fetchLatestBlock } from '../../db'
 
 export async function indexRegistry(queue: Queue, 
-  options: { chainId: number, key: string, from?: bigint, to?: bigint 
-  }) {
+  options: { chainId: number, key: string, from?: bigint, to?: bigint }
+  ) {
 
   const { chainId, key } = options
   const contract = contracts.at(chainId, key)
   const from = options.from || contract.incept
-  const to = options.to || await latestBlock(chainId)
+  const to = options.to || await fetchLatestBlock(chainId)
   const stride = 10_000n
   const throttle = 16
 

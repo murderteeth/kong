@@ -12,7 +12,7 @@ const db = new Pool({
 
 export default db
 
-export async function latestBlock(chainId: number) {
+export async function fetchLatestBlock(chainId: number) {
   const result = await db.query(`
     SELECT block_number
     FROM latest_block
