@@ -27,16 +27,18 @@ async function main() {
         name: 'menu',
         message: '🐒 menu',
         choices: [
-          { title: 'Catchup archive pointer', value: 'catchup' },
+          { title: 'Block pointers', value: 'pointers' },
           { title: 'Index', value: 'index' },
+          { title: 'Extract', value: 'extract' },
           { title: 'Redis', value: 'redis' },
+          { title: 'Message queue', value: 'queue' },
           { title: 'Quit', value: 'quit' }
         ],
       }
     ])).menu
 
     switch(menu) {
-      case 'catchup': {
+      case 'pointers': {
         const {chain, confirm} = await prompts([
           {
             type: 'select',
@@ -53,19 +55,20 @@ async function main() {
           {
             type: 'confirm',
             name: 'confirm',
-            message: (_, all) => `🤔 index ${all.registry} on ${all.chain.name}?`,
+            message: (_, all) => `🤔 catchup yearn registry pointers on ${all.chain.name}?`,
           }
         ])
 
         if (confirm) {
-          const queue = mq.queue(mq.q.archive.pointer)
+          const queue = mq.queue(mq.q.yearn.registry.pointer)
           const options = { chainId: chain.id }
-          await queue.add(mq.q.archive.pointerJobs.catchup, options)
+          await queue.add(mq.q.yearn.registry.pointerJobs.catchup, options)
           await queue.close()
         }
 
         break;
       }
+
       case 'index': {
         const {chain, registry, confirm} = await prompts([
           {
@@ -106,11 +109,35 @@ async function main() {
         break
       }
 
+      case 'extract': {
+        const {confirm} = await prompts([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: (_, all) => `🤔 extract apetax vaults?`,
+          }
+        ])
+
+        if (confirm) {
+          const queue = mq.queue(mq.q.yearn.registry.extract)
+          const options = {}
+          await queue.add(mq.q.yearn.registry.extractJobs.apetax, options)
+          await queue.close()
+        }
+
+        break
+      }
+
       case 'redis': {
         await redis.connect()
         console.log('await redis.memoryStats()', await redis.memoryStats())
         await redis.disconnect()
         break
+      }
+
+      case 'queue': {
+        console.log(chalk.yellow('🍌 coming soon 🍌'))
+        break;
       }
 
       case 'quit': {

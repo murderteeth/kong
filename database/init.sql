@@ -7,17 +7,22 @@ CREATE TABLE public.latest_block (
 	CONSTRAINT latest_block_pkey PRIMARY KEY (chain_id)
 );
 
-CREATE TABLE public.archive_node_pointer (
+CREATE TABLE public.block_pointer (
 	chain_id int4 NOT NULL,
+	address text NOT NULL,
 	block_number int8 NOT NULL,
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT archive_node_pointers_pkey PRIMARY KEY (chain_id)
+	CONSTRAINT block_pointer_pkey PRIMARY KEY (chain_id, address)
 );
 
 CREATE TABLE public.vault (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
 	version text NULL,
+	apetax_type text NULL CHECK (apetax_type IN ('experimental', 'weird')),
+	apetax_status text NULL CHECK (apetax_type IN ('new', 'active', 'withdraw', 'endorsed', 'stealth')),
+	registry_status text NULL CHECK (registry_status IN ('experimental', 'endorsed')),
+	registry_address text NULL,
 	symbol text NULL,
 	name text NULL,
 	decimals int4 NULL,

@@ -8,17 +8,19 @@ const bull = { connection: {
 export const q = {
   block: {
     load: 'load-block'
-  }, archive: {
-    pointer: 'archive-pointer',
-    pointerJobs: { catchup: 'catchup' }
   }, yearn: {
-    index: 'yearn-index',
+    index: 'index-yearn',
     indexJobs: {
-      registry: 'registry'
+      registry: 'registry',
+      vault: 'vault'
     }, registry: {
+      pointer: 'pointer-yearn-registry',
+      pointerJobs: { catchup: 'catchup' },
       extract: 'extract-yearn-registry',
-      extractJobs: { logs: 'logs' },
+      extractJobs: { logs: 'logs', apetax: 'apetax' },
     }, vault: {
+      pointer: 'pointer-yearn-vault',
+      pointerJobs: { catchup: 'catchup' },
       extract: 'extract-yearn-vault',
       extractJobs: { logs: 'logs', state: 'state' },
       load: 'load-yearn-vault'

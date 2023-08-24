@@ -4,7 +4,7 @@ import { Processor } from '../../../processor'
 import { extractState } from './state'
 import { RpcClients, rpcs } from '../../../rpcs'
 
-export class VaultExtractor implements Processor {
+export class YearnVaultExtractor implements Processor {
   rpcs: RpcClients
   worker: Worker | undefined
   queue: Queue | undefined

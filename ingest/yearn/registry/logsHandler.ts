@@ -1,11 +1,17 @@
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import { contracts } from 'lib/contracts/yearn/registries'
+import { Processor } from '../../processor'
 
-export class LogsHandler {
-  queue: Queue
-  constructor() {
-    this.queue = mq.queue(mq.q.yearn.vault.extract)
+export class LogsHandler implements Processor {
+  queue: Queue | undefined
+
+  async up() {
+    this.queue = mq.queue(mq.q.yearn.vault.extract)    
+  }
+
+  async down() {
+    await this.queue?.close()
   }
 
   async handle(chainId: number, key: string, logs: any[]) {
@@ -13,7 +19,7 @@ export class LogsHandler {
     for(const log of logs) {
       if(log.eventName === 'NewVault' || log.eventName === 'NewEndorsedVault') {
         console.log('🪵', chainId, log.blockNumber, log.eventName)
-        await this.queue.add(mq.q.yearn.vault.extractJobs.state, {
+        await this.queue?.add(mq.q.yearn.vault.extractJobs.state, {
           ...contract.parser.NewVault(log),
           chainId
         } as types.Vault, {
@@ -21,9 +27,5 @@ export class LogsHandler {
         })
       }
     }
-  }
-
-  async down() {
-    await this.queue.close()
   }
 }

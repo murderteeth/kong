@@ -34,6 +34,11 @@ export async function extractState(rpc: PublicClient, vault: types.Vault) {
         abi: parseAbi(['function symbol() returns (string)']),
         functionName: 'symbol'
       },
+      {
+        address: vault.address,
+        abi: parseAbi(['function apiVersion() returns (string)']),
+        functionName: 'apiVersion'
+      }
     ]
   })
 
@@ -45,5 +50,6 @@ export async function extractState(rpc: PublicClient, vault: types.Vault) {
     totalAssets: result[3].result?.toString(),
     assetName: result[4].result,
     assetSymbol: result[5].result,
+    apiVersion: result[6].result
   } as types.Vault
 }

@@ -7,8 +7,12 @@ export interface LatestBlock {
 
 export interface Vault {
   chainId: number
-  registry: `0x${string}`
-  endorsed: boolean
+
+  apetaxType: string
+  apeTaxStatus: string
+  registryStatus: string
+  registryAddress: `0x${string}`
+
   type: 'vault' | 'strategy'
   apiVersion: string
   address: `0x${string}`

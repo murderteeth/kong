@@ -23,7 +23,8 @@ dev:
 	@tmux send-keys -t devenv:0.1 'docker compose up gql --build' C-m
 	@tmux send-keys -t devenv:0.2 'top' C-m
 
-	# Select bottom pane (interactive terminal)
+	# Bottom pane (terminal)
+	@tmux send-keys -t devenv:0.3 'yarn workspace terminal start' C-m
 	@tmux selectp -t 3
 
 	@tmux attach-session -t devenv
