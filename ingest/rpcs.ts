@@ -4,11 +4,7 @@ import { Chain, arbitrum, fantom, mainnet, optimism, polygon } from 'viem/chains
 export interface RpcClients { [chaindId: number]: PublicClient }
 
 export const chains = [
-  mainnet, 
-  optimism, 
-  polygon, 
-  fantom, 
-  arbitrum
+  mainnet
 ]
 
 class pool {

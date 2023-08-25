@@ -3,7 +3,7 @@ import { mq } from 'lib'
 import { contracts } from 'lib/contracts/yearn/registries'
 import { Processor } from '../../processor'
 import { getBlockPointer, getLatestBlock, saveBlockPointer } from '../../db'
-import { indexRegistry } from './indexRegistry'
+import { indexLogs } from './indexLogs'
 
 export class YearnRegistryBlockPointer implements Processor {
   worker: Worker | undefined
@@ -24,7 +24,7 @@ export class YearnRegistryBlockPointer implements Processor {
             const contract = contracts.at(chainId, key)
             const address = contract.address
             const blockPointer = await getBlockPointer(chainId, address)
-            await indexRegistry(this.queues[mq.q.yearn.registry.extract], {
+            await indexLogs(this.queues[mq.q.yearn.registry.extract], {
               chainId, key, 
               from: blockPointer || contract.incept, 
               to: latestBlock

@@ -1,7 +1,7 @@
 import { Queue, Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from '../processor'
-import { indexRegistry } from './registry/indexRegistry'
+import { indexLogs as indexRegistryLogs } from './registry/indexLogs'
 
 export class YearnIndexer implements Processor {
   worker: Worker | undefined
@@ -12,7 +12,10 @@ export class YearnIndexer implements Processor {
     this.worker = mq.worker(mq.q.yearn.index, async job => {
       switch(job.name) {
         case mq.q.yearn.indexJobs.registry:{
-          await indexRegistry(this.queue as Queue, job.data)
+          await indexRegistryLogs(this.queue as Queue, job.data)
+          break
+        } case mq.q.yearn.indexJobs.vault:{
+
           break
         } default: {
           throw new Error(`unknown job name ${job.name}`)

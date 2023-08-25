@@ -4,7 +4,7 @@ import { contracts } from 'lib/contracts/yearn/registries'
 import { mq } from 'lib'
 import { getLatestBlock } from '../../db'
 
-export async function indexRegistry(queue: Queue, 
+export async function indexLogs(queue: Queue, 
   options: { chainId: number, key: string, from?: bigint, to?: bigint }
   ) {
 

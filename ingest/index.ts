@@ -10,6 +10,7 @@ import { YearnIndexer } from './yearn/indexer'
 import { YearnRegistryExtractor } from './yearn/registry/extractor'
 import { YearnVaultExtractor } from './yearn/vault/extractor'
 import { YearnRegistryBlockPointer } from './yearn/registry/blockPointer'
+import { YearnVaultBlockPointer } from './yearn/vault/blockPointer'
 
 const envPath = path.join(__dirname, '..', '.env')
 dotenv.config({ path: envPath })
@@ -23,9 +24,10 @@ const processors = [
   new ProcessorPool<YearnIndexer>(YearnIndexer, 4),
   new ProcessorPool<YearnRegistryExtractor>(YearnRegistryExtractor, 4),
   new ProcessorPool<YearnRegistryWatcher>(YearnRegistryWatcher, 2),
-  new ProcessorPool<YearnVaultExtractor>(YearnVaultExtractor, 2),
-  new ProcessorPool<YearnVaultLoader>(YearnVaultLoader, 2),
   new ProcessorPool<YearnRegistryBlockPointer>(YearnRegistryBlockPointer, 2),
+  new ProcessorPool<YearnVaultExtractor>(YearnVaultExtractor, 4),
+  new ProcessorPool<YearnVaultLoader>(YearnVaultLoader, 2),
+  new ProcessorPool<YearnVaultBlockPointer>(YearnVaultBlockPointer, 2),
 ] as Processor[]
 
 

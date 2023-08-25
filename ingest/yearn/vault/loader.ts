@@ -23,24 +23,28 @@ export async function upsert(vault: types.Vault) {
   const query = `
     INSERT INTO public.vault (
       chain_id, address, version, symbol, name, decimals, total_assets,
-      asset_address, asset_name, asset_symbol, 
+      asset_address, asset_name, asset_symbol,
+      activation_timestamp, activation_block_number,
       as_of_block_number, updated_at
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, to_timestamp($11::double precision), $12, $13, NOW())
     ON CONFLICT (chain_id, address) 
     DO UPDATE SET
-      version = $3,
-      symbol = $4,
-      name = $5,
-      decimals = $6,
-      total_assets = $7,
-      asset_address = $8,
-      asset_name = $9,
-      asset_symbol = $10,
-      as_of_block_number = $11,
+      version = EXCLUDED.version,
+      symbol = EXCLUDED.symbol,
+      name = EXCLUDED.name,
+      decimals = EXCLUDED.decimals,
+      total_assets = EXCLUDED.total_assets,
+      asset_address = EXCLUDED.asset_address,
+      asset_name = EXCLUDED.asset_name,
+      asset_symbol = EXCLUDED.asset_symbol,
+      activation_timestamp = EXCLUDED.activation_timestamp,
+      activation_block_number = EXCLUDED.activation_block_number,
+      as_of_block_number = EXCLUDED.as_of_block_number,
       updated_at = NOW()
     WHERE vault.as_of_block_number < EXCLUDED.as_of_block_number;
   `
+
   const values = [
     vault.chainId, 
     vault.address,
@@ -52,6 +56,8 @@ export async function upsert(vault: types.Vault) {
     vault.assetAddress,
     vault.assetName,
     vault.assetSymbol,
+    vault.activationTimestamp,
+    vault.activationBlockNumber,
     vault.asOfBlockNumber
   ]
 

@@ -18,7 +18,7 @@ export class LogsHandler implements Processor {
     const contract = contracts.at(chainId, key)
     for(const log of logs) {
       if(log.eventName === 'NewVault' || log.eventName === 'NewEndorsedVault') {
-        console.log('🪵', chainId, log.blockNumber, log.eventName)
+        console.log('🪵', chainId, key, log.blockNumber, log.eventName)
         await this.queue?.add(mq.q.yearn.vault.extractJobs.state, {
           ...contract.parser.NewVault(log),
           chainId

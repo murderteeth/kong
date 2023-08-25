@@ -1,4 +1,5 @@
 import { types } from 'lib'
+import { blocks } from 'lib'
 import { PublicClient, parseAbi } from 'viem'
 
 export async function extractState(rpc: PublicClient, vault: types.Vault) {
@@ -38,9 +39,19 @@ export async function extractState(rpc: PublicClient, vault: types.Vault) {
         address: vault.address,
         abi: parseAbi(['function apiVersion() returns (string)']),
         functionName: 'apiVersion'
+      },
+      {
+        address: vault.address,
+        abi: parseAbi(['function activation() returns (uint256)']),
+        functionName: 'activation'
       }
     ]
   })
+
+  const activation = result[7].result
+  let activationBlockNumber = (activation && activation > 0n) 
+  ? await blocks.estimateHeight(rpc as PublicClient, Number(activation)) 
+  : 0n
 
   return {
     ...vault,
@@ -50,6 +61,9 @@ export async function extractState(rpc: PublicClient, vault: types.Vault) {
     totalAssets: result[3].result?.toString(),
     assetName: result[4].result,
     assetSymbol: result[5].result,
-    apiVersion: result[6].result
+    apiVersion: result[6].result || '0.0.0',
+    activationTimestamp: activation?.toString(),
+    activationBlockNumber: activationBlockNumber.toString(),
+    asOfBlockNumber: (await rpc.getBlockNumber()).toString()
   } as types.Vault
 }

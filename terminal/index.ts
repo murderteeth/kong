@@ -39,11 +39,15 @@ async function main() {
 
     switch(menu) {
       case 'pointers': {
-        const {chain, confirm} = await prompts([
+        const { chain, primitive, confirm } : {
+          chain: any,
+          primitive: 'registry' | 'vault',
+          confirm: any
+        } = await prompts([
           {
             type: 'select',
             name: 'chain',
-            message: '⛓️ pick a chain',
+            message: 'pick a chain',
             choices: [
               { title: mainnet.name, value: mainnet },
               { title: optimism.name, value: optimism },
@@ -53,16 +57,25 @@ async function main() {
             ]
           },
           {
+            type: 'select',
+            name: 'primitive',
+            message: 'pick a contract primitive',
+            choices: [
+              { title: 'Registry', value: 'registry' },
+              { title: 'Vault', value: 'vault' }
+            ]
+          },
+          {
             type: 'confirm',
             name: 'confirm',
-            message: (_, all) => `🤔 catchup yearn registry pointers on ${all.chain.name}?`,
+            message: (_, all) => `🤔 catchup yearn ${all.primitive} pointers on ${all.chain.name}?`,
           }
         ])
 
         if (confirm) {
-          const queue = mq.queue(mq.q.yearn.registry.pointer)
+          const queue = mq.queue(mq.q.yearn[primitive].pointer)
           const options = { chainId: chain.id }
-          await queue.add(mq.q.yearn.registry.pointerJobs.catchup, options)
+          await queue.add(mq.q.yearn[primitive].pointerJobs.catchup, options)
           await queue.close()
         }
 
@@ -74,7 +87,7 @@ async function main() {
           {
             type: 'select',
             name: 'chain',
-            message: '⛓️ pick a chain',
+            message: 'pick a chain',
             choices: [
               { title: mainnet.name, value: mainnet },
               { title: optimism.name, value: optimism },
@@ -86,7 +99,7 @@ async function main() {
           {
             type: 'select',
             name: 'registry',
-            message: '📖 pick a registry',
+            message: 'pick a registry',
             choices: (_, all) => {
               const registries = contracts.for(parseInt(all.chain.id))
               return Object.keys(registries).map(key => ({ title: key, value: key }))

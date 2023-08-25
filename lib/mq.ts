@@ -24,6 +24,12 @@ export const q = {
       extract: 'extract-yearn-vault',
       extractJobs: { logs: 'logs', state: 'state' },
       load: 'load-yearn-vault'
+    }, strategy: {
+      pointer: 'pointer-yearn-strategy',
+      pointerJobs: { catchup: 'catchup' },
+      extract: 'extract-yearn-strategy',
+      extractJobs: { logs: 'logs', state: 'state' },
+      load: 'load-yearn-strategy'
     }
   }
 }

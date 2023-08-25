@@ -34,6 +34,10 @@ const typeDefs = gql`
     chainId: Int!
     address: String!
     version: String!
+    apetaxType: String
+    apetaxStatus: String
+    registryStatus: String
+    registryAddress: String
     symbol: String
     name: String
     decimals: Int
@@ -41,6 +45,8 @@ const typeDefs = gql`
     assetAddress: String
     assetSymbol: String
     assetName: String
+    activationTimestamp: String
+    activationBlockNumber: String
     asOfBlockNumber: String
   }
 
@@ -61,7 +67,11 @@ const resolvers = {
         SELECT 
           chain_id as "chainId",
           address, 
-          version, 
+          version,
+          apetax_type as "apetaxType",
+          apetax_status as "apetaxStatus",
+          registry_status as "registryStatus",
+          registry_address as "registryAddress", 
           symbol, 
           name, 
           decimals, 
@@ -69,6 +79,8 @@ const resolvers = {
           asset_address as "assetAddress", 
           asset_name as "assetName", 
           asset_symbol as "assetSymbol", 
+          activation_timestamp as "activationTimestamp",
+          activation_block_number as "activationBlockNumber",
           as_of_block_number as "asOfBlockNumber" 
         FROM public.vault 
         WHERE chain_id = $1 OR $1 IS NULL

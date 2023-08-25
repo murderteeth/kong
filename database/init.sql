@@ -30,7 +30,25 @@ CREATE TABLE public.vault (
 	asset_name text NULL,
 	asset_symbol text NULL,
 	total_assets text NULL,
+	activation_timestamp timestamp NULL,
+	activation_block_number int8 NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT vault_pkey PRIMARY KEY (chain_id, address)
 );
+
+CREATE TABLE public.strategy (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	version text NULL,
+	name text NULL,
+	vault_address text NOT NULL,
+	withdrawal_queue_index int4 NULL,
+	migrate_address text NULL,
+	activation_timestamp timestamp NULL,
+	activation_block_number int8 NULL,
+	as_of_block_number int8 NOT NULL,
+	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT strategy_pkey PRIMARY KEY (chain_id, address)
+);
+)
