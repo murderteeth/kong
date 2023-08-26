@@ -7,20 +7,20 @@ export interface LatestBlock {
 
 export interface Vault {
   chainId: number
-  apetaxType: string
-  apeTaxStatus: string
-  registryStatus: string
-  registryAddress: `0x${string}`
-  type: 'vault' | 'strategy'
-  apiVersion: string
   address: `0x${string}`
-  name?: string,
+  type?: 'vault' | 'strategy'
+  apiVersion?: string
+  apetaxType?: string
+  apetaxStatus?: string
+  registryStatus?: string
+  registryAddress?: `0x${string}`
   symbol?: string,
+  name?: string,
   decimals?: number,
-  totalAssets?: string,
-  assetAddress: `0x${string}`
+  assetAddress?: `0x${string}`
   assetName?: string,
   assetSymbol?: string,
+  totalAssets?: string,
   activationTimestamp?: string,
   activationBlockNumber?: string,
   asOfBlockNumber: string
@@ -36,5 +36,13 @@ export interface Strategy {
   migrateAddress?: string,
   activationTimestamp?: string,
   activationBlockNumber?: string,
+  asOfBlockNumber: string
+}
+
+export interface WithdrawalQueueItem {
+  chainId: number
+  vaultAddress: `0x${string}`
+  queueIndex: number
+  strategyAddress?: `0x${string}`
   asOfBlockNumber: string
 }

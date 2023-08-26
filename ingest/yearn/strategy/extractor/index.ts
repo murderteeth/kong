@@ -3,11 +3,9 @@ import { mq } from 'lib'
 import { Processor } from '../../../processor'
 import { StateExtractor } from './state'
 import { RpcClients, rpcs } from '../../../rpcs'
-import { LogsExtractor } from './logs'
 
-export class YearnVaultExtractor implements Processor {
+export class YearnStrategyExtractor implements Processor {
   rpcs: RpcClients
-  logsExtractor: LogsExtractor = new LogsExtractor()
   stateExtractor: StateExtractor = new StateExtractor()
   worker: Worker | undefined
 
@@ -16,15 +14,14 @@ export class YearnVaultExtractor implements Processor {
   }
 
   async up() {
-    await this.logsExtractor.up()
     await this.stateExtractor.up()
-    this.worker = mq.worker(mq.q.yearn.vault.extract, async job => {
+    this.worker = mq.worker(mq.q.yearn.strategy.extract, async job => {
       switch(job.name) {
-        case mq.q.yearn.vault.extractJobs.logs:{
-          await this.logsExtractor.extract(job)
+        case mq.q.yearn.strategy.extractJobs.logs:{
+          throw new Error('not implemented')
           break
 
-        } case mq.q.yearn.vault.extractJobs.state:{
+        } case mq.q.yearn.strategy.extractJobs.state:{
           await this.stateExtractor.extract(job)
           break
 
@@ -38,6 +35,5 @@ export class YearnVaultExtractor implements Processor {
   async down() {
     await this.worker?.close()
     await this.stateExtractor.down()
-    await this.logsExtractor.down()
   }
 }

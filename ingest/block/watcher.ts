@@ -19,7 +19,7 @@ export class BlockWatcher implements Processor {
       this.watchers.push(rpc.watchBlocks({
         onBlock: async (block) => {
           console.log('👀', 'block', rpc.chain?.id, block.number)
-          await this.queue.add('', {
+          await this.queue.add(mq.q.block.loadJobs.block, {
             chainId: rpc.chain?.id,
             blockNumber: block.number.toString(),
             blockTimestamp: block.timestamp.toString(),

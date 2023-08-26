@@ -51,7 +51,7 @@ export class ApetaxExtractor implements Processor {
       await this.queue?.add(mq.q.yearn.vault.extractJobs.state, {
         chainId: vault.CHAIN_ID,
         apetaxType: vault.VAULT_TYPE,
-        apeTaxStatus: vault.VAULT_STATUS,
+        apetaxStatus: vault.VAULT_STATUS,
         address: vault.VAULT_ADDR,
         assetAddress: vault.WANT_ADDR,
         asOfBlockNumber: latestBlock.toString()

@@ -30,10 +30,21 @@ const typeDefs = gql`
     latency: Latency!
   }
 
+  type Strategy {
+    chainId: Int!
+    address: String!
+    apiVersion: String!
+    vaultAddress: String!    
+    name: String
+    activationTimestamp: String
+    activationBlockNumber: String
+    asOfBlockNumber: String
+  }
+
   type Vault {
     chainId: Int!
     address: String!
-    version: String!
+    apiVersion: String!
     apetaxType: String
     apetaxStatus: String
     registryStatus: String
@@ -45,6 +56,7 @@ const typeDefs = gql`
     assetAddress: String
     assetSymbol: String
     assetName: String
+    withdrawalQueue: [Strategy]
     activationTimestamp: String
     activationBlockNumber: String
     asOfBlockNumber: String
@@ -67,7 +79,7 @@ const resolvers = {
         SELECT 
           chain_id as "chainId",
           address, 
-          version,
+          api_version as "apiVersion",
           apetax_type as "apetaxType",
           apetax_status as "apetaxStatus",
           registry_status as "registryStatus",
@@ -89,7 +101,42 @@ const resolvers = {
 
       try {
         const res = await pool.query(query, values)
-        return res.rows
+        const vaults = res.rows
+
+        const queues = (await pool.query(`
+          SELECT 
+            withdrawal_queue.chain_id as "chainId",
+            withdrawal_queue.vault_address as "vaultAddress", 
+            withdrawal_queue.strategy_address as "strategyAddress",
+            withdrawal_queue.queue_index as "queueIndex",
+            strategy.name,
+            strategy.api_version as "apiVersion",
+            strategy.activation_timestamp as "activationTimestamp",
+            strategy.activation_block_number as "activationBlockNumber",
+            strategy.as_of_block_number as "asOfBlockNumber"
+          FROM withdrawal_queue
+          INNER JOIN strategy ON strategy.address = withdrawal_queue.strategy_address
+          WHERE withdrawal_queue.chain_id = $1 OR $1 IS NULL
+          ORDER BY withdrawal_queue.chain_id, withdrawal_queue.vault_address, withdrawal_queue.queue_index ASC
+          `, 
+          [chainId]
+        )).rows
+
+        return vaults.map(vault => ({
+          ...vault, 
+          withdrawalQueue: queues
+          .filter(q => q.chainId === vault.chainId && q.vaultAddress === vault.address)
+          .map(q => ({
+            chainId: q.chainId,
+            address: q.strategyAddress,
+            name: q.name,
+            apiVersion: q.apiVersion,
+            activationTimestamp: q.activationTimestamp,
+            activationBlockNumber: q.activationBlockNumber,
+            asOfBlockNumber: q.asOfBlockNumber
+          }))
+        }))
+
       } catch (err) {
         console.error(err)
         throw new Error('Failed to fetch vaults')

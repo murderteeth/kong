@@ -12,13 +12,15 @@ const db = new Pool({
 
 export default db
 
+export const camelToSnake = (str: string) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+
 export async function getLatestBlock(chainId: number) {
   const result = await db.query(`
     SELECT block_number
     FROM latest_block
     WHERE chain_id = $1
   `, [chainId])
-  return result.rows[0]?.block_number as bigint
+  return (result.rows[0]?.block_number || 0) as bigint
 }
 
 export async function getBlockPointer(chainId: number, address: `0x${string}`) {

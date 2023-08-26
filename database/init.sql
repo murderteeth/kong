@@ -18,10 +18,11 @@ CREATE TABLE public.block_pointer (
 CREATE TABLE public.vault (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
-	version text NULL,
-	apetax_type text NULL CHECK (apetax_type IN ('experimental', 'weird')),
-	apetax_status text NULL CHECK (apetax_type IN ('new', 'active', 'withdraw', 'endorsed', 'stealth')),
-	registry_status text NULL CHECK (registry_status IN ('experimental', 'endorsed')),
+	type text NULL CHECK (type IN ('vault', 'strategy')),
+	api_version text NULL,
+	apetax_type text NULL,
+	apetax_status text NULL,
+	registry_status text NULL,
 	registry_address text NULL,
 	symbol text NULL,
 	name text NULL,
@@ -40,10 +41,9 @@ CREATE TABLE public.vault (
 CREATE TABLE public.strategy (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
-	version text NULL,
+	api_version text NULL,
 	name text NULL,
 	vault_address text NOT NULL,
-	withdrawal_queue_index int4 NULL,
 	migrate_address text NULL,
 	activation_timestamp timestamp NULL,
 	activation_block_number int8 NULL,
@@ -51,4 +51,13 @@ CREATE TABLE public.strategy (
 	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT strategy_pkey PRIMARY KEY (chain_id, address)
 );
-)
+
+CREATE TABLE public.withdrawal_queue (
+	chain_id int4 NOT NULL,
+	vault_address text NOT NULL,
+	queue_index int4 NOT NULL,
+	strategy_address text NULL,
+	as_of_block_number int8 NOT NULL,
+	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT withdrawal_queue_pkey PRIMARY KEY (chain_id, vault_address, queue_index)
+);

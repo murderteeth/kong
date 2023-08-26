@@ -7,7 +7,8 @@ const bull = { connection: {
 
 export const q = {
   block: {
-    load: 'load-block'
+    load: 'load-block',
+    loadJobs: { block: 'block' }
   }, yearn: {
     index: 'index-yearn',
     indexJobs: {
@@ -23,13 +24,15 @@ export const q = {
       pointerJobs: { catchup: 'catchup' },
       extract: 'extract-yearn-vault',
       extractJobs: { logs: 'logs', state: 'state' },
-      load: 'load-yearn-vault'
+      load: 'load-yearn-vault',
+      loadJobs: { vault: 'vault', withdrawalQueue: 'withdrawal-queue' }
     }, strategy: {
       pointer: 'pointer-yearn-strategy',
       pointerJobs: { catchup: 'catchup' },
       extract: 'extract-yearn-strategy',
       extractJobs: { logs: 'logs', state: 'state' },
-      load: 'load-yearn-strategy'
+      load: 'load-yearn-strategy',
+      loadJobs: { strategy: 'strategy' }
     }
   }
 }
