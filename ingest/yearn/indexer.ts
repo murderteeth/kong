@@ -1,6 +1,6 @@
 import { Queue, Worker } from 'bullmq'
 import { mq } from 'lib'
-import { Processor } from '../processor'
+import { Processor } from 'lib/processor'
 import { indexLogs as indexRegistryLogs } from './registry/indexLogs'
 
 export class YearnIndexer implements Processor {

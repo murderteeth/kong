@@ -7,8 +7,9 @@ export class ProcessorPool<T extends Processor> implements Processor {
   private pool: T[] = []
   private pointer = 0
   private interval: NodeJS.Timeout | undefined
+  private recycle = 10 * 60 * 1000
 
-  constructor(private readonly Type: new () => T, size: number, private recycle = 10 * 60 * 1000) {
+  constructor(private readonly Type: new () => T, size: number) {
     for (let i = 0; i < size; i++) {
       this.pool.push(new Type())
     }

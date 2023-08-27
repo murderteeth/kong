@@ -1,4 +1,4 @@
-import { Processor } from '../../../processor'
+import { Processor } from 'lib/processor'
 import { RpcClients, rpcs } from '../../../rpcs'
 import { parseAbi } from 'viem'
 import { LogsHandler } from '../logsHandler'
@@ -7,6 +7,8 @@ export class LogsExtractor implements Processor {
   rpcs: RpcClients
   handler: LogsHandler = new LogsHandler()
 
+  // here you can just list all versions of each event
+  // don't need to check version
   events = parseAbi([
     `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
     `event StrategyMigrated(address indexed oldVersion, address indexed newVersion)`,

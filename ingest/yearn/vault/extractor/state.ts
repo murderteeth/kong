@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import { blocks } from 'lib'
 import { PublicClient, parseAbi, zeroAddress } from 'viem'
-import { Processor } from '../../../processor'
+import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { RpcClients, rpcs } from '../../../rpcs'
 import db from '../../../db'

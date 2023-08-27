@@ -1,7 +1,7 @@
 import { Queue, Worker } from 'bullmq'
 import { mq } from 'lib'
 import { contracts } from 'lib/contracts/yearn/registries'
-import { Processor } from '../../processor'
+import { Processor } from 'lib/processor'
 import { getBlockPointer, getLatestBlock, saveBlockPointer } from '../../db'
 import { indexLogs } from './indexLogs'
 

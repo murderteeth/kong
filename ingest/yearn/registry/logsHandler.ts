@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import { contracts } from 'lib/contracts/yearn/registries'
-import { Processor } from '../../processor'
+import { Processor } from 'lib/processor'
 
 export class LogsHandler implements Processor {
   queue: Queue | undefined

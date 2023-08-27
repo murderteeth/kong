@@ -42,13 +42,7 @@ export function queue(name: string) {
 }
 
 export function worker(name: string, handler: (job: any) => Promise<any>) {
-  return new Worker(name, async job => {
-      try {
-        return await handler(job)
-      } catch(error) {
-        console.error('🤬', name, 'worker', error)
-      }
-    }, {
+  return new Worker(name, async job => await handler(job), {
     ...bull,
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 100 }

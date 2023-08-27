@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import db, { camelToSnake } from '../../db'
 import { Worker } from 'bullmq'
-import { Processor } from '../../processor'
+import { Processor } from 'lib/processor'
 
 export class YearnStrategyLoader implements Processor {
   worker: Worker | undefined

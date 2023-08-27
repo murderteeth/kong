@@ -1,5 +1,5 @@
 import { contracts } from 'lib/contracts/yearn/registries'
-import { Processor } from '../../../processor'
+import { Processor } from 'lib/processor'
 import { RpcClients, rpcs } from '../../../rpcs'
 import { LogsHandler } from '../logsHandler'
 

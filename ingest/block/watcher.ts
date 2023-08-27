@@ -1,7 +1,7 @@
 import { PublicClient } from 'viem'
 import { mq, types } from 'lib'
 import { Queue } from 'bullmq'
-import { Processor } from '../processor'
+import { Processor } from 'lib/processor'
 import { RpcClients, rpcs } from '../rpcs'
 
 export class BlockWatcher implements Processor {

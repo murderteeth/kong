@@ -1,7 +1,7 @@
 import path from 'path'
 import dotenv from 'dotenv'
 import { rpcs } from './rpcs'
-import { Processor, ProcessorPool } from './processor'
+import { Processor, ProcessorPool } from 'lib/processor'
 import { BlockWatcher } from './block/watcher'
 import { BlockLoader } from './block/loader'
 import { YearnRegistryWatcher } from './yearn/registry/watcher'

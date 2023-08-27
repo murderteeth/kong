@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq'
 import { mq } from 'lib'
-import { Processor } from '../../../processor'
+import { Processor } from 'lib/processor'
 import { StateExtractor } from './state'
 import { RpcClients, rpcs } from '../../../rpcs'
 import { LogsExtractor } from './logs'

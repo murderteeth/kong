@@ -9,7 +9,8 @@
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q build/index.js\""
   },
   "dependencies": {
-    "cross-env": "5.0.5"
+    "cross-env": "5.0.5",
+    "lib": "^1.0.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.17",

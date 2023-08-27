@@ -1,11 +1,8 @@
+import { chains } from 'lib'
 import { PublicClient, createPublicClient, webSocket } from 'viem'
-import { Chain, arbitrum, fantom, mainnet, optimism, polygon } from 'viem/chains'
+import { Chain } from 'viem/chains'
 
 export interface RpcClients { [chaindId: number]: PublicClient }
-
-export const chains = [
-  mainnet
-]
 
 class pool {
   private recycle = 10 * 60 * 1000

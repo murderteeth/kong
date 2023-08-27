@@ -137,8 +137,8 @@ const resolvers = {
           }))
         }))
 
-      } catch (err) {
-        console.error(err)
+      } catch (error) {
+        console.error(error)
         throw new Error('Failed to fetch vaults')
       }
     },
@@ -167,8 +167,8 @@ const resolvers = {
         }
 
         return {...row, latency}
-      } catch (err) {
-        console.error(err)
+      } catch (error) {
+        console.error(error)
         throw new Error('Failed to fetch latest block')
       }
     }
