@@ -15,11 +15,11 @@ services:
     ipAllowList: [] # only allow internal connections
 
   - type: worker
-    name: ingres
+    name: ingest
     region: ohio
     env: node
     buildCommand: yarn
-    startCommand: yarn workspace ingres production
+    startCommand: yarn workspace ingest production
     envVars:
       - key: NODE_VERSION
         value: lts
