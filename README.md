@@ -7,10 +7,9 @@ cp .env.example .env
 # configure .env
 make build
 make dev
-make terminal
 ```
 
 ## requirements
-- node, yarn, make
+- node, yarn, make, tmux, docker, docker compose
 - latest docker and docker compose
-- luv for zoo animals
+- ♥ for zoo animals

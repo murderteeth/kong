@@ -4,7 +4,8 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "ts-node index.ts",
+    "production": "ts-node --transpile-only index.ts"
   },
   "dependencies": {
     "cross-env": "5.0.5",

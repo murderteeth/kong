@@ -15,12 +15,14 @@ export class LogsHandler implements Processor {
   }
 
   async handle(chainId: number, key: string, logs: any[]) {
+    const newVaultEvents = ['NewExperimentalVault', 'NewVault', 'NewEndorsedVault']
     const contract = contracts.at(chainId, key)
     for(const log of logs) {
-      if(log.eventName === 'NewVault' || log.eventName === 'NewEndorsedVault') {
+      if(newVaultEvents.includes(log.eventName)) {
         console.log('🪵', chainId, key, log.blockNumber, log.eventName)
+        const registryStatus = log.eventName === 'NewExperimentalVault' ? 'experimental' : 'endorsed'
         await this.queue?.add(mq.q.yearn.vault.extractJobs.state, {
-          ...contract.parser.NewVault(log),
+          ...contract.parser.NewVault(log, registryStatus),
           chainId
         } as types.Vault, {
           jobId: `${chainId}-${log.blockNumber}-${log.args.vault.toString()}`

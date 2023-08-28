@@ -19,9 +19,9 @@ dev:
 	@tmux splitw -h -p 50
 
 	# Run commands in the three top panes
-	@tmux send-keys -t devenv:0.0 'docker compose up ingest --build' C-m
-	@tmux send-keys -t devenv:0.1 'docker compose up gql --build' C-m
-	@tmux send-keys -t devenv:0.2 'top' C-m
+	@tmux send-keys -t devenv:0.0 'yarn workspace gql start' C-m
+	@tmux send-keys -t devenv:0.1 'yarn workspace web dev' C-m
+	@tmux send-keys -t devenv:0.2 'yarn workspace ingest start' C-m
 
 	# Bottom pane (terminal)
 	@tmux send-keys -t devenv:0.3 'yarn workspace terminal start' C-m

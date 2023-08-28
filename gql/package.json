@@ -4,9 +4,11 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
-    "start": "node build/index.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q build/index.js\""
+    "start": "ts-node index.ts",
+    "production": "ts-node --transpile-only index.ts",
+    "--x-build": "tsc",
+    "--x-start": "node build/index.js",
+    "--x-dev": "concurrently \"npx tsc --watch\" \"nodemon -q build/index.js\""
   },
   "dependencies": {
     "cross-env": "5.0.5",

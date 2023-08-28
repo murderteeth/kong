@@ -1,6 +1,6 @@
 import { MenuAction } from '.'
 import chalk from 'chalk'
-import { Monitor } from '../../lib/monitor'
+import { Monitor } from 'lib'
 
 export default {
   action,
