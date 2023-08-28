@@ -42,15 +42,3 @@ services:
       dockerfile: Dockerfile.gql
     ports:
       - "3000:3000"
-
-  bullmq-dash:
-    depends_on:
-      - redis
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    build:
-      context: ./queue
-      dockerfile: dockerfile
-    ports:
-      - "3001:3001"

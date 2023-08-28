@@ -48,9 +48,6 @@ gql:
 terminal:
 	@yarn workspace terminal start
 
-bullmq-dash:
-	@docker compose up bullmq-dash --build
-
 tidy:
 	@docker compose down
 	-@tmux kill-server

@@ -9,7 +9,7 @@ dotenv.config({ path: envPath })
 
 async function main() {
   console.log()
-  console.log(chalk.yellowBright(figlet.textSync('KONG', { font: 'Chiseled', horizontalLayout: 'fitted' })))
+  console.log(chalk.yellowBright(figlet.textSync('KONG', { font: 'Cyberlarge', horizontalLayout: 'fitted' })))
   console.log()
 
   while(true) { await menuPrompt() }
