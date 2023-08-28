@@ -58,6 +58,7 @@ services:
   - type: web
     name: gql
     region: ohio
+    plan: standard
     runtime: node
     buildCommand: yarn
     startCommand: yarn workspace gql production
