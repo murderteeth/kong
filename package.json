@@ -6,9 +6,10 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "extractor",
     "gql",
+    "ingest",
     "lib",
-    "loader"
+    "web",
+    "terminal"
   ]
 }

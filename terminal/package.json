@@ -1,0 +1,28 @@
+{
+  "name": "terminal",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "production": "ts-node --transpile-only index.ts"
+  },
+  "dependencies": {
+    "cross-env": "5.0.5",
+    "lib": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/cli-spinner": "^0.2.1",
+    "@types/figlet": "^1.5.6",
+    "@types/node": "^20.5.0",
+    "@types/prompts": "^2.4.4",
+    "bullmq": "^4.7.3",
+    "chalk": "4.1.2",
+    "dotenv": "^16.3.1",
+    "figlet": "^1.6.0",
+    "prompts": "^2.4.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6",
+    "viem": "1.6.3"
+  }
+}

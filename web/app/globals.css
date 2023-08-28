@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-zinc-950 text-yellow-300;
+}
+
+a {
+  @apply hover:underline;
+}

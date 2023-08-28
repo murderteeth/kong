@@ -19,11 +19,12 @@ dev:
 	@tmux splitw -h -p 50
 
 	# Run commands in the three top panes
-	@tmux send-keys -t devenv:0.0 'docker compose up extractor --build' C-m
-	@tmux send-keys -t devenv:0.1 'docker compose up loader --build' C-m
-	@tmux send-keys -t devenv:0.2 'docker compose up gql --build' C-m
+	@tmux send-keys -t devenv:0.0 'yarn workspace gql start' C-m
+	@tmux send-keys -t devenv:0.1 'yarn workspace web dev' C-m
+	@tmux send-keys -t devenv:0.2 'yarn workspace ingest start' C-m
 
-	# Select bottom pane (interactive terminal)
+	# Bottom pane (terminal)
+	@tmux send-keys -t devenv:0.3 'yarn workspace terminal start' C-m
 	@tmux selectp -t 3
 
 	@tmux attach-session -t devenv
@@ -35,20 +36,17 @@ redis:
 postgres:
 	@docker compose up -d postgres --build
 
-.PHONY: extractor
-extractor:
-	@docker compose up extractor --build
-
-.PHONY: loader
-loader:
-	@docker compose up loader --build
+.PHONY: ingest
+ingest:
+	@docker compose up ingest --build
 
 .PHONY: gql
 gql:
 	@docker compose up gql --build
 
-bullmq-dash:
-	@docker compose up bullmq-dash --build
+.PHONY: terminal
+terminal:
+	@yarn workspace terminal start
 
 tidy:
 	@docker compose down
