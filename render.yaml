@@ -21,7 +21,7 @@ services:
     buildCommand: yarn
     startCommand: yarn workspace ingest production
     envVars:
-      fromGroup: kong
+      - fromGroup: kong
       - key: NODE_VERSION
         value: lts
       - key: REDIS_HOST
@@ -62,7 +62,7 @@ services:
     buildCommand: yarn
     startCommand: yarn workspace gql production
     envVars:
-      fromGroup: kong
+      - fromGroup: kong
       - key: PORT
         value: 80
       - key: NODE_VERSION
