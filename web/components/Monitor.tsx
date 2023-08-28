@@ -22,8 +22,6 @@ interface MonitorResults {
   }
 }
 
-const GRAPHQL_API = 'http://localhost:3001/graphql'
-
 const GRAPHQL_QUERY = `query Monitor {
   monitor {
     queues {
@@ -45,7 +43,7 @@ const GRAPHQL_QUERY = `query Monitor {
 }`
 
 async function fetchMonitorResults() {
-  const response = await fetch(GRAPHQL_API, {
+  const response = await fetch(process.env.GQL || 'http://localhost:3001/graphql', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: GRAPHQL_QUERY })
