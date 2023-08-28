@@ -1,7 +1,12 @@
+import path from 'path'
+import dotenv from 'dotenv'
 import express from 'express'
 import { Pool } from 'pg'
 import { ApolloServer, gql } from 'apollo-server-express'
 import { Monitor } from 'lib'
+
+const envPath = path.join(__dirname, '..', '.env')
+dotenv.config({ path: envPath })
 
 const port = process.env.GQL_PORT || 3001
 
