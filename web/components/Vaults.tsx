@@ -82,7 +82,7 @@ export default function Vaults() {
       <Frosty _key={`experimental-${experimental}`}>{pad(experimental)}</Frosty>
     </div>
 
-    {chains.map(chain => <div className="w-full flex items-center justify-between text-xs">
+    {chains.map(chain => <div key={chain.id} className="w-full flex items-center justify-between text-xs">
       <div>{chain.name.toLowerCase()}</div>
       <Frosty _key={`${chain.id}-${vaults.filter(v => v.chainId === chain.id).length}`}>
         {pad(vaults.filter(v => v.chainId === chain.id).length)}
