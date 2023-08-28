@@ -26,7 +26,7 @@ const GRAPHQL_QUERY = `query Vaults {
 }`
 
 async function fetchVaults() {
-  const response = await fetch(process.env.GQL || 'http://localhost:3001/graphql', {
+  const response = await fetch(process.env.NEXT_PUBLIC_GQL || 'http://localhost:3001/graphql', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: GRAPHQL_QUERY })
