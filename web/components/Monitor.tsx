@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import Panel from './Panel'
 import Frosty from './Frosty'
+import Connector from './Connector'
 
 interface MonitorResults {
   queues: {
@@ -82,20 +83,20 @@ function useMonitorResults() {
 export default function Monitor() {
   const results = useMonitorResults()
 
-  function pad(value: number) {
+  function padNumber(value: number) {
     return value.toString().padStart(3, '0')
   }
 
   return <Panel className={'w-full flex flex-col items-start'}>
     <div className="font-bold text-lg">Queue activity</div>
     {results.queues.map((queue, index) => <div key={queue.name} className={`
-      w-full flex items-center justify-between gap-2 text-xs
-      ${index % 2 === 1 ? '' : 'bg-zinc-900/20'}`}>
+      w-full flex items-center justify-between gap-2 text-xs`}>
       <div>{queue.name}</div>
+      <Connector name={queue.name} index={index} padding={{ default: 0, sm: 59 }} />
       <div className="flex items-center gap-2">
-        <Frosty _key={`${queue.name}-w-${queue.waiting}`}>{`w ${pad(queue.waiting)}`}</Frosty>
-        <Frosty _key={`${queue.name}-a-${queue.active}`}>{`a ${pad(queue.active)}`}</Frosty>
-        <Frosty _key={`${queue.name}-f-${queue.failed}`}>{`f ${pad(queue.failed)}`}</Frosty>
+        <Frosty _key={`${queue.name}-w-${queue.waiting}`}>{`w ${padNumber(queue.waiting)}`}</Frosty>
+        <Frosty _key={`${queue.name}-a-${queue.active}`}>{`a ${padNumber(queue.active)}`}</Frosty>
+        <Frosty _key={`${queue.name}-f-${queue.failed}`}>{`f ${padNumber(queue.failed)}`}</Frosty>
       </div>
     </div>)}
   </Panel>

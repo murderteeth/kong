@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import chains from '../chains'
 import Panel from './Panel'
 import Frosty from './Frosty'
+import Connector from './Connector'
 
 interface Vault {
   chainId: number
@@ -74,16 +75,19 @@ export default function Vaults() {
 
     <div className="w-full flex items-center justify-between text-sm">
       <div>endorsed</div>
+      <Connector name={'endorsed'} index={0} padding={{ default: 0, sm: 62}} />
       <Frosty _key={`endorsed-${endorsed}`}>{pad(endorsed)}</Frosty>
     </div>
 
     <div className="w-full flex items-center justify-between text-sm">
       <div>experimental</div>
+      <Connector name={'experimental'} index={1} padding={{ default: 0, sm: 62}} />
       <Frosty _key={`experimental-${experimental}`}>{pad(experimental)}</Frosty>
     </div>
 
-    {chains.map(chain => <div key={chain.id} className="w-full flex items-center justify-between text-xs">
+    {chains.map((chain, index) => <div key={chain.id} className="w-full flex items-center justify-between text-xs">
       <div>{chain.name.toLowerCase()}</div>
+      <Connector name={chain.name} index={2 + index} padding={{ default: 0, sm: 72}} />
       <Frosty _key={`${chain.id}-${vaults.filter(v => v.chainId === chain.id).length}`}>
         {pad(vaults.filter(v => v.chainId === chain.id).length)}
       </Frosty>
@@ -91,6 +95,7 @@ export default function Vaults() {
 
     <div className="w-full flex items-center justify-between text-xs">
       <div>apetax</div>
+      <Connector name={'apetax'} index={1} padding={{ default: 0, sm: 52}} />
       <div className="flex items-center gap-2">
         <Frosty _key={`apetax-s-${apetax.stealth}`}>{`s ${pad(apetax.stealth)}`}</Frosty>
         <Frosty _key={`apetax-n-${apetax.new}`}>{`n ${pad(apetax.new)}`}</Frosty>
