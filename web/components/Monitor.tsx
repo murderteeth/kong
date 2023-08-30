@@ -91,9 +91,9 @@ export default function Monitor() {
     <div className="font-bold text-lg">Queue activity</div>
     {results.queues.map((queue, index) => <div key={queue.name} className={`
       w-full flex items-center justify-between gap-2 text-xs`}>
-      <div>{queue.name}</div>
+      <div className="whitespace-nowrap">{queue.name}</div>
       <Connector name={queue.name} index={index} padding={{ default: 0, sm: 59 }} />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 whitespace-nowrap">
         <Frosty _key={`${queue.name}-w-${queue.waiting}`}>{`w ${padNumber(queue.waiting)}`}</Frosty>
         <Frosty _key={`${queue.name}-a-${queue.active}`}>{`a ${padNumber(queue.active)}`}</Frosty>
         <Frosty _key={`${queue.name}-f-${queue.failed}`}>{`f ${padNumber(queue.failed)}`}</Frosty>
