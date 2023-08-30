@@ -86,7 +86,7 @@ export default function Vaults() {
     </div>
 
     {chains.map((chain, index) => <div key={chain.id} className="w-full flex items-center justify-between text-xs">
-      <div>{chain.name.toLowerCase()}</div>
+      <div className="whitespace-nowrap">{chain.name.toLowerCase()}</div>
       <Connector name={chain.name} index={2 + index} padding={{ default: 0, sm: 72}} />
       <Frosty _key={`${chain.id}-${vaults.filter(v => v.chainId === chain.id).length}`}>
         {pad(vaults.filter(v => v.chainId === chain.id).length)}
@@ -96,7 +96,7 @@ export default function Vaults() {
     <div className="w-full flex items-center justify-between text-xs">
       <div>apetax</div>
       <Connector name={'apetax'} index={1} padding={{ default: 0, sm: 52}} />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 whitespace-nowrap">
         <Frosty _key={`apetax-s-${apetax.stealth}`}>{`s ${pad(apetax.stealth)}`}</Frosty>
         <Frosty _key={`apetax-n-${apetax.new}`}>{`n ${pad(apetax.new)}`}</Frosty>
         <Frosty _key={`apetax-a-${apetax.active}`}>{`a ${pad(apetax.active)}`}</Frosty>
