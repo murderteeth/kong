@@ -5,7 +5,7 @@ import { StateExtractor } from './state'
 import { RpcClients, rpcs } from '../../../rpcs'
 import { LogsExtractor } from './logs'
 
-export class YearnVaultExtractor implements Processor {
+export default class YearnVaultExtractor implements Processor {
   rpcs: RpcClients
   logsExtractor: LogsExtractor = new LogsExtractor()
   stateExtractor: StateExtractor = new StateExtractor()

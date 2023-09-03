@@ -4,7 +4,7 @@ import { LogsHandler } from './logsHandler'
 import { contracts } from 'lib/contracts/yearn/registries'
 import { RpcClients, rpcs } from '../../rpcs'
 
-export class YearnRegistryWatcher implements Processor {
+export default class YearnRegistryWatcher implements Processor {
   rpcs: RpcClients
   handler: LogsHandler
   watchers: (() => void)[] = []

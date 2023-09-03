@@ -4,7 +4,7 @@ import { Processor } from 'lib/processor'
 import { StateExtractor } from './state'
 import { RpcClients, rpcs } from '../../../rpcs'
 
-export class YearnStrategyExtractor implements Processor {
+export default class YearnStrategyExtractor implements Processor {
   rpcs: RpcClients
   stateExtractor: StateExtractor = new StateExtractor()
   worker: Worker | undefined

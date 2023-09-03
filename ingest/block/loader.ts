@@ -3,7 +3,7 @@ import db from '../db'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 
-export class BlockLoader implements Processor {
+export default class BlockLoader implements Processor {
   worker: Worker | undefined
 
   async up() {

@@ -1,0 +1,23 @@
+processors:
+  - name: BlockWatcher
+    poolSize: 0
+  - name: BlockLoader
+    poolSize: 0
+  - name: YearnIndexer
+    poolSize: 2
+  - name: YearnRegistryWatcher
+    poolSize: 0
+  - name: YearnRegistryBlockPointer
+    poolSize: 2
+  - name: YearnRegistryExtractor
+    poolSize: 2
+  - name: YearnVaultBlockPointer
+    poolSize: 2
+  - name: YearnVaultExtractor
+    poolSize: 2
+  - name: YearnVaultLoader
+    poolSize: 2
+  - name: YearnStrategyExtractor
+    poolSize: 2
+  - name: YearnStrategyLoader
+    poolSize: 2

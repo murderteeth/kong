@@ -4,7 +4,7 @@ import { Processor } from 'lib/processor'
 import { LogsExtractor } from './logs'
 import { ApetaxExtractor } from './apetax'
 
-export class YearnRegistryExtractor implements Processor {
+export default class YearnRegistryExtractor implements Processor {
   logsExtractor: LogsExtractor = new LogsExtractor()
   apetaxExtractor: ApetaxExtractor = new ApetaxExtractor()
   worker: Worker | undefined

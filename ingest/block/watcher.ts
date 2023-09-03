@@ -4,7 +4,7 @@ import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { RpcClients, rpcs } from '../rpcs'
 
-export class BlockWatcher implements Processor {
+export default class BlockWatcher implements Processor {
   queue: Queue
   rpcs: RpcClients
   watchers: (() => void)[] = []

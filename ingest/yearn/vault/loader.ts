@@ -3,7 +3,7 @@ import db, { camelToSnake } from '../../db'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 
-export class YearnVaultLoader implements Processor {
+export default class YearnVaultLoader implements Processor {
   worker: Worker | undefined
 
   async up() {

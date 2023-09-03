@@ -2,10 +2,10 @@ import { Queue, Worker } from 'bullmq'
 import { mq } from 'lib'
 import { contracts } from 'lib/contracts/yearn/registries'
 import { Processor } from 'lib/processor'
-import { getBlockPointer, getLatestBlock, saveBlockPointer } from '../../db'
-import { indexLogs } from './indexLogs'
+import { getBlockPointer, getLatestBlock, saveBlockPointer } from '../../../db'
+import { indexLogs } from '../indexLogs'
 
-export class YearnRegistryBlockPointer implements Processor {
+export default class YearnRegistryBlockPointer implements Processor {
   worker: Worker | undefined
   queues: {
     [key: string]: Queue

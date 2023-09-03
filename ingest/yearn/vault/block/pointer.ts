@@ -1,10 +1,10 @@
 import { Queue, Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from 'lib/processor'
-import db, { getLatestBlock, saveBlockPointer } from '../../db'
-import { indexLogs } from './indexLogs'
+import db, { getLatestBlock, saveBlockPointer } from '../../../db'
+import { indexLogs } from '../indexLogs'
 
-export class YearnVaultBlockPointer implements Processor {
+export default class YearnVaultBlockPointer implements Processor {
   worker: Worker | undefined
   queues: {
     [key: string]: Queue

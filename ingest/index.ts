@@ -1,38 +1,38 @@
 import path from 'path'
 import dotenv from 'dotenv'
+import * as yaml from 'js-yaml'
+import * as fs from 'fs'
 import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
-import { BlockWatcher } from './block/watcher'
-import { BlockLoader } from './block/loader'
-import { YearnRegistryWatcher } from './yearn/registry/watcher'
-import { YearnVaultLoader } from './yearn/vault/loader'
-import { YearnIndexer } from './yearn/indexer'
-import { YearnRegistryExtractor } from './yearn/registry/extractor'
-import { YearnVaultExtractor } from './yearn/vault/extractor'
-import { YearnRegistryBlockPointer } from './yearn/registry/blockPointer'
-import { YearnVaultBlockPointer } from './yearn/vault/blockPointer'
-import { YearnStrategyLoader } from './yearn/strategy/loader'
-import { YearnStrategyExtractor } from './yearn/strategy/extractor'
 
 const envPath = path.join(__dirname, '..', '.env')
 dotenv.config({ path: envPath })
 
 
 
+interface ProcessorConfig {
+  name: string
+  poolSize: number
+}
+
+interface YamlData {
+  processors: ProcessorConfig[]
+}
+
+const toCamelPath = (str: string) => {
+  return str.replace(/([a-z0-9])([A-Z])/g, '$1/$2').toLowerCase()
+}
+
+const fileContents = fs.readFileSync('./processors.yaml', 'utf8')
+const data = yaml.load(fileContents) as YamlData
+
 rpcs.up()
-const processors = [
-  new ProcessorPool<BlockWatcher>(BlockWatcher, 2),
-  new ProcessorPool<BlockLoader>(BlockLoader, 2),
-  new ProcessorPool<YearnIndexer>(YearnIndexer, 4),
-  new ProcessorPool<YearnRegistryWatcher>(YearnRegistryWatcher, 2),
-  new ProcessorPool<YearnRegistryBlockPointer>(YearnRegistryBlockPointer, 2),
-  new ProcessorPool<YearnRegistryExtractor>(YearnRegistryExtractor, 4),
-  new ProcessorPool<YearnVaultBlockPointer>(YearnVaultBlockPointer, 2),
-  new ProcessorPool<YearnVaultExtractor>(YearnVaultExtractor, 4),
-  new ProcessorPool<YearnVaultLoader>(YearnVaultLoader, 2),
-  new ProcessorPool<YearnStrategyExtractor>(YearnStrategyExtractor, 4),
-  new ProcessorPool<YearnStrategyLoader>(YearnStrategyLoader, 2),
-] as Processor[]
+const processors = data.processors.filter(p => p.poolSize > 0).map(p => {
+  const path = `./${toCamelPath(p.name)}`
+  const ProcessorClass = require(path).default
+  console.log('⬆', 'processors up', p.poolSize, path)
+  return new ProcessorPool(ProcessorClass, p.poolSize)
+}) as Processor[]
 
 
 

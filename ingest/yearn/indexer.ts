@@ -3,7 +3,7 @@ import { mq } from 'lib'
 import { Processor } from 'lib/processor'
 import { indexLogs as indexRegistryLogs } from './registry/indexLogs'
 
-export class YearnIndexer implements Processor {
+export default class YearnIndexer implements Processor {
   worker: Worker | undefined
   queue: Queue | undefined
 
