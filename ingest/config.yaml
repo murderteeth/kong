@@ -1,8 +1,15 @@
+
+pollMs: 5_000
+
+processRecycleMs: 600_000
+
 processors:
   - name: BlockWatcher
     poolSize: 0
+  - name: BlockPoller
+    poolSize: 2
   - name: BlockLoader
-    poolSize: 0
+    poolSize: 2
   - name: YearnIndexer
     poolSize: 2
   - name: YearnRegistryWatcher

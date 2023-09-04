@@ -13,16 +13,11 @@ export default class YearnRegistryExtractor implements Processor {
     await this.logsExtractor.up()
     await this.apetaxExtractor.up()
     this.worker = mq.worker(mq.q.yearn.registry.extract, async job => {
-      switch(job.name) {
-        case mq.q.yearn.registry.extractJobs.logs: {
-          await this.logsExtractor.extract(job)
-          break
-        } case mq.q.yearn.registry.extractJobs.apetax: {
-          await this.apetaxExtractor.extract(job)
-          break
-        } default: {
-          throw new Error(`unknown job name ${job.name}`)
-        }
+      try {
+        await this.do(job)
+      } catch(error) {
+        console.error('🤬', error)
+        throw error
       }
     })
   }
@@ -31,5 +26,19 @@ export default class YearnRegistryExtractor implements Processor {
     await this.worker?.close()
     await this.apetaxExtractor.down()
     await this.logsExtractor.down()
+  }
+
+  private async do(job: any) {
+    switch(job.name) {
+      case mq.q.yearn.registry.extractJobs.logs: {
+        await this.logsExtractor.extract(job)
+        break
+      } case mq.q.yearn.registry.extractJobs.apetax: {
+        await this.apetaxExtractor.extract(job)
+        break
+      } default: {
+        throw new Error(`unknown job name ${job.name}`)
+      }
+    }
   }
 }

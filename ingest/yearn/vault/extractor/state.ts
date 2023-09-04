@@ -24,12 +24,17 @@ export class StateExtractor implements Processor {
   async extract(job: any) {
     const vault = job.data as types.Vault
     const rpc = this.rpcs[vault.chainId]
-
+    console.log('vault', vault)
     const asOfBlockNumber = (await rpc.getBlockNumber()).toString()
+    console.log('asOfBlockNumber', asOfBlockNumber)
     const fields = await this.extractFields(rpc, vault.address)
+    console.log('fields', fields)
     const asset = await this.extractAsset(rpc, fields.assetAddress as `0x${string}`)
+    console.log('asset', asset)
     const activation = await this.extractActivation(rpc, vault.address)
+    console.log('activation, activation')
     const withdrawalQueue = await this.extractWithdrawalQueue(rpc, vault.address)
+    console.log('withdrawalQueue', withdrawalQueue)
 
     const update = {
       ...vault,
@@ -87,6 +92,9 @@ export class StateExtractor implements Processor {
       {
         address, functionName: 'token',
         abi: parseAbi(['function token() returns (address)'])
+      }, {
+        address, functionName: 'asset',
+        abi: parseAbi(['function asset() returns (address)'])
       }
     ]})
   
@@ -96,7 +104,7 @@ export class StateExtractor implements Processor {
       decimals: multicallResult[2].result,
       totalAssets: multicallResult[3].result?.toString(),
       apiVersion: multicallResult[4].result || '0.0.0',
-      assetAddress: multicallResult[5].result
+      assetAddress: multicallResult[5].result || multicallResult[6].result
     } as types.Vault
   }
   
