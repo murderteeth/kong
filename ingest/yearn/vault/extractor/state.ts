@@ -5,6 +5,7 @@ import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { RpcClients, rpcs } from '../../../rpcs'
 import db from '../../../db'
+import { estimateCreationBlock } from 'lib/blocks'
 
 export class StateExtractor implements Processor {
   rpcs: RpcClients = rpcs.next()
@@ -24,17 +25,11 @@ export class StateExtractor implements Processor {
   async extract(job: any) {
     const vault = job.data as types.Vault
     const rpc = this.rpcs[vault.chainId]
-    console.log('vault', vault)
     const asOfBlockNumber = (await rpc.getBlockNumber()).toString()
-    console.log('asOfBlockNumber', asOfBlockNumber)
     const fields = await this.extractFields(rpc, vault.address)
-    console.log('fields', fields)
     const asset = await this.extractAsset(rpc, fields.assetAddress as `0x${string}`)
-    console.log('asset', asset)
     const activation = await this.extractActivation(rpc, vault.address)
-    console.log('activation, activation')
     const withdrawalQueue = await this.extractWithdrawalQueue(rpc, vault.address)
-    console.log('withdrawalQueue', withdrawalQueue)
 
     const update = {
       ...vault,
@@ -90,21 +85,26 @@ export class StateExtractor implements Processor {
         abi: parseAbi(['function apiVersion() returns (string)'])
       },
       {
+        address, functionName: 'api_version',
+        abi: parseAbi(['function api_version() returns (string)'])
+      },
+      {
         address, functionName: 'token',
         abi: parseAbi(['function token() returns (address)'])
-      }, {
+      }, 
+      {
         address, functionName: 'asset',
         abi: parseAbi(['function asset() returns (address)'])
       }
     ]})
-  
+
     return {
       name: multicallResult[0].result,
       symbol: multicallResult[1].result,
       decimals: multicallResult[2].result,
       totalAssets: multicallResult[3].result?.toString(),
-      apiVersion: multicallResult[4].result || '0.0.0',
-      assetAddress: multicallResult[5].result || multicallResult[6].result
+      apiVersion: multicallResult[4].result || multicallResult[5].result || '0.0.0',
+      assetAddress: multicallResult[6].result || multicallResult[7].result
     } as types.Vault
   }
   
@@ -125,32 +125,48 @@ export class StateExtractor implements Processor {
       assetSymbol: result[1].result
     }
   }
-  
+
   private async extractActivation(rpc: PublicClient, address: `0x${string}`) {
-    const activationBlockNumber = ((await db.query(
-      `SELECT activation_block_number FROM vault WHERE chain_id = $1 AND address = $2`, 
+    const { activation_timestamp, activation_block_number } = (await db.query(
+      `SELECT
+        FLOOR(EXTRACT(EPOCH FROM activation_timestamp)) as activation_timestamp,
+        activation_block_number
+      FROM
+        vault
+      WHERE
+        chain_id = $1 AND address = $2`, 
       [rpc.chain?.id, address]
-    )).rows[0]?.activation_block_number || 0) as bigint
-  
-    if(activationBlockNumber > 0n) return {}
-  
-    const activationTimestamp = (await rpc.readContract({
-      address, functionName: 'activation' as never,
-      abi: parseAbi(['function activation() returns (uint256)'])
-    }) || 0) as number
-  
-    if(!activationTimestamp) return {}
-  
-    return {
-      activationTimestamp: activationTimestamp.toString(),
-      activationBlockNumber: (await blocks.estimateHeight(rpc, activationTimestamp)).toString()
+    )).rows[0] || {}
+
+    if(activation_timestamp) return {
+      activationTimestamp: activation_timestamp.toString(),
+      activationBlockNumber: activation_block_number as bigint
+    }
+
+    try {
+      const activationTimestamp = await rpc.readContract({
+        address, functionName: 'activation' as never,
+        abi: parseAbi(['function activation() returns (uint256)'])
+      }) as number
+
+      return {
+        activationTimestamp: activationTimestamp.toString(),
+        activationBlockNumber: (await blocks.estimateHeight(rpc, activationTimestamp)).toString()
+      }
+    } catch(error) {
+      console.log('⚠', rpc.chain?.id, address, '!activation field')
+      const createBlock = await estimateCreationBlock(rpc, address)
+      return {
+        activationTimestamp: createBlock.timestamp.toString(),
+        activationBlockNumber: createBlock.number.toString()
+      }
     }
   }
 
   private async extractWithdrawalQueue(rpc: PublicClient, address: `0x${string}`) {
     const withdrawalQueue = []
 
-    // y dis no work? give runtime error 'property abi cannot be destructured'
+    // TODO: y dis no work? runtime error 'property abi cannot be destructured'
     // const contracts = Array(20).map((_, i) => ({
     //   address, functionName: 'withdrawalQueue', args: [BigInt(i)],
     //   abi: parseAbi(['function withdrawalQueue(uint256) returns (address)'])    

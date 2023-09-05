@@ -19,19 +19,7 @@ export default class YearnVaultExtractor implements Processor {
     await this.logsExtractor.up()
     await this.stateExtractor.up()
     this.worker = mq.worker(mq.q.yearn.vault.extract, async job => {
-      switch(job.name) {
-        case mq.q.yearn.vault.extractJobs.logs:{
-          await this.logsExtractor.extract(job)
-          break
-
-        } case mq.q.yearn.vault.extractJobs.state:{
-          await this.stateExtractor.extract(job)
-          break
-
-        } default: {
-          throw new Error(`unknown job name ${job.name}`)
-        }
-      }
+      await this.do(job)
     })
   }
 
@@ -39,5 +27,21 @@ export default class YearnVaultExtractor implements Processor {
     await this.worker?.close()
     await this.stateExtractor.down()
     await this.logsExtractor.down()
+  }
+
+  private async do(job: any) {
+    switch(job.name) {
+      case mq.q.yearn.vault.extractJobs.logs:{
+        await this.logsExtractor.extract(job)
+        break
+
+      } case mq.q.yearn.vault.extractJobs.state:{
+        await this.stateExtractor.extract(job)
+        break
+
+      } default: {
+        throw new Error(`unknown job name ${job.name}`)
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Queue, Worker } from 'bullmq'
+import { Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from 'lib/processor'
 import { LogsExtractor } from './logs'
@@ -13,12 +13,7 @@ export default class YearnRegistryExtractor implements Processor {
     await this.logsExtractor.up()
     await this.apetaxExtractor.up()
     this.worker = mq.worker(mq.q.yearn.registry.extract, async job => {
-      try {
-        await this.do(job)
-      } catch(error) {
-        console.error('🤬', error)
-        throw error
-      }
+      await this.do(job)
     })
   }
 

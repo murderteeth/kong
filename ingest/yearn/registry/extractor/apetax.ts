@@ -45,8 +45,6 @@ export class ApetaxExtractor implements Processor {
       const rpc = this.rpcs[vault.CHAIN_ID]
       if(!rpc) continue
 
-      console.log('vault', vault)
-
       const latestBlock = latestBlocks[vault.CHAIN_ID] || await rpc.getBlockNumber()
       latestBlocks[vault.CHAIN_ID] = latestBlock
 
