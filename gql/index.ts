@@ -40,6 +40,14 @@ const typeDefs = gql`
     latency: Latency!
   }
 
+  type Price {
+    chainId: Int!
+    tokenAddress: String!
+    symbol: String!
+    priceUsd: Float!
+    asOfTime: String!
+  }
+
   type Strategy {
     chainId: Int!
     address: String!
@@ -103,6 +111,7 @@ const typeDefs = gql`
   type Query {
     bananas: String,
     latestBlocks(chainId: Int): [LatestBlock],
+    prices(chainId: Int!, address: String!): [Price],
     vaults(chainId: Int): [Vault],
     monitor: MonitorResults
   }
@@ -114,12 +123,13 @@ const resolvers = {
 
     latestBlocks: async (_: any, args: { chainId?: number }) => {
       const { chainId } = args
-      const query = `SELECT 
-        chain_id as "chainId", 
-        block_number as "blockNumber", 
-        FLOOR(EXTRACT(EPOCH FROM block_timestamp)) * 1000 as "blockTimestamp", 
-        FLOOR(EXTRACT(EPOCH FROM queue_timestamp)) * 1000 as "queueTimestamp",
-        FLOOR(EXTRACT(EPOCH FROM updated_at)) * 1000 as "updatedAt" 
+      const query = `
+        SELECT 
+          chain_id as "chainId", 
+          block_number as "blockNumber", 
+          FLOOR(EXTRACT(EPOCH FROM block_timestamp)) * 1000 as "blockTimestamp", 
+          FLOOR(EXTRACT(EPOCH FROM queue_timestamp)) * 1000 as "queueTimestamp",
+          FLOOR(EXTRACT(EPOCH FROM updated_at)) * 1000 as "updatedAt" 
         FROM public.latest_block 
         WHERE chain_id = $1 OR $1 IS NULL
         ORDER BY chain_id
@@ -139,6 +149,31 @@ const resolvers = {
       } catch (error) {
         console.error(error)
         throw new Error('Failed to fetch latest block')
+      }
+    },
+
+    prices: async (_: any, args: { chainId: number, address: string }) => {
+      const { chainId, address } = args
+      const query = `
+        SELECT 
+          chain_id as "chainId",
+          token_address as "tokenAddress",
+          symbol,
+          MAX(price_usd) as "priceUsd",
+          FLOOR(EXTRACT(EPOCH FROM time_bucket('15 minutes', as_of_time))) * 1000 as "asOfTime"
+        FROM price
+        WHERE chain_id = $1 AND token_address = $2
+        GROUP BY "asOfTime", chain_id, token_address, symbol
+        ORDER BY "asOfTime" DESC
+      `
+      const values = [chainId, address]
+
+      try {
+        const res = await pool.query(query, values)
+        return res.rows
+      } catch (error) {
+        console.error(error)
+        throw new Error('Failed to fetch prices')
       }
     },
 

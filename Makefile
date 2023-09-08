@@ -2,7 +2,7 @@
 build:
 	@docker compose build
 
-dev:
+up:
 	@docker compose up -d redis
 	@docker compose up -d postgres
 	@tmux new-session -d -s devenv
@@ -48,6 +48,6 @@ gql:
 terminal:
 	@yarn workspace terminal start
 
-tidy:
+down:
 	@docker compose down
 	-@tmux kill-server

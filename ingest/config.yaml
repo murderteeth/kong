@@ -10,6 +10,10 @@ processors:
     poolSize: 2
   - name: BlockLoader
     poolSize: 2
+  - name: PricePoller
+    poolSize: 2
+  - name: PriceLoader
+    poolSize: 2
   - name: YearnIndexer
     poolSize: 2
   - name: YearnRegistryWatcher

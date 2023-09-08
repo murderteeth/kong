@@ -5,6 +5,15 @@ export interface LatestBlock {
   queueTimestamp: string
 }
 
+export interface Price {
+  chainId: number
+  tokenAddress: string
+  symbol: string
+  priceUsd: number
+  asOfBlockNumber: string
+  asOfTime: string
+}
+
 export interface Vault {
   chainId: number
   address: `0x${string}`
