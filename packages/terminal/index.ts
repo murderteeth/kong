@@ -4,7 +4,7 @@ import figlet from 'figlet'
 import chalk from 'chalk'
 import { menuPrompt } from './menu'
 
-const envPath = path.join(__dirname, '..', '.env')
+const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
 async function main() {

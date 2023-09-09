@@ -5,7 +5,7 @@ import { Pool } from 'pg'
 import { ApolloServer, gql } from 'apollo-server-express'
 import { Monitor } from 'lib'
 
-const envPath = path.join(__dirname, '..', '.env')
+const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
 const port = process.env.GQL_PORT || 3001
@@ -42,7 +42,7 @@ const typeDefs = gql`
 
   type Price {
     chainId: Int!
-    tokenAddress: String!
+    address: String!
     symbol: String!
     priceUsd: Float!
     asOfTime: String!
@@ -157,13 +157,13 @@ const resolvers = {
       const query = `
         SELECT 
           chain_id as "chainId",
-          token_address as "tokenAddress",
+          address,
           symbol,
           MAX(price_usd) as "priceUsd",
           FLOOR(EXTRACT(EPOCH FROM time_bucket('15 minutes', as_of_time))) * 1000 as "asOfTime"
         FROM price
-        WHERE chain_id = $1 AND token_address = $2
-        GROUP BY "asOfTime", chain_id, token_address, symbol
+        WHERE chain_id = $1 AND address = $2
+        GROUP BY "asOfTime", chain_id, address, symbol
         ORDER BY "asOfTime" DESC
       `
       const values = [chainId, address]

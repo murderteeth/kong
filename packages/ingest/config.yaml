@@ -14,6 +14,8 @@ processors:
     poolSize: 2
   - name: PriceLoader
     poolSize: 2
+  - name: TvlLoader
+    poolSize: 20
   - name: YearnIndexer
     poolSize: 2
   - name: YearnRegistryWatcher
@@ -22,10 +24,10 @@ processors:
     poolSize: 2
   - name: YearnRegistryExtractor
     poolSize: 2
-  - name: YearnVaultBlockPointer
+  - name: YearnVaultPointer
     poolSize: 2
   - name: YearnVaultExtractor
-    poolSize: 2
+    poolSize: 50
   - name: YearnVaultLoader
     poolSize: 2
   - name: YearnStrategyExtractor

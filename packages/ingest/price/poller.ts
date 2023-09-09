@@ -15,21 +15,18 @@ const tokens = [
 ]
 
 export default class BlockPoller implements Processor {
-  private queue: Queue
-  private rpcs: RpcClients
+  private id = Math.random().toString(36).substring(7)
+  private queue: Queue | undefined
+  private rpcs: RpcClients = rpcs.next()
   private interval: NodeJS.Timeout | undefined
 
-  constructor() {
-    this.queue = mq.queue(mq.q.price.load)
-    this.rpcs = rpcs.next()
-  }
-
   async up() {
+    this.queue = mq.queue(mq.q.price.load)
     this.interval = setInterval(async () => {
       const rpc = this.rpcs[mainnet.id]
       const weth = tokens[0]
       const block = await rpc.getBlock()
-      console.log('💈', 'price', rpc.chain?.id, block.number)
+      console.log('💈', 'price', this.id, rpc.chain?.id, block.number)
 
       const priceUSDC = await rpc.readContract({
         address: oracle,
@@ -41,9 +38,9 @@ export default class BlockPoller implements Processor {
 
       const priceUsd = Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000
 
-      await this.queue.add(mq.q.price.loadJobs.price, {
+      await this.queue?.add(mq.q.price.loadJobs.price, {
         chainId: rpc.chain?.id,
-        tokenAddress: weth.address,
+        address: weth.address,
         symbol: weth.symbol,
         priceUsd,
         asOfBlockNumber: block.number.toString(),
@@ -51,11 +48,12 @@ export default class BlockPoller implements Processor {
       } as types.Price, {
         jobId: `${rpc.chain?.id}-${weth}-${block.number}`,
       })
-    }, 30_000)
+    }, 60_000)
   }
 
   async down() {
-    if(this.interval) clearInterval(this.interval)
-    await this.queue.close()
+    clearInterval(this.interval)
+    await this.queue?.close()
+    this.queue = undefined
   }
 }

@@ -1,4 +1,4 @@
-import { setTimeout } from 'node:timers/promises'
+import { setTimeout } from 'timers/promises'
 import { Queue } from 'bullmq'
 import { contracts } from 'lib/contracts/yearn/registries'
 import { mq } from 'lib'

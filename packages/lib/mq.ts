@@ -9,11 +9,16 @@ export const q = {
   block: {
     load: 'load-block',
     loadJobs: { block: 'block' }
-  }, 
+  },
 
   price: {
     load: 'load-price',
     loadJobs: { price: 'price' }
+  },
+
+  tvl: {
+    load: 'load-tvl',
+    loadJobs: { tvl: 'tvl' }
   },
 
   yearn: {
@@ -22,23 +27,30 @@ export const q = {
 
     registry: {
       pointer: 'pointer-yearn-registry',
-      pointerJobs: { catchup: 'catchup' },
+      pointerJobs: { catchup: {
+        block: 'catchup-block'
+      } },
       extract: 'extract-yearn-registry',
       extractJobs: { logs: 'logs', apetax: 'apetax' },
     }, 
-    
+
     vault: {
       pointer: 'pointer-yearn-vault',
-      pointerJobs: { catchup: 'catchup' },
+      pointerJobs: { catchup: {
+        block: 'catchup-block',
+        tvl: 'catchup-tvl'
+      } },
       extract: 'extract-yearn-vault',
-      extractJobs: { logs: 'logs', state: 'state' },
+      extractJobs: { logs: 'logs', state: 'state', tvl: 'tvl' },
       load: 'load-yearn-vault',
       loadJobs: { vault: 'vault', withdrawalQueue: 'withdrawal-queue' }
     }, 
 
     strategy: {
       pointer: 'pointer-yearn-strategy',
-      pointerJobs: { catchup: 'catchup' },
+      pointerJobs: { catchup: {
+        block: 'catchup-block'
+      } },
       extract: 'extract-yearn-strategy',
       extractJobs: { logs: 'logs', state: 'state' },
       load: 'load-yearn-strategy',

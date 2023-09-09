@@ -1,8 +1,5 @@
 
-build:
-	@docker compose build
-
-up:
+dev:
 	@docker compose up -d redis
 	@docker compose up -d postgres
 	@tmux new-session -d -s devenv
@@ -46,7 +43,7 @@ gql:
 
 .PHONY: terminal
 terminal:
-	@yarn workspace terminal start
+	@bun workspace terminal start
 
 down:
 	@docker compose down

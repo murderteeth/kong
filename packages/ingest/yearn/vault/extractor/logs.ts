@@ -4,7 +4,7 @@ import { parseAbi } from 'viem'
 import { LogsHandler } from '../logsHandler'
 
 export class LogsExtractor implements Processor {
-  rpcs: RpcClients
+  rpcs: RpcClients = rpcs.next()
   handler: LogsHandler = new LogsHandler()
 
   // here you can just list all versions of each event
@@ -17,10 +17,6 @@ export class LogsExtractor implements Processor {
     `event StrategyAddedToQueue(address indexed strategy)`,
     `event StrategyRemovedFromQueue(address indexed strategy)`
   ])
-
-  constructor() {
-    this.rpcs = rpcs.next()
-  }
 
   async up() {
     await this.handler.up()

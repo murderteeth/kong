@@ -7,9 +7,17 @@ export interface LatestBlock {
 
 export interface Price {
   chainId: number
-  tokenAddress: string
+  address: string
   symbol: string
   priceUsd: number
+  asOfBlockNumber: string
+  asOfTime: string
+}
+
+export interface TVL {
+  chainId: number
+  address: string
+  tvlUsd: number
   asOfBlockNumber: string
   asOfTime: string
 }

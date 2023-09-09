@@ -4,13 +4,13 @@ import { MenuAction } from '.'
 
 export default {
   action,
-  menu: { title: 'Pointers', value: 'pointers' }
+  menu: { title: 'Vaults', value: 'vaults' }
 } as MenuAction
 
 async function action() {
-  const { chain, primitive, confirm } : {
+  const { chain, job, confirm } : {
     chain: any,
-    primitive: 'registry' | 'vault',
+    job: 'block' | 'tvl'
     confirm: any
   } = await prompts([
     {
@@ -21,24 +21,24 @@ async function action() {
     },
     {
       type: 'select',
-      name: 'primitive',
-      message: 'pick a contract primitive',
+      name: 'job',
+      message: 'pick a job',
       choices: [
-        { title: 'Registry', value: 'registry' },
-        { title: 'Vault', value: 'vault' }
+        { title: 'Block', value: 'block' },
+        { title: 'Tvl', value: 'tvl' }
       ]
     },
     {
       type: 'confirm',
       name: 'confirm',
-      message: (_, all) => `🤔 catchup yearn ${all.primitive} pointers on ${all.chain.name}?`,
+      message: (_, all) => `🤔 yearn vault ${all.job} pointers on ${all.chain.name}?`,
     }
   ])
   
   if (confirm) {
-    const queue = mq.queue(mq.q.yearn[primitive].pointer)
+    const queue = mq.queue(mq.q.yearn.vault.pointer)
     const options = { chainId: chain.id }
-    await queue.add(mq.q.yearn[primitive].pointerJobs.catchup, options)
+    await queue.add(mq.q.yearn.vault.pointerJobs.catchup[job], options)
     await queue.close()
   }
 }

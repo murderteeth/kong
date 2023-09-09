@@ -5,21 +5,18 @@ import { RpcClients, rpcs } from '../rpcs'
 import config from '../config'
 
 export default class BlockPoller implements Processor {
-  private queue: Queue
-  private rpcs: RpcClients
+  private id = Math.random().toString(36).substring(7)
+  private queue: Queue | undefined
+  private rpcs: RpcClients = rpcs.next()
   private interval: NodeJS.Timeout | undefined
 
-  constructor() {
-    this.queue = mq.queue(mq.q.block.load)
-    this.rpcs = rpcs.next()
-  }
-
   async up() {
+    this.queue = mq.queue(mq.q.block.load)
     this.interval = setInterval(async () => {
       for(const rpc of Object.values(this.rpcs)) {
         const block = await rpc.getBlock()
-        console.log('💈', 'block', rpc.chain?.id, block.number)
-        await this.queue.add(mq.q.block.loadJobs.block, {
+        console.log('💈', 'block', this.id, rpc.chain?.id, block.number)
+        await this.queue?.add(mq.q.block.loadJobs.block, {
           chainId: rpc.chain?.id,
           blockNumber: block.number.toString(),
           blockTimestamp: block.timestamp.toString(),
@@ -32,7 +29,8 @@ export default class BlockPoller implements Processor {
   }
 
   async down() {
-    if(this.interval) clearInterval(this.interval)
-    await this.queue.close()
+    clearInterval(this.interval)
+    await this.queue?.close()
+    this.queue = undefined
   }
 }

@@ -21,16 +21,17 @@ export default class PriceLoader implements Processor {
 
 export async function upsert(price: types.Price) {
   const query = `
-    INSERT INTO price (chain_id, token_address, symbol, price_usd, as_of_block_number, as_of_time)
+    INSERT INTO price (chain_id, address, symbol, price_usd, as_of_block_number, as_of_time)
     VALUES ($1, $2, $3, $4, $5, to_timestamp($6::double precision))
-    ON CONFLICT (chain_id, token_address, as_of_time)
+    ON CONFLICT (chain_id, address, as_of_time)
     DO UPDATE SET
       price_usd = EXCLUDED.price_usd,
       as_of_time = EXCLUDED.as_of_time;
   `
+
   const values = [
     price.chainId, 
-    price.tokenAddress, 
+    price.address, 
     price.symbol,
     price.priceUsd,
     price.asOfBlockNumber,

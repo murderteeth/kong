@@ -64,12 +64,23 @@ CREATE TABLE withdrawal_queue (
 
 CREATE TABLE price (
 	chain_id int4 NOT NULL,
-	token_address text NOT NULL,
+	address text NOT NULL,
 	symbol text NOT NULL,
 	price_usd numeric(38,18) NOT NULL,
 	as_of_block_number int8 NOT NULL,
 	as_of_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT price_pkey PRIMARY KEY (chain_id, token_address, as_of_time)
+	CONSTRAINT price_pkey PRIMARY KEY (chain_id, address, as_of_time)
 );
 
 SELECT create_hypertable('price', 'as_of_time');
+
+CREATE TABLE tvl (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	tvl_usd numeric(38,18) NOT NULL,
+	as_of_block_number int8 NOT NULL,
+	as_of_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT tvl_pkey PRIMARY KEY (chain_id, address, as_of_time)
+);
+
+SELECT create_hypertable('tvl', 'as_of_time');

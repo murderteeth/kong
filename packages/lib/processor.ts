@@ -31,7 +31,7 @@ export class ProcessorPool<T extends Processor> implements Processor {
   }
 
   async down() {
-    if(this.interval) clearInterval(this.interval)
+    clearInterval(this.interval)
     await Promise.all(this.pool.map(p => p.down()))
   }
 }

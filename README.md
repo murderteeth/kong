@@ -5,20 +5,22 @@ Real-time and historical ZooTroop GraphQL API
 yarn
 cp .env.example .env
 # configure .env
-make build
-make up
+make dev
 ```
 
 ![image](https://github.com/murderteeth/kong/assets/89237203/7e492a26-0b58-4d32-aee2-8de04426e493)
+
+- http://localhost:3000 for kong dash
+- http://localhost:3001/graphql for kong graphql api
+
 
 ## requirements
 - node, yarn, make, tmux, docker, docker compose
 - ♥ for zoo animals
 
-## make
-`build` - build everything
 
-`up` - run dev services and terminal
+## make
+`dev` - run dev services and terminal
 
 `down` - make sure your dev environment is shutdown
 
@@ -33,9 +35,24 @@ make up
 `scroll` - `ctrl+b` then `[` then `arrow keys` then `q` to quit scroll mode
 
 
+## workspace
+### packages
+`gql` - graphql schema and server
+
+`ingest` - etl logic
+
+`lib` - shared code
+
+`terminal` - cli app for interacting with kong at runtime
+
+`web` - kong runtime dash
+
+
 ## ingest
+### config
 ### processors
 #### paths
+
 
 ## postgres x timescale
 locally you can run postgres and timescale from a docker image, eg using `make postgres`. connect to your local with
@@ -53,3 +70,5 @@ timescale has to be manually installed on top of postgres in the render environm
 - `CREATE EXTENSION IF NOT EXISTS timescaledb;` to install the timescale extension
 - `\dx` to verify the install
 
+### timescale cheats
+`hypertable size` - `SELECT hypertable_size('table name');`

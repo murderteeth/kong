@@ -4,7 +4,7 @@ import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
 import config, { toCamelPath } from './config'
 
-const envPath = path.join(__dirname, '..', '.env')
+const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
 

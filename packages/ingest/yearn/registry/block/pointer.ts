@@ -15,7 +15,7 @@ export default class YearnRegistryBlockPointer implements Processor {
     this.queues[mq.q.yearn.registry.extract] = mq.queue(mq.q.yearn.registry.extract)
     this.worker = mq.worker(mq.q.yearn.registry.pointer, async job => {
       switch(job.name) {
-        case mq.q.yearn.registry.pointerJobs.catchup: {
+        case mq.q.yearn.registry.pointerJobs.catchup.block: {
           const { chainId } = job.data
           const latestBlock = await getLatestBlock(chainId)
           if(!latestBlock) throw new Error(`no latest block for chain ${chainId}`)
