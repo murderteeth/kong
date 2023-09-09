@@ -4,17 +4,12 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node index.ts",
-    "production": "ts-node --transpile-only index.ts",
-    "--x-build": "tsc",
-    "--x-start": "node build/index.js",
-    "--x-dev": "concurrently \"npx tsc --watch\" \"nodemon -q build/index.js\""
+    "dev": "ts-node index.ts",
+    "production": "ts-node --transpile-only index.ts"
   },
   "dependencies": {
     "cross-env": "5.0.5",
-    "lib": "^1.0.0"
-  },
-  "devDependencies": {
+    "lib": "^1.0.0",
     "@types/express": "^4.17.17",
     "@types/node": "^20.4.10",
     "@types/pg": "^8.10.2",

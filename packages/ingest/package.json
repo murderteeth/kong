@@ -4,14 +4,12 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node index.ts",
+    "dev": "ts-node index.ts",
     "production": "ts-node --transpile-only index.ts"
   },
   "dependencies": {
     "cross-env": "5.0.5",
-    "lib": "^1.0.0"
-  },
-  "devDependencies": {
+    "lib": "^1.0.0",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^20.5.0",
     "@types/pg": "^8.10.2",

@@ -19,12 +19,12 @@ up:
 	@tmux splitw -h -p 50
 
 	# Run commands in the three top panes
-	@tmux send-keys -t devenv:0.0 'yarn workspace gql start' C-m
+	@tmux send-keys -t devenv:0.0 'yarn workspace gql dev' C-m
 	@tmux send-keys -t devenv:0.1 'yarn workspace web dev' C-m
-	@tmux send-keys -t devenv:0.2 'yarn workspace ingest start' C-m
+	@tmux send-keys -t devenv:0.2 'yarn workspace ingest dev' C-m
 
 	# Bottom pane (terminal)
-	@tmux send-keys -t devenv:0.3 'yarn workspace terminal start' C-m
+	@tmux send-keys -t devenv:0.3 'yarn workspace terminal dev' C-m
 	@tmux selectp -t 3
 
 	@tmux attach-session -t devenv
