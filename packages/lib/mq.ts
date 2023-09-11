@@ -6,54 +6,55 @@ const bull = { connection: {
 }}
 
 export const q = {
+  noJobName: '',
+
   block: {
-    load: 'load-block',
-    loadJobs: { block: 'block' }
+    poll: 'block-poll',
+    load: 'block-load'
   },
 
   price: {
-    load: 'load-price',
-    loadJobs: { price: 'price' }
+    poll: 'price-poll',
+    load: 'price-load'
   },
 
   tvl: {
-    load: 'load-tvl',
-    loadJobs: { tvl: 'tvl' }
+    load: 'tvl-load'
   },
 
   yearn: {
-    index: 'index-yearn',
+    index: 'yearn-index',
     indexJobs: { registry: 'registry', vault: 'vault' }, 
 
     registry: {
-      pointer: 'pointer-yearn-registry',
+      pointer: 'yearn-registry-pointer',
       pointerJobs: { catchup: {
-        block: 'catchup-block'
+        block: 'block-catchup'
       } },
-      extract: 'extract-yearn-registry',
+      extract: 'yearn-registry-extract',
       extractJobs: { logs: 'logs', apetax: 'apetax' },
     }, 
 
     vault: {
-      pointer: 'pointer-yearn-vault',
+      pointer: 'yearn-vault-pointer',
       pointerJobs: { catchup: {
-        block: 'catchup-block',
-        tvl: 'catchup-tvl'
+        block: 'block-catchup',
+        tvl: 'tvl-catchup'
       } },
-      extract: 'extract-yearn-vault',
+      extract: 'yearn-vault-extract',
       extractJobs: { logs: 'logs', state: 'state', tvl: 'tvl' },
-      load: 'load-yearn-vault',
+      load: 'yearn-vault-load',
       loadJobs: { vault: 'vault', withdrawalQueue: 'withdrawal-queue' }
     }, 
 
     strategy: {
-      pointer: 'pointer-yearn-strategy',
+      pointer: 'yearn-strategy-pointer',
       pointerJobs: { catchup: {
-        block: 'catchup-block'
+        block: 'block-catchup'
       } },
-      extract: 'extract-yearn-strategy',
+      extract: 'yearn-strategy-extract',
       extractJobs: { logs: 'logs', state: 'state' },
-      load: 'load-yearn-strategy',
+      load: 'yearn-strategy-load',
       loadJobs: { strategy: 'strategy' }
     }
   }

@@ -2,11 +2,18 @@ import * as yaml from 'js-yaml'
 import * as fs from 'fs'
 
 export interface YamlConfig {
-  pollMs: number
-  processRecycleMs: number
-  processors: {
+  crons: {
     name: string
-    poolSize: number
+    queue: string
+    job?: string
+    schedule: string
+  }[]
+
+  processRecycleMs: number
+
+  processorPools: {
+    type: string
+    size: number
   }[]
 }
 

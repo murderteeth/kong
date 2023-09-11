@@ -3,28 +3,41 @@ import dotenv from 'dotenv'
 import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
 import config, { toCamelPath } from './config'
+import { mq } from 'lib'
 
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
-
-
 rpcs.up()
-const processors = config.processors.filter(p => p.poolSize > 0).map(p => {
-  const path = `./${toCamelPath(p.name)}`
+
+const processors = config.processorPools.filter(p => p.size > 0).map(p => {
+  const path = `./${toCamelPath(p.type)}`
   const ProcessorClass = require(path).default
-  console.log('⬆', 'processor up', p.poolSize, path)
-  return new ProcessorPool(ProcessorClass, p.poolSize, config.processRecycleMs)
+  console.log('⬆', 'processor up', p.size, path)
+  return new ProcessorPool(ProcessorClass, p.size, config.processRecycleMs)
 }) as Processor[]
 
-
+const crons = config.crons.map(cron => new Promise((resolve, reject) => {
+  const queue = mq.queue(cron.queue)
+  queue.add(cron.job || mq.q.noJobName, {}, {
+    repeat: { pattern: cron.schedule },
+  }).then(() => {
+    console.log('⬆', 'cron up', cron.name)
+    queue.close().then(resolve).catch(reject)
+  })
+}))
 
 Promise.all([...
   processors.map(process => process.up()),
 ]).then(() => {
+  Promise.all(crons).then(() => {
 
-  console.log('🐒 ingest up')
+    console.log('🐒 ingest up')
 
+  }).catch(error => {
+    console.error('🤬', error)
+    process.exit(1)    
+  })
 }).catch(error => {
   console.error('🤬', error)
   process.exit(1)

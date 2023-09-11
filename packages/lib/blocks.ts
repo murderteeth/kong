@@ -4,7 +4,7 @@ export async function estimateHeight(rpc: PublicClient, timestamp: number) {
   try {
     return await estimateHeightLlama(rpc, timestamp)
   } catch(error) {
-    console.warn('⚠️', 'estimateHeightLlama failed, trying estimateHeightManual')
+    console.warn('🚨', 'estimateHeightLlama failed, trying estimateHeightManual')
     return await estimateHeightManual(rpc, timestamp)
   }
 }

@@ -1,11 +1,9 @@
 import { mq, types } from 'lib'
-import { Queue } from 'bullmq'
+import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { RpcClients, rpcs } from '../rpcs'
 import { mainnet } from 'viem/chains'
-import { parseAbi } from 'viem'
-
-const oracle = '0x9b8b9F6146B29CC32208f42b995E70F0Eb2807F3' as `0x${string}`
+import { fetchErc20PriceUsd } from 'lib/prices'
 
 const tokens = [
   {
@@ -15,30 +13,21 @@ const tokens = [
 ]
 
 export default class BlockPoller implements Processor {
-  private id = Math.random().toString(36).substring(7)
   private queue: Queue | undefined
+  private worker: Worker | undefined
   private rpcs: RpcClients = rpcs.next()
-  private interval: NodeJS.Timeout | undefined
 
   async up() {
     this.queue = mq.queue(mq.q.price.load)
-    this.interval = setInterval(async () => {
+    this.worker = mq.worker(mq.q.price.poll, async job => {
       const rpc = this.rpcs[mainnet.id]
       const weth = tokens[0]
       const block = await rpc.getBlock()
-      console.log('💈', 'price', this.id, rpc.chain?.id, block.number)
+      console.log('💈', 'price', rpc.chain?.id, block.number)
 
-      const priceUSDC = await rpc.readContract({
-        address: oracle,
-        functionName: '' as never,
-        args: [ weth.address ],
-        abi: parseAbi(['function getPriceUsdcRecommended(address tokenAddress) view returns (uint256)']),
-        blockNumber: block.number
-      }) as bigint
+      const priceUsd = await fetchErc20PriceUsd(rpc, weth.address, block.number)
 
-      const priceUsd = Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000
-
-      await this.queue?.add(mq.q.price.loadJobs.price, {
+      await this.queue?.add(mq.q.noJobName, {
         chainId: rpc.chain?.id,
         address: weth.address,
         symbol: weth.symbol,
@@ -48,11 +37,11 @@ export default class BlockPoller implements Processor {
       } as types.Price, {
         jobId: `${rpc.chain?.id}-${weth}-${block.number}`,
       })
-    }, 60_000)
+    })
   }
 
   async down() {
-    clearInterval(this.interval)
+    await this.worker?.close()
     await this.queue?.close()
     this.queue = undefined
   }

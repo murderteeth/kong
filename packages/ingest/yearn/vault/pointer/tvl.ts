@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq'
 import db from '../../../db'
 import { Processor } from 'lib/processor'
-import { mq } from 'lib'
+import { chains, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
 
 export class CatchupTvl implements Processor {
@@ -17,18 +17,30 @@ export class CatchupTvl implements Processor {
 
   async catchup(job: any) {
     if(!this.queue) throw new Error('!queue')
-    const throttle = 16
-    const periodMinutes = 30
-    const period = periodMinutes * 60_000
-
     const { chainId } = job.data
+    if(chainId) {
+      await this.catchupChain(chainId)
+    } else {
+      for(const chain of chains) {
+        await this.catchupChain(chain.id)
+      }
+    }
+  }
+
+  async catchupChain(chainId: number) {
+    const throttle = 16
+    const periodMinutes = 24 * 60
+    const period = periodMinutes * 60_000
+    const defaultStart = daysAgoInMs(30)
+    console.log('⚾️', 'catchup tvl', chainId)
+
     const latestTvlTimes = await getLatestTvlTimes(chainId)
     for(const tvlTime of latestTvlTimes) {
       const { address, as_of_time } = tvlTime
-      const start = roundToNearestMinutes(Math.max(as_of_time || 0, daysAgoInMs(30)), periodMinutes)
+      const start = roundToNearestMinutes(Math.max(as_of_time || 0, defaultStart), periodMinutes)
       const end = roundToNearestMinutes(new Date().getTime(), periodMinutes)
       for(let time = start; time < end; time += period) {
-        await this.queue.add(mq.q.yearn.vault.extractJobs.tvl, {
+        await this.queue?.add(mq.q.yearn.vault.extractJobs.tvl, {
           chainId, address, time: time / 1000
         })
       }
@@ -54,7 +66,7 @@ export async function getLatestTvlTimes(chainId: number) {
   const result = await db.query(`
     SELECT 
       v.address,
-      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.as_of_time))) * 1000
+      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.as_of_time))) * 1000 as as_of_time
     FROM vault v
     LEFT OUTER JOIN tvl
     ON v.chain_id = tvl.chain_id AND v.address = tvl.address

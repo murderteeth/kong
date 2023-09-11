@@ -5,6 +5,7 @@ import { mq, types } from 'lib'
 import { estimateHeight } from 'lib/blocks'
 import db from '../../../db'
 import { parseAbi } from 'viem'
+import { fetchErc20PriceUsd } from 'lib/prices'
 
 const oracle = '0x9b8b9F6146B29CC32208f42b995E70F0Eb2807F3' as `0x${string}`
 
@@ -28,28 +29,18 @@ export class TvlExtractor implements Processor {
     const asOfBlockNumber = await estimateHeight(rpc, time)
     const { assetAddress, decimals } = await getAsset(chainId, address)
 
-    const multicallResult = await rpc.multicall({ contracts: [
-      {
-        address: oracle,
-        functionName: 'getPriceUsdcRecommended' as never,
-        args: [ assetAddress ],
-        abi: parseAbi(['function getPriceUsdcRecommended(address tokenAddress) view returns (uint256)'])
-      },
-      {
-        address,
-        functionName: 'totalAssets' as never,
-        abi: parseAbi(['function totalAssets() view returns (uint256)'])
-      }
-    ], blockNumber: asOfBlockNumber })
+    const totalAssets = await rpc.readContract({
+      address,
+      functionName: 'totalAssets' as never,
+      abi: parseAbi(['function totalAssets() view returns (uint256)']),
+      blockNumber: asOfBlockNumber
+    }) as bigint
 
-    const priceUSDC = (multicallResult[0].result || 0n) as bigint
-    const totalAssets = (multicallResult[1].result || 0n) as bigint
-
-    const priceUsd = Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000
+    const assetPriceUsd = await fetchErc20PriceUsd(rpc, assetAddress, asOfBlockNumber)
     const assets = Number(totalAssets * 10_000n / BigInt(10 ** decimals)) / 10_000
-    const tvlUsd = priceUsd * assets
+    const tvlUsd = assetPriceUsd * assets
 
-    await this.queue?.add(mq.q.tvl.loadJobs.tvl, {
+    await this.queue?.add(mq.q.noJobName, {
       chainId,
       address,
       tvlUsd,
@@ -62,14 +53,12 @@ export class TvlExtractor implements Processor {
 export async function getAsset(chainId: number, address: string) {
   const result = await db.query(`
     SELECT 
-      api_version as "apiVersion",
       asset_address as "assetAddress",
       decimals
     FROM vault
     WHERE chain_id = $1 AND address = $2
   `, [chainId, address])
   return result.rows[0] as {
-    apiVersion: string,
     assetAddress: `0x${string}`, 
     decimals: number
   }

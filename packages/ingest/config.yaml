@@ -1,36 +1,48 @@
 
-pollMs: 5_000
-
-processRecycleMs: 600_000
-
-processors:
-  - name: BlockWatcher
-    poolSize: 0
+crons:
   - name: BlockPoller
-    poolSize: 2
-  - name: BlockLoader
-    poolSize: 2
+    queue: block-poll
+    schedule: "*/5 * * * * *" # every 5 seconds
+
   - name: PricePoller
-    poolSize: 2
-  - name: PriceLoader
-    poolSize: 2
-  - name: TvlLoader
-    poolSize: 20
-  - name: YearnIndexer
-    poolSize: 2
-  - name: YearnRegistryWatcher
-    poolSize: 0
-  - name: YearnRegistryBlockPointer
-    poolSize: 2
-  - name: YearnRegistryExtractor
-    poolSize: 2
-  - name: YearnVaultPointer
-    poolSize: 2
-  - name: YearnVaultExtractor
-    poolSize: 50
-  - name: YearnVaultLoader
-    poolSize: 2
-  - name: YearnStrategyExtractor
-    poolSize: 2
-  - name: YearnStrategyLoader
-    poolSize: 2
+    queue: price-poll
+    schedule: "*/30 * * * *" # every 30 minutes
+
+  - name: YearnVaultTvlCatchup
+    queue: yearn-vault-pointer
+    job: tvl-catchup
+    schedule: "*/5 * * * *" # every 5 minutes
+
+processRecycleMs: 600_000 # 10 minutes
+
+processorPools:
+  - type: BlockWatcher
+    size: 0
+  - type: BlockPoller
+    size: 2
+  - type: BlockLoader
+    size: 2
+  - type: PricePoller
+    size: 2
+  - type: PriceLoader
+    size: 2
+  - type: TvlLoader
+    size: 4
+  - type: YearnIndexer
+    size: 2
+  - type: YearnRegistryWatcher
+    size: 0
+  - type: YearnRegistryBlockPointer
+    size: 2
+  - type: YearnRegistryExtractor
+    size: 2
+  - type: YearnVaultPointer
+    size: 2
+  - type: YearnVaultExtractor
+    size: 20
+  - type: YearnVaultLoader
+    size: 2
+  - type: YearnStrategyExtractor
+    size: 2
+  - type: YearnStrategyLoader
+    size: 2
