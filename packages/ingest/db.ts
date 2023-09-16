@@ -1,3 +1,4 @@
+import { types } from 'lib'
 import { Pool } from 'pg'
 
 const db = new Pool({

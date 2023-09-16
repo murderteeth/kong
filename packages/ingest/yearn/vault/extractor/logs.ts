@@ -7,13 +7,18 @@ export class LogsExtractor implements Processor {
   rpcs: RpcClients = rpcs.next()
   handler: LogsHandler = new LogsHandler()
 
+  // events = parseAbi([
+  //   `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
+  //   `event StrategyMigrated(address indexed oldVersion, address indexed newVersion)`,
+  //   `event StrategyRevoked(address indexed strategy)`,
+  //   `event UpdateWithdrawalQueue(address[20] queue)`,
+  //   `event StrategyAddedToQueue(address indexed strategy)`,
+  //   `event StrategyRemovedFromQueue(address indexed strategy)`,
+  //   `event Transfer(address indexed sender, address indexed receiver, uint256 value)`,
+  // ])
+
   events = parseAbi([
     `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
-    `event StrategyMigrated(address indexed oldVersion, address indexed newVersion)`,
-    `event StrategyRevoked(address indexed strategy)`,
-    `event UpdateWithdrawalQueue(address[20] queue)`,
-    `event StrategyAddedToQueue(address indexed strategy)`,
-    `event StrategyRemovedFromQueue(address indexed strategy)`,
     `event Transfer(address indexed sender, address indexed receiver, uint256 value)`,
   ])
 
@@ -34,7 +39,12 @@ export class LogsExtractor implements Processor {
       address,
       events: this.events as any,
       fromBlock: BigInt(from), toBlock: BigInt(to)
-    })
+    }) as any[]
+
+    for(const log of logs) {
+      const block = await rpc.getBlock({ blockNumber: log.blockNumber })
+      log.blockTimestamp = block.timestamp.toString()
+    }
 
     await this.handler.handle(chainId, address, logs)
   }

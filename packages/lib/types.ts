@@ -63,3 +63,23 @@ export interface WithdrawalQueueItem {
   strategyAddress?: `0x${string}`
   asOfBlockNumber: string
 }
+
+export interface ERC20 {
+  chainId: number
+  address: `0x${string}`
+  symbol: string
+  name: string
+  decimals: number
+}
+
+export interface Transfer {
+  chainId: number
+  address: `0x${string}`
+  sender: `0x${string}`
+  receiver: `0x${string}`
+  amount: string
+  amountUsd?: number
+  blockNumber: string
+  blockTimestamp: string
+  transactionHash: `0x${string}`
+}

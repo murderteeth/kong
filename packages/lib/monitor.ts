@@ -30,6 +30,7 @@ export class Monitor implements Processor {
 
   async up() {
     this.queues = [
+      mq.queue(mq.q.load.name),
       mq.queue(mq.q.block.load),
       mq.queue(mq.q.price.load),
       mq.queue(mq.q.tvl.load),

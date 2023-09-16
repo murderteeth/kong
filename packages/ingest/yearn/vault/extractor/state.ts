@@ -14,12 +14,13 @@ export class StateExtractor implements Processor {
   } = {}
 
   async up() {
+    this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
     this.queues[mq.q.yearn.vault.load] = mq.queue(mq.q.yearn.vault.load)
     this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
   }
 
   async down() {
-    Promise.all(Object.values(this.queues).map(queue => queue.close()))
+    await Promise.all(Object.values(this.queues).map(queue => queue.close()))
   }
 
   async extract(job: any) {
@@ -38,6 +39,26 @@ export class StateExtractor implements Processor {
       ...activation,
       asOfBlockNumber
     } as types.Vault
+
+    await this.queues[mq.q.load.name].add(
+      mq.q.load.jobs.erc20, {
+        chainId: rpc.chain?.id,
+        address: fields.assetAddress,
+        name: asset.assetName,
+        symbol: asset.assetSymbol,
+        decimals: fields.decimals
+      }
+    )
+
+    await this.queues[mq.q.load.name].add(
+      mq.q.load.jobs.erc20, {
+        chainId: rpc.chain?.id,
+        address: vault.address,
+        name: fields.name,
+        symbol: fields.symbol,
+        decimals: fields.decimals
+      }
+    )
 
     await this.queues[mq.q.yearn.vault.load].add(
       mq.q.yearn.vault.loadJobs.vault, update

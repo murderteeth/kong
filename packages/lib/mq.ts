@@ -8,6 +8,14 @@ const bull = { connection: {
 export const q = {
   noJobName: '',
 
+  load: {
+    name: 'load',
+    jobs: { 
+      erc20: 'erc20',
+      transfer: 'transfer'
+    }
+  },
+
   block: {
     poll: 'block-poll',
     load: 'block-load'

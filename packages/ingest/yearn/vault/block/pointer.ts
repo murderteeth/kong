@@ -43,7 +43,7 @@ export default class YearnVaultBlockPointer implements Processor {
 
   async down() {
     await this.worker?.close()
-    Promise.all(Object.values(this.queues).map(queue => queue.close()))
+    await Promise.all(Object.values(this.queues).map(queue => queue.close()))
   }
 }
 

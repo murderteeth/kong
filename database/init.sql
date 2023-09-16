@@ -30,7 +30,7 @@ CREATE TABLE vault (
 	asset_address text NULL,
 	asset_name text NULL,
 	asset_symbol text NULL,
-	total_assets text NULL,
+	total_assets numeric NULL,
 	activation_timestamp timestamp NULL,
 	activation_block_number int8 NULL,
 	as_of_block_number int8 NOT NULL,
@@ -84,3 +84,27 @@ CREATE TABLE tvl (
 );
 
 SELECT create_hypertable('tvl', 'as_of_time');
+
+CREATE TABLE erc20 (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	name text NOT NULL,
+	symbol text NOT NULL,
+	decimals int4 NOT NULL,
+	CONSTRAINT erc20_pkey PRIMARY KEY (chain_id, address)
+);
+
+CREATE TABLE transfer (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	sender text NOT NULL,
+	receiver text NOT NULL,
+	amount numeric NOT NULL,
+	amount_usd numeric(38,18) NULL,
+	block_number int8 NOT NULL,
+	block_timestamp timestamptz NOT NULL,
+	transaction_hash text NOT NULL,
+	CONSTRAINT transfer_pkey PRIMARY KEY (chain_id, transaction_hash)
+);
+CREATE INDEX transfer_idx_address_sender ON transfer(address, sender);
+CREATE INDEX transfer_idx_address_receiver ON transfer(address, receiver);
