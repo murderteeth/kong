@@ -24,6 +24,8 @@ export class LogsHandler implements Processor {
         } as types.Strategy, {
           jobId: `${chainId}-${log.blockNumber}-${address}`
         })
+      } else if(log.eventName === 'Transfer') {
+        
       }
     }
   }

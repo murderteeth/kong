@@ -1,6 +1,6 @@
 import * as types from '../../types'
 import { parseAbi } from 'viem'
-import { arbitrum, fantom, mainnet, optimism, polygon } from 'viem/chains'
+import { arbitrum, base, fantom, mainnet, optimism, polygon } from 'viem/chains'
 
 const mainnetContracts = {
   'registry-0': {
@@ -154,6 +154,27 @@ const fantomContracts = {
   }
 }
 
+const baseContracts = {
+  'registry-0': {
+    address: '0xF3885eDe00171997BFadAa98E01E167B53a78Ec5' as `0x${string}`,
+    incept: 3263730n,
+    events: parseAbi([
+      `event NewVault(address indexed token, uint256 indexed vaultId, uint256 vaultType, address vault, string apiVersion)`
+    ]),
+    parser: {
+      NewVault: (log: any, registryStatus: string) => ({
+        type: 'vault',
+        registryStatus,
+        registryAddress: '0xF3885eDe00171997BFadAa98E01E167B53a78Ec5' as `0x${string}`,
+        address: log.args.vault.toString(),
+        apiVersion: log.args.apiVersion.toString(),
+        assetAddress: log.args.token.toString(),
+        asOfBlockNumber: log.blockNumber.toString()
+      } as types.Vault)
+    }
+  }
+}
+
 const arbitrumContracts = {
   'registry-0': {
     address: '0x3199437193625DCcD6F9C9e98BDf93582200Eb1f' as `0x${string}`,
@@ -182,6 +203,7 @@ class Contracts {
     [optimism.id as number]: optimismContracts,
     [polygon.id as number]: polygonContracts,
     [fantom.id as number]: fantomContracts,
+    [base.id as number]: baseContracts,
     [arbitrum.id as number]: arbitrumContracts
   }
 

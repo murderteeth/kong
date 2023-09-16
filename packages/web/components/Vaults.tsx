@@ -95,7 +95,7 @@ export default function Vaults() {
 
     <div className="w-full flex items-center justify-between text-xs">
       <div>apetax</div>
-      <Connector name={'apetax'} index={1} padding={{ default: 0, sm: 52}} />
+      <Connector name={'apetax'} index={chains.length} padding={{ default: 0, sm: 52}} />
       <div className="flex items-center gap-2 whitespace-nowrap">
         <Frosty _key={`apetax-s-${apetax.stealth}`}>{`s ${pad(apetax.stealth)}`}</Frosty>
         <Frosty _key={`apetax-n-${apetax.new}`}>{`n ${pad(apetax.new)}`}</Frosty>

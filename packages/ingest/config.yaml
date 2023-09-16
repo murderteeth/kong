@@ -8,10 +8,10 @@ crons:
     queue: price-poll
     schedule: "*/30 * * * *" # every 30 minutes
 
-  - name: YearnVaultTvlCatchup
-    queue: yearn-vault-pointer
-    job: tvl-catchup
-    schedule: "*/5 * * * *" # every 5 minutes
+  # - name: YearnVaultTvlCatchup
+  #   queue: yearn-vault-pointer
+  #   job: tvl-catchup
+  #   schedule: "*/5 * * * *" # every 5 minutes
 
 processRecycleMs: 600_000 # 10 minutes
 

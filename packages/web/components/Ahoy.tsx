@@ -16,8 +16,6 @@ export default function Ahoy() {
         <div className="pt-16 -mr-16 sm:-mr-12 text-xl whitespace-nowrap rotate-90">{'(|:(|)'}</div>
         <div className="text-lg whitespace-pre">{wordmark}</div>
       </div>
-
-      <p className="text-xs">Real-time and historical ZooTroop GraphQL API</p>
       <a href="https://github.com/murderteeth/kong" target="_blank" className="text-xs">{'https://github.com/murderteeth/kong'}</a>
     </div>
   </Panel>

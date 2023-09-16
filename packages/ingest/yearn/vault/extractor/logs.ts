@@ -7,15 +7,14 @@ export class LogsExtractor implements Processor {
   rpcs: RpcClients = rpcs.next()
   handler: LogsHandler = new LogsHandler()
 
-  // here you can just list all versions of each event
-  // don't need to check version
   events = parseAbi([
     `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
     `event StrategyMigrated(address indexed oldVersion, address indexed newVersion)`,
     `event StrategyRevoked(address indexed strategy)`,
     `event UpdateWithdrawalQueue(address[20] queue)`,
     `event StrategyAddedToQueue(address indexed strategy)`,
-    `event StrategyRemovedFromQueue(address indexed strategy)`
+    `event StrategyRemovedFromQueue(address indexed strategy)`,
+    `event Transfer(address indexed sender, address indexed receiver, uint256 value)`,
   ])
 
   async up() {
