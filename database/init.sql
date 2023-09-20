@@ -103,8 +103,6 @@ CREATE TABLE transfer (
 	amount_usd numeric(38,18) NULL,
 	block_number int8 NOT NULL,
 	block_timestamp timestamptz NOT NULL,
-	transaction_hash text NOT NULL,
-	CONSTRAINT transfer_pkey PRIMARY KEY (chain_id, transaction_hash)
+	transaction_hash text NOT NULL
 );
-CREATE INDEX transfer_idx_address_sender ON transfer(address, sender);
-CREATE INDEX transfer_idx_address_receiver ON transfer(address, receiver);
+

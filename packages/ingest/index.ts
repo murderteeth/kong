@@ -1,6 +1,6 @@
 import path from 'path'
 import dotenv from 'dotenv'
-import { rpcs } from './rpcs'
+import { rpcs } from 'lib/rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
 import config, { toCamelPath } from './config'
 import { mq } from 'lib'

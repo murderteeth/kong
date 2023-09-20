@@ -3,7 +3,7 @@ import { blocks } from 'lib'
 import { PublicClient, parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { RpcClients, rpcs } from '../../../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 import db from '../../../db'
 import { estimateCreationBlock } from 'lib/blocks'
 

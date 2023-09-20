@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from '../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 import { mainnet } from 'viem/chains'
 import { fetchErc20PriceUsd } from 'lib/prices'
 
@@ -25,7 +25,7 @@ export default class BlockPoller implements Processor {
       const block = await rpc.getBlock()
       console.log('💈', 'price', rpc.chain?.id, block.number)
 
-      const priceUsd = await fetchErc20PriceUsd(rpc, weth.address, block.number)
+      const { price: priceUsd } = await fetchErc20PriceUsd(rpc, weth.address, block.number)
 
       await this.queue?.add(mq.q.noJobName, {
         chainId: rpc.chain?.id,

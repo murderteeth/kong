@@ -1,13 +1,11 @@
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from '../../../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import { estimateHeight } from 'lib/blocks'
 import db from '../../../db'
 import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
-
-const oracle = '0x9b8b9F6146B29CC32208f42b995E70F0Eb2807F3' as `0x${string}`
 
 export class TvlExtractor implements Processor {
   rpcs : RpcClients = rpcs.next()
@@ -36,7 +34,7 @@ export class TvlExtractor implements Processor {
       blockNumber: asOfBlockNumber
     }) as bigint
 
-    const assetPriceUsd = await fetchErc20PriceUsd(rpc, assetAddress, asOfBlockNumber)
+    const { price: assetPriceUsd } = await fetchErc20PriceUsd(rpc, assetAddress, asOfBlockNumber)
     const assets = Number(totalAssets * 10_000n / BigInt(10 ** decimals)) / 10_000
     const tvlUsd = assetPriceUsd * assets
 

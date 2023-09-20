@@ -2,7 +2,7 @@ import { Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from 'lib/processor'
 import { StateExtractor } from './state'
-import { RpcClients, rpcs } from '../../../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 import { LogsExtractor } from './logs'
 import { TvlExtractor } from './tvl'
 

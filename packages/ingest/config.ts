@@ -14,6 +14,7 @@ export interface YamlConfig {
   processorPools: {
     type: string
     size: number
+    concurrency?: number
   }[]
 }
 

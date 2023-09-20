@@ -5,12 +5,13 @@ import { Chain } from 'viem/chains'
 export interface RpcClients { [chaindId: number]: PublicClient }
 
 class pool {
-  private recycle = 10 * 60 * 1000
   private recycling: NodeJS.Timeout | undefined
   private rpcs = {} as { [chainId: number]: { 
     clients: PublicClient[], 
     pointers: { next: number, recycle: number } 
   }}
+
+  constructor(private size: number, private recycleMs: number) {}
 
   private wss(chain: Chain) {
     return process.env[`WSS_NETWORK_${chain.id}`] as string
@@ -19,11 +20,11 @@ class pool {
   private setupRpcs() {
     for(const chain of chains) {
       this.rpcs[chain.id] = {
-        clients: Array(2).fill(createPublicClient({
+        clients: Array(this.size).fill(createPublicClient({
           chain, transport: webSocket(this.wss(chain))
         })),
         pointers: { next: 0, recycle: 0 }
-      }      
+      }
     }
   }
 
@@ -40,12 +41,25 @@ class pool {
         })
         forChain.pointers.recycle = (pointer + 1) % clients.length
       })
-    }, this.recycle)
+    }, this.recycleMs)
   }
 
-  up() {
+  async up() {
     this.setupRpcs()
+    if(this.size < 2) return
     this.startRecycling()
+  }
+
+  async down() {
+    clearInterval(this.recycling)
+    for(const pool of Object.values(this.rpcs)) {
+      for(const rpc of pool.clients) {
+        (await rpc.transport.getSocket()).close()
+      }
+      pool.clients.length = 0
+      pool.pointers.next = 0
+      pool.pointers.recycle = 0
+    }
   }
 
   private nextForChain(chainId: number) {
@@ -61,16 +75,6 @@ class pool {
     })
     return result
   }
-
-  down() {
-    if(this.recycling) clearInterval(this.recycling)
-    Object.values(this.rpcs).forEach(forChain => { 
-      forChain.clients.length = 0
-      forChain.pointers.next = 0
-      forChain.pointers.recycle = 0
-    })
-  }
-
 }
 
-export const rpcs = new pool()
+export const rpcs = new pool(2, 10 * 60 * 1000)

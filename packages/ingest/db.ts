@@ -1,4 +1,3 @@
-import { types } from 'lib'
 import { Pool } from 'pg'
 
 const db = new Pool({
@@ -7,7 +6,7 @@ const db = new Pool({
   database: process.env.POSTGRES_DATABASE || 'user',
   user: process.env.POSTGRES_USER || 'user',
   password: process.env.POSTGRES_PASSWORD || 'password',
-  max: 10,
+  max: 40,
   idleTimeoutMillis: 30_000,
 })
 

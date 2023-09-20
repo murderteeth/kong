@@ -1,6 +1,6 @@
 import { contracts } from 'lib/contracts/yearn/registries'
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from '../../../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 import { LogsHandler } from '../logsHandler'
 
 export class LogsExtractor implements Processor {

@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { RpcClients, rpcs } from '../../../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 
 interface ApetaxVault { 
   TITLE: string

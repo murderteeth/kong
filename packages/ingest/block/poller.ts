@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from '../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 
 export default class BlockPoller implements Processor {
   private queue: Queue | undefined

@@ -46,11 +46,15 @@ export const q = {
     vault: {
       pointer: 'yearn-vault-pointer',
       pointerJobs: { catchup: {
-        block: 'block-catchup',
-        tvl: 'tvl-catchup'
+        block: 'catchup-block',
+        tvl: 'catchup-tvl',
       } },
       extract: 'yearn-vault-extract',
-      extractJobs: { logs: 'logs', state: 'state', tvl: 'tvl' },
+      extractJobs: {
+        logs: 'logs',
+        state: 'state',
+        tvl: 'tvl'
+      },
       load: 'yearn-vault-load',
       loadJobs: { vault: 'vault', withdrawalQueue: 'withdrawal-queue' }
     }, 
@@ -58,7 +62,7 @@ export const q = {
     strategy: {
       pointer: 'yearn-strategy-pointer',
       pointerJobs: { catchup: {
-        block: 'block-catchup'
+        block: 'catchup-block'
       } },
       extract: 'yearn-strategy-extract',
       extractJobs: { logs: 'logs', state: 'state' },
@@ -72,7 +76,7 @@ export function queue(name: string) {
   return new Queue(name, bull)
 }
 
-export function worker(name: string, handler: (job: any) => Promise<any>) {
+export function worker(name: string, handler: (job: any) => Promise<any>, concurrency = 1) {
   return new Worker(name, async job => {
     try {
       await handler(job)
@@ -82,6 +86,7 @@ export function worker(name: string, handler: (job: any) => Promise<any>) {
     }
   }, {
     ...bull,
+    concurrency,
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 100 }
   })

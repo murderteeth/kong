@@ -2,7 +2,7 @@ import { PublicClient } from 'viem'
 import { Processor } from 'lib/processor'
 import { LogsHandler } from './logsHandler'
 import { contracts } from 'lib/contracts/yearn/registries'
-import { RpcClients, rpcs } from '../../rpcs'
+import { RpcClients, rpcs } from 'lib/rpcs'
 
 export default class YearnRegistryWatcher implements Processor {
   rpcs: RpcClients
