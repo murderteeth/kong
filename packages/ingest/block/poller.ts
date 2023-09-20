@@ -1,20 +1,20 @@
 import { mq, types } from 'lib'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 
 export default class BlockPoller implements Processor {
   private queue: Queue | undefined
   private worker: Worker | undefined
-  private rpcs: RpcClients = rpcs.next()
 
   async up() {
     this.queue = mq.queue(mq.q.block.load)
-    this.worker = mq.worker(mq.q.block.poll, async job => {
-      for(const rpc of Object.values(this.rpcs)) {
+    this.worker = mq.worker(mq.q.block.poll, async () => {
+      const _rpcs = rpcs.nextAll()
+      for(const rpc of Object.values(_rpcs)) {
         const block = await rpc.getBlock()
         console.log('💈', 'block', rpc.chain?.id, block.number)
-        await this.queue?.add(mq.q.noJobName, {
+        await this.queue?.add(mq.q.__noJobName, {
           chainId: rpc.chain?.id,
           blockNumber: block.number.toString(),
           blockTimestamp: block.timestamp.toString(),

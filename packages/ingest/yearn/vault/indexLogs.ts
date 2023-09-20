@@ -16,12 +16,11 @@ export async function indexLogs(queue: Queue,
   const stride = 100_000n
   const throttle = 16
 
-  console.log('🗂️ ', 'index vault', chainId, address, from, to)
+  console.log('🗂️ ', 'index vault logs', chainId, address, from, to)
 
   for (let block = BigInt(from); block <= to; block += stride) {
     const toBlock = block + stride - 1n < to ? block + stride - 1n : to
     const options = { chainId, address, from: block.toString(), to: toBlock.toString() }
-    console.log('🌭', 'catchup block', 'q log extract', options.from, options.to)
     await queue.add(mq.q.yearn.vault.extractJobs.logs, options)
     await setTimeout(throttle)
   }

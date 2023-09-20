@@ -29,7 +29,6 @@ export class CatchupBlockPointer implements Processor {
       ? pointer.pointer
       : pointer.activation_block_number
 
-      console.log('🌭', 'catchup block', 'indexLogs', pointer.address, from, latestBlock)
       await indexLogs(this.queue, {
         chainId, address: pointer.address, from, to: latestBlock
       })

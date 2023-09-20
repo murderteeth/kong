@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 
 interface ApetaxVault { 
   TITLE: string
@@ -18,12 +18,7 @@ interface ApetaxVault {
 
 export class ApetaxExtractor implements Processor {
   url: string = process.env.APE_TAX_VAULTS || 'https://raw.githubusercontent.com/saltyfacu/ape-tax/master/utils/vaults.json'
-  rpcs: RpcClients
   queue: Queue | undefined
-
-  constructor() {
-    this.rpcs = rpcs.next()
-  }
 
   async up() {
     this.queue = mq.queue(mq.q.yearn.vault.extract)    
@@ -42,7 +37,7 @@ export class ApetaxExtractor implements Processor {
     const latestBlocks: { [chainId: number]: { block: bigint } } = {}
 
     for(const vault of vaults) {
-      const rpc = this.rpcs[vault.CHAIN_ID]
+      const rpc = rpcs.nextAll()[vault.CHAIN_ID]
       if(!rpc) continue
 
       const latestBlock = latestBlocks[vault.CHAIN_ID] || await rpc.getBlockNumber()

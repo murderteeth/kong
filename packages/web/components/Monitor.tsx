@@ -1,87 +1,13 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React from 'react'
 import Panel from './Panel'
 import Frosty from './Frosty'
 import Connector from './Connector'
-
-interface MonitorResults {
-  queues: {
-    name: string
-    waiting: number
-    active: number
-    failed: number
-  }[]
-  redis: {
-    uptime: number
-    clients: number
-    memory: {
-      total: number
-      used: number
-      peak: number
-    }
-  }
-}
-
-const GRAPHQL_QUERY = `query Monitor {
-  monitor {
-    queues {
-      name
-      waiting
-      active
-      failed
-    }
-    redis {
-      uptime
-      clients
-      memory {
-        total
-        used
-        peak
-      }
-    }
-  }
-}`
-
-async function fetchMonitorResults() {
-  const response = await fetch(process.env.NEXT_PUBLIC_GQL || 'http://localhost:3001/graphql', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: GRAPHQL_QUERY })
-  })
-
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-
-  return (await response.json()).data.monitor
-}
-
-function useMonitorResults() {
-  const frequency = 1000
-  const [results, setResults] = useState<MonitorResults>({
-    queues: [],
-    redis: {
-      uptime: 0,
-      clients: 0,
-      memory: {
-        total: 0,
-        used: 0,
-        peak: 0
-      }
-    }
-  })
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      fetchMonitorResults().then(data => setResults(data))
-    }, frequency)
-    return () => clearInterval(timer)
-  }, [])
-
-  return results
-}
+import { useData } from '@/hooks/useData'
 
 export default function Monitor() {
-  const results = useMonitorResults()
+  const { monitor } = useData()
 
   function padNumber(value: number) {
     return value.toString().padStart(3, '0')
@@ -89,7 +15,7 @@ export default function Monitor() {
 
   return <Panel className={'w-full flex flex-col items-start'}>
     <div className="font-bold text-lg">Queue activity</div>
-    {results.queues.map((queue, index) => <div key={queue.name} className={`
+    {monitor.queues.map((queue, index) => <div key={queue.name} className={`
       w-full flex items-center justify-between gap-2 text-xs`}>
       <div className="whitespace-nowrap">{queue.name}</div>
       <Connector name={queue.name} index={index} padding={{ default: 0, sm: 59 }} />

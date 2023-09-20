@@ -40,6 +40,7 @@ class pool {
           chain: rpc.chain, transport: webSocket(this.wss(rpc.chain as Chain))
         })
         forChain.pointers.recycle = (pointer + 1) % clients.length
+        rpc.transport.getSocket().then((socket: any) => socket.close())
       })
     }, this.recycleMs)
   }
@@ -62,16 +63,16 @@ class pool {
     }
   }
 
-  private nextForChain(chainId: number) {
+  next(chainId: number) {
     const result = this.rpcs[chainId].clients[this.rpcs[chainId].pointers.next]
     this.rpcs[chainId].pointers.next = (this.rpcs[chainId].pointers.next + 1) % this.rpcs[chainId].clients.length
     return result
   }
 
-  next() {
+  nextAll() {
     const result = {} as RpcClients
     Object.keys(this.rpcs).forEach(chainId => {
-      result[parseInt(chainId)] = this.nextForChain(parseInt(chainId))
+      result[parseInt(chainId)] = this.next(parseInt(chainId))
     })
     return result
   }

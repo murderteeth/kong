@@ -3,11 +3,10 @@ import { blocks } from 'lib'
 import { PublicClient, parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 import db from '../../../db'
 
 export class StateExtractor implements Processor {
-  rpcs: RpcClients = rpcs.next()
   queue: Queue | undefined
 
   async up() {
@@ -20,10 +19,9 @@ export class StateExtractor implements Processor {
 
   async extract(job: any) {
     const strategy = job.data as types.Strategy
-    const rpc = this.rpcs[strategy.chainId]
 
-    const asOfBlockNumber = (await rpc.getBlockNumber()).toString()
-    const fields = await this.extractFields(rpc, strategy.address)
+    const asOfBlockNumber = (await rpcs.next(strategy.chainId).getBlockNumber()).toString()
+    const fields = await this.extractFields(strategy.chainId, strategy.address)
     // const activation = await this.extractActivation(rpc, strategy.address)
 
     const update = {
@@ -37,8 +35,8 @@ export class StateExtractor implements Processor {
     )
   }
 
-  private async extractFields(rpc: PublicClient, address: `0x${string}`) {
-    const multicallResult = await rpc.multicall({ contracts: [
+  private async extractFields(chainId: number, address: `0x${string}`) {
+    const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
       {
         address, functionName: 'name',
         abi: parseAbi(['function name() returns (string)'])
@@ -51,8 +49,7 @@ export class StateExtractor implements Processor {
   
     return {
       name: multicallResult[0].result,
-      apiVersion: multicallResult[1].result || '0.0.0',
-      asOfBlockNumber: (await rpc.getBlockNumber()).toString()
+      apiVersion: multicallResult[1].result || '0.0.0'
     } as types.Vault
   }
 

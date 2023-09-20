@@ -1,10 +1,9 @@
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 import { parseAbi, parseAbiItem, zeroAddress } from 'viem'
 import { LogsHandler } from '../logsHandler'
 
 export class LogsExtractor implements Processor {
-  rpcs: RpcClients = rpcs.next()
   handler: LogsHandler = new LogsHandler()
 
   async up() {
@@ -16,12 +15,11 @@ export class LogsExtractor implements Processor {
   }
 
   async extract(job: any) {
+    const start = process.hrtime()
     const { chainId, address, from, to } = job.data
-    const rpc = this.rpcs[chainId]
-    console.time('yearn-vault-extract-logs')
     console.log('⬇️ ', job.queueName, job.name, chainId, address, from, to)
 
-    const strategies = await rpc.getLogs({
+    const strategies = await rpcs.next(chainId).getLogs({
       address,
       events: parseAbi([
         `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
@@ -30,35 +28,24 @@ export class LogsExtractor implements Processor {
       toBlock: BigInt(to)
     }) as any[]
 
-    const deposits = await rpc.getLogs({
+    const transfers = await rpcs.next(chainId).getLogs({
       address,
       event: parseAbiItem(`event Transfer(address indexed sender, address indexed receiver, uint256 value)`),
-      args: { sender: zeroAddress },
+      args: {},
       fromBlock: BigInt(from), 
       toBlock: BigInt(to)
     }) as any[]
 
-    const withdrawals = await rpc.getLogs({
-      address,
-      event: parseAbiItem(`event Transfer(address indexed sender, address indexed receiver, uint256 value)`),
-      args: { receiver: zeroAddress },
-      fromBlock: BigInt(from), 
-      toBlock: BigInt(to)
-    }) as any[]
+    const depositsAndWithdrawals = transfers.filter(log => log.args.sender === zeroAddress || log.args.receiver === zeroAddress)
 
     const logs = [
       ...strategies, 
-      ...deposits, 
-      ...withdrawals
+      ...depositsAndWithdrawals
     ]
 
-    // for(const log of logs) {
-    //   const block = await rpc.getBlock({ blockNumber: log.blockNumber })
-    //   log.blockTimestamp = block.timestamp.toString()
-    // }
-
-    console.log('logs', logs[0])
-    console.timeEnd('yearn-vault-extract-logs')
+    const [seconds, nanoseconds] = process.hrtime(start)
+    const milliseconds = (seconds * 1e3) + (nanoseconds / 1e6)
+    console.log('⏱️', 'yearn-vault-extract-logs', milliseconds, 'ms')
     await this.handler.handle(chainId, address, logs)
   }
 

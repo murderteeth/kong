@@ -2,24 +2,19 @@ import { PublicClient } from 'viem'
 import { mq, types } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 
 export default class BlockWatcher implements Processor {
-  queue: Queue
-  rpcs: RpcClients
+  queue: Queue = mq.queue(mq.q.block.load)
   watchers: (() => void)[] = []
 
-  constructor() {
-    this.queue = mq.queue(mq.q.block.load)
-    this.rpcs = rpcs.next()
-  }
-
   async up() {
-    Object.values(this.rpcs).forEach((rpc: PublicClient) => {
+    const _rpcs = rpcs.nextAll()
+    Object.values(_rpcs).forEach((rpc: PublicClient) => {
       this.watchers.push(rpc.watchBlocks({
         onBlock: async (block) => {
           console.log('👀', 'block', rpc.chain?.id, block.number)
-          await this.queue.add(mq.q.noJobName, {
+          await this.queue.add(mq.q.__noJobName, {
             chainId: rpc.chain?.id,
             blockNumber: block.number.toString(),
             blockTimestamp: block.timestamp.toString(),

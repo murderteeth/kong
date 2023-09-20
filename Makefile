@@ -27,24 +27,28 @@ dev:
 	@tmux attach-session -t devenv
 	@docker compose down
 
-redis:
-	@docker compose up -d redis --build
-
-postgres:
-	@docker compose up -d postgres --build
 
 .PHONY: ingest
 ingest:
-	@docker compose up ingest --build
+	@docker compose up -d redis
+	@docker compose up -d postgres
+	@tmux new-session -d -s devenv
 
-.PHONY: gql
-gql:
-	@docker compose up gql --build
+	@tmux splitw -h -p 50
+	@tmux selectp -t 1
+	@tmux splitw -v -p 50
 
-.PHONY: terminal
-terminal:
-	@bun workspace terminal start
+	@tmux send-keys -t devenv:0.0 'yarn workspace ingest dev' C-m
+	@tmux send-keys -t devenv:0.1 'yarn workspace terminal dev' C-m
+	@tmux send-keys -t devenv:0.2 'sleep 10 && psql --host=localhost --port=5432 --username=user --dbname=user' C-m
 
+	@tmux selectp -t 1
+
+	@tmux attach-session -t devenv
+	@docker compose down
+
+
+# here if you need it, you shouldn't need to run this
 down:
 	@docker compose down
 	-@tmux kill-server

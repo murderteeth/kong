@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 import { mainnet } from 'viem/chains'
 import { fetchErc20PriceUsd } from 'lib/prices'
 
@@ -15,27 +15,25 @@ const tokens = [
 export default class BlockPoller implements Processor {
   private queue: Queue | undefined
   private worker: Worker | undefined
-  private rpcs: RpcClients = rpcs.next()
 
   async up() {
     this.queue = mq.queue(mq.q.price.load)
-    this.worker = mq.worker(mq.q.price.poll, async job => {
-      const rpc = this.rpcs[mainnet.id]
+    this.worker = mq.worker(mq.q.price.poll, async () => {
       const weth = tokens[0]
-      const block = await rpc.getBlock()
-      console.log('💈', 'price', rpc.chain?.id, block.number)
+      const block = await rpcs.next(mainnet.id).getBlock()
+      console.log('💈', 'price', mainnet.id, block.number)
 
-      const { price: priceUsd } = await fetchErc20PriceUsd(rpc, weth.address, block.number)
+      const { price: priceUsd } = await fetchErc20PriceUsd(mainnet.id, weth.address, block.number)
 
-      await this.queue?.add(mq.q.noJobName, {
-        chainId: rpc.chain?.id,
+      await this.queue?.add(mq.q.__noJobName, {
+        chainId: mainnet.id,
         address: weth.address,
         symbol: weth.symbol,
         priceUsd,
         asOfBlockNumber: block.number.toString(),
         asOfTime: block.timestamp.toString()
       } as types.Price, {
-        jobId: `${rpc.chain?.id}-${weth}-${block.number}`,
+        jobId: `${mainnet.id}-${weth}-${block.number}`,
       })
     })
   }

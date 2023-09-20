@@ -80,6 +80,7 @@ export interface Transfer {
   amount: string
   amountUsd?: number
   blockNumber: string
+  blockIndex: number
   blockTimestamp: string
   transactionHash: `0x${string}`
 }

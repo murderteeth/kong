@@ -13,14 +13,14 @@ rpcs.up()
 const processors = config.processorPools.filter(p => p.size > 0).map(p => {
   const path = `./${toCamelPath(p.type)}`
   const ProcessorClass = require(path).default
-  console.log('⬆', 'processor up', p.size, path)
+  console.log('⬆', 'processor up', p.size, `(${p.concurrency || 1})`, path)
   return new ProcessorPool(ProcessorClass, p.size, config.processRecycleMs)
 }) as Processor[]
 
 const crons = config.crons.map(cron => new Promise((resolve, reject) => {
   const queue = mq.queue(cron.queue)
-  queue.add(cron.job || mq.q.noJobName, {}, {
-    repeat: { pattern: cron.schedule },
+  queue.add(cron.job || mq.q.__noJobName, {}, {
+    repeat: { pattern: cron.schedule }
   }).then(() => {
     console.log('⬆', 'cron up', cron.name)
     queue.close().then(resolve).catch(reject)

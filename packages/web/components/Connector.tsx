@@ -8,5 +8,5 @@ export default function Connector({ name, index, padding }: { name: string, inde
     const padded = name.padStart(pad, '.^')
     return padded.replace(name, '')
   }, [mb, padding])
-  return <div className={`${index % 2 === 0 ? 'text-green-950' : 'text-green-900'} whitespace-nowrap`}>{connector(name)}</div>
+  return <div className={`${index % 2 === 0 ? 'text-green-950' : 'text-green-900'} whitespace-nowrap`} suppressHydrationWarning>{connector(name)}</div>
 }

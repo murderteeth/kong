@@ -2,16 +2,10 @@ import { Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from 'lib/processor'
 import { StateExtractor } from './state'
-import { RpcClients, rpcs } from 'lib/rpcs'
 
 export default class YearnStrategyExtractor implements Processor {
-  rpcs: RpcClients
   stateExtractor: StateExtractor = new StateExtractor()
   worker: Worker | undefined
-
-  constructor() {
-    this.rpcs = rpcs.next()
-  }
 
   async up() {
     await this.stateExtractor.up()

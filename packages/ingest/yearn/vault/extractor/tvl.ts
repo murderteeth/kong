@@ -1,5 +1,5 @@
 import { Processor } from 'lib/processor'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import { estimateHeight } from 'lib/blocks'
@@ -8,7 +8,6 @@ import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
 
 export class TvlExtractor implements Processor {
-  rpcs : RpcClients = rpcs.next()
   queue: Queue | undefined
 
   async up() {
@@ -21,24 +20,23 @@ export class TvlExtractor implements Processor {
 
   async extract(job: any) {
     const { chainId, address, time } = job.data
-    const rpc = this.rpcs[chainId]
     console.log('⬇️ ', job.queueName, job.name, chainId, address, time)
 
-    const asOfBlockNumber = await estimateHeight(rpc, time)
+    const asOfBlockNumber = await estimateHeight(chainId, time)
     const { assetAddress, decimals } = await getAsset(chainId, address)
 
-    const totalAssets = await rpc.readContract({
+    const totalAssets = await rpcs.next(chainId).readContract({
       address,
       functionName: 'totalAssets' as never,
       abi: parseAbi(['function totalAssets() view returns (uint256)']),
       blockNumber: asOfBlockNumber
     }) as bigint
 
-    const { price: assetPriceUsd } = await fetchErc20PriceUsd(rpc, assetAddress, asOfBlockNumber)
+    const { price: assetPriceUsd } = await fetchErc20PriceUsd(chainId, assetAddress, asOfBlockNumber)
     const assets = Number(totalAssets * 10_000n / BigInt(10 ** decimals)) / 10_000
     const tvlUsd = assetPriceUsd * assets
 
-    await this.queue?.add(mq.q.noJobName, {
+    await this.queue?.add(mq.q.__noJobName, {
       chainId,
       address,
       tvlUsd,

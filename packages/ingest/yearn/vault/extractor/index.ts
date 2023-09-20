@@ -2,20 +2,14 @@ import { Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from 'lib/processor'
 import { StateExtractor } from './state'
-import { RpcClients, rpcs } from 'lib/rpcs'
 import { LogsExtractor } from './logs'
 import { TvlExtractor } from './tvl'
 
 export default class YearnVaultExtractor implements Processor {
-  rpcs: RpcClients
   logsExtractor: LogsExtractor = new LogsExtractor()
   stateExtractor: StateExtractor = new StateExtractor()
   tvlExtractor: TvlExtractor = new TvlExtractor()
   worker: Worker | undefined
-
-  constructor() {
-    this.rpcs = rpcs.next()
-  }
 
   async up() {
     await this.logsExtractor.up()

@@ -1,5 +1,5 @@
 import { mq, types } from 'lib'
-import db from '../db'
+import db, { camelToSnake, toUpsertQuery } from '../db'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import config from '../config'
@@ -19,9 +19,9 @@ export default class Loader implements Processor {
 
         }
         case mq.q.load.jobs.transfer: {
-          const objects = job.data as types.Transfer []
-          console.log('📀', 'transfers', objects.length)
-          await upsertTransfers(objects)
+          const { batch } = job.data as { batch: types.Transfer [] }
+          console.log('📀', 'transfers', batch.length)
+          await upsertTransfers(batch)
           break
 
         }
@@ -57,31 +57,17 @@ export async function upsertErc20(object: types.ERC20) {
   await db.query(query, values)
 }
 
-export async function upsertTransfers(objects: types.Transfer[]) {
-  const query = `
-  INSERT INTO transfer (chain_id, address, sender, receiver, amount, amount_usd, block_number, block_timestamp, transaction_hash)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, to_timestamp($8::double precision), $9);`
-
-  const bactchSize = 200
+export async function upsertTransfers(batch: types.Transfer[]) {
   const client = await db.connect()
+
   try {
     await client.query('BEGIN')
 
-    for(let i = 0; i < objects.length; i += bactchSize) {
-      const batch = objects.slice(i, i + bactchSize)
-      for(const object of batch) {
-        await client.query(query, [
-          object.chainId,
-          object.address,
-          object.sender,
-          object.receiver,
-          object.amount,
-          object.amountUsd,
-          object.blockNumber,
-          object.blockTimestamp,
-          object.transactionHash
-        ])
-      }
+    for(const object of batch) {
+      await client.query(
+        toUpsertQuery('transfer', 'chain_id, block_number, block_index', object),
+        Object.values(object)
+      )
     }
 
     await client.query('COMMIT')

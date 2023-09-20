@@ -1,4 +1,4 @@
-import { Queue, Worker } from 'bullmq'
+import { Queue, QueueOptions, Worker } from 'bullmq'
 
 const bull = { connection: {
   host: process.env.REDIS_HOST || 'localhost',
@@ -6,7 +6,7 @@ const bull = { connection: {
 }}
 
 export const q = {
-  noJobName: '',
+  __noJobName: '',
 
   load: {
     name: 'load',
@@ -14,6 +14,10 @@ export const q = {
       erc20: 'erc20',
       transfer: 'transfer'
     }
+  },
+
+  transfer: {
+    extract: 'transfer-extract'
   },
 
   block: {
@@ -72,8 +76,8 @@ export const q = {
   }
 }
 
-export function queue(name: string) {
-  return new Queue(name, bull)
+export function queue(name: string, options?: QueueOptions) {
+  return new Queue(name, {...bull, ...options})
 }
 
 export function worker(name: string, handler: (job: any) => Promise<any>, concurrency = 1) {

@@ -1,14 +1,13 @@
 import { mq, types } from 'lib'
 import { blocks } from 'lib'
-import { PublicClient, parseAbi, zeroAddress } from 'viem'
+import { parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { RpcClients, rpcs } from 'lib/rpcs'
+import { rpcs } from 'lib/rpcs'
 import db from '../../../db'
 import { estimateCreationBlock } from 'lib/blocks'
 
 export class StateExtractor implements Processor {
-  rpcs: RpcClients = rpcs.next()
   queues: {
     [name: string]: Queue
   } = {}
@@ -25,12 +24,11 @@ export class StateExtractor implements Processor {
 
   async extract(job: any) {
     const vault = job.data as types.Vault
-    const rpc = this.rpcs[vault.chainId]
-    const asOfBlockNumber = (await rpc.getBlockNumber()).toString()
-    const fields = await this.extractFields(rpc, vault.address)
-    const asset = await this.extractAsset(rpc, fields.assetAddress as `0x${string}`)
-    const activation = await this.extractActivation(rpc, vault.address)
-    const withdrawalQueue = await this.extractWithdrawalQueue(rpc, vault.address)
+    const asOfBlockNumber = (await rpcs.next(vault.chainId).getBlockNumber()).toString()
+    const fields = await this.extractFields(vault.chainId, vault.address)
+    const asset = await this.extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
+    const activation = await this.extractActivation(vault.chainId, vault.address)
+    const withdrawalQueue = await this.extractWithdrawalQueue(vault.chainId, vault.address)
 
     const update = {
       ...vault,
@@ -42,7 +40,7 @@ export class StateExtractor implements Processor {
 
     await this.queues[mq.q.load.name].add(
       mq.q.load.jobs.erc20, {
-        chainId: rpc.chain?.id,
+        chainId: vault.chainId,
         address: fields.assetAddress,
         name: asset.assetName,
         symbol: asset.assetSymbol,
@@ -52,7 +50,7 @@ export class StateExtractor implements Processor {
 
     await this.queues[mq.q.load.name].add(
       mq.q.load.jobs.erc20, {
-        chainId: rpc.chain?.id,
+        chainId: vault.chainId,
         address: vault.address,
         name: fields.name,
         symbol: fields.symbol,
@@ -66,7 +64,7 @@ export class StateExtractor implements Processor {
 
     await this.queues[mq.q.yearn.vault.load].add(
       mq.q.yearn.vault.loadJobs.withdrawalQueue, withdrawalQueue.map((strategyAddress, queueIndex) => ({
-        chainId: rpc.chain?.id,
+        chainId: vault.chainId,
         vaultAddress: vault.address,
         queueIndex, strategyAddress, asOfBlockNumber
     })) as types.WithdrawalQueueItem[])
@@ -75,7 +73,7 @@ export class StateExtractor implements Processor {
       if(!strategy || strategy === zeroAddress) continue
       await this.queues[mq.q.yearn.strategy.extract].add(
         mq.q.yearn.strategy.extractJobs.state, {
-          chainId: rpc.chain?.id,
+          chainId: vault.chainId,
           address: strategy,
           vaultAddress: vault.address,
           asOfBlockNumber
@@ -83,8 +81,8 @@ export class StateExtractor implements Processor {
     }
   }
 
-  private async extractFields(rpc: PublicClient, address: `0x${string}`) {
-    const multicallResult = await rpc.multicall({ contracts: [
+  private async extractFields(chainId: number, address: `0x${string}`) {
+    const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
       {
         address, functionName: 'name',
         abi: parseAbi(['function name() returns (string)'])
@@ -129,8 +127,8 @@ export class StateExtractor implements Processor {
     } as types.Vault
   }
   
-  private async extractAsset(rpc: PublicClient, address: `0x${string}`) {
-    const result = await rpc.multicall({ contracts: [
+  private async extractAsset(chainId: number, address: `0x${string}`) {
+    const result = await rpcs.next(chainId).multicall({ contracts: [
       {
         address, functionName: 'name',
         abi: parseAbi(['function name() returns (string)'])
@@ -147,7 +145,7 @@ export class StateExtractor implements Processor {
     }
   }
 
-  private async extractActivation(rpc: PublicClient, address: `0x${string}`) {
+  private async extractActivation(chainId: number, address: `0x${string}`) {
     const { activation_timestamp, activation_block_number } = (await db.query(
       `SELECT
         FLOOR(EXTRACT(EPOCH FROM activation_timestamp)) as activation_timestamp,
@@ -156,7 +154,7 @@ export class StateExtractor implements Processor {
         vault
       WHERE
         chain_id = $1 AND address = $2`, 
-      [rpc.chain?.id, address]
+      [chainId, address]
     )).rows[0] || {}
 
     if(activation_timestamp) return {
@@ -165,18 +163,18 @@ export class StateExtractor implements Processor {
     }
 
     try {
-      const activationTimestamp = await rpc.readContract({
+      const activationTimestamp = await rpcs.next(chainId).readContract({
         address, functionName: 'activation' as never,
         abi: parseAbi(['function activation() returns (uint256)'])
       }) as number
 
       return {
         activationTimestamp: activationTimestamp.toString(),
-        activationBlockNumber: (await blocks.estimateHeight(rpc, activationTimestamp)).toString()
+        activationBlockNumber: (await blocks.estimateHeight(chainId, activationTimestamp)).toString()
       }
     } catch(error) {
-      console.log('⚠', rpc.chain?.id, address, '!activation field')
-      const createBlock = await estimateCreationBlock(rpc, address)
+      console.log('⚠', chainId, address, '!activation field')
+      const createBlock = await estimateCreationBlock(chainId, address)
       return {
         activationTimestamp: createBlock.timestamp.toString(),
         activationBlockNumber: createBlock.number.toString()
@@ -184,7 +182,7 @@ export class StateExtractor implements Processor {
     }
   }
 
-  private async extractWithdrawalQueue(rpc: PublicClient, address: `0x${string}`) {
+  private async extractWithdrawalQueue(chainId: number, address: `0x${string}`) {
     const withdrawalQueue = []
 
     // TODO: y dis no work? runtime error 'property abi cannot be destructured'
@@ -195,7 +193,7 @@ export class StateExtractor implements Processor {
     // const results = await rpc.multicall({ contracts })
     //
 
-    const results = await rpc.multicall({ contracts: [
+    const results = await rpcs.next(chainId).multicall({ contracts: [
       { args: [0n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
       { args: [1n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
       { args: [2n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },

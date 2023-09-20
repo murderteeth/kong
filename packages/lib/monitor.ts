@@ -32,6 +32,7 @@ export class Monitor implements Processor {
     this.queues = [
       mq.queue(mq.q.load.name),
       mq.queue(mq.q.block.load),
+      mq.queue(mq.q.transfer.extract),
       mq.queue(mq.q.price.load),
       mq.queue(mq.q.tvl.load),
       mq.queue(mq.q.yearn.index),
@@ -59,7 +60,7 @@ export class Monitor implements Processor {
     for(const queue of this.queues) {
       result.queues.push({
         name: queue.name,
-        waiting: (await queue.getJobs('waiting')).length,
+        waiting: await queue.count(),
         active: (await queue.getJobs('active')).length,
         failed: (await queue.getJobs('failed')).length
       })

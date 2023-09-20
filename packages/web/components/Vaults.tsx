@@ -1,59 +1,14 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import chains from '../chains'
 import Panel from './Panel'
 import Frosty from './Frosty'
 import Connector from './Connector'
-
-interface Vault {
-  chainId: number
-  address: string
-  apiVersion: string
-  apetaxType: string
-  apetaxStatus: string
-  registryStatus: string
-}
-
-const GRAPHQL_QUERY = `query Vaults {
-  vaults {
-    chainId
-    address
-    apetaxStatus
-    apetaxType
-    apiVersion
-    registryStatus
-  }
-}`
-
-async function fetchVaults() {
-  const response = await fetch(process.env.NEXT_PUBLIC_GQL || 'http://localhost:3001/graphql', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: GRAPHQL_QUERY })
-  })
-
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-
-  return (await response.json()).data.vaults
-}
-
-function useVaults() {
-  const frequency = 1000
-  const [results, setResults] = useState<Vault[]>([])
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      fetchVaults().then(data => setResults(data))
-    }, frequency)
-    return () => clearInterval(timer)
-  }, [])
-
-  return results
-}
+import { useData } from '@/hooks/useData'
 
 export default function Vaults() {
-  const vaults = useVaults()
+  const { vaults } = useData()
   const apetax = useMemo(() => ({
     stealth: vaults.filter(v => v.apetaxStatus === 'stealth').length,
     new: vaults.filter(v => v.apetaxStatus === 'new').length,
