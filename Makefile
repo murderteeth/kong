@@ -48,7 +48,6 @@ ingest:
 	@docker compose down
 
 
-# here if you need it, you shouldn't need to run this
 down:
 	@docker compose down
 	-@tmux kill-server

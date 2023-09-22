@@ -6,6 +6,8 @@ export class LogsHandler implements Processor {
   queues: { [key: string]: Queue } = {}
 
   async up() {
+    this.queues[mq.q.yearn.vault.extract] = mq.queue(mq.q.yearn.vault.extract)
+    this.queues[mq.q.compute] = mq.queue(mq.q.compute)
     this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
     this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
     this.queues[mq.q.transfer.extract] = mq.queue(mq.q.transfer.extract)
@@ -16,9 +18,21 @@ export class LogsHandler implements Processor {
   }
 
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
-    const strategyLogs = logs.filter(log => log.eventName === 'StrategyAdded')
-    console.log('🪵', chainId, address, 'strategyLogs', strategyLogs.length)
-    for(const log of strategyLogs) {
+    const strategies = logs.filter(log => log.eventName === 'StrategyAdded')
+    console.log('🪵', chainId, address, 'strategies', strategies.length)
+    await this.handleStrategies(chainId, address, strategies)
+
+    const harvests = logs.filter(log => log.eventName === 'StrategyReported')
+    console.log('🪵', chainId, address, 'harvests', harvests.length)
+    await this.handleHarvests(chainId, address, harvests)
+
+    const transfers = logs.filter(log => log.eventName === 'Transfer')
+    console.log('🪵', chainId, address, 'transfers', transfers.length)
+    await this.handleTransfers(chainId, address, transfers)
+  }
+
+  private async handleStrategies(chainId: number, address: string, logs: any[]) {
+    for(const log of logs) {
       await this.queues[mq.q.yearn.strategy.extract].add(mq.q.yearn.strategy.extractJobs.state, {
         chainId, 
         address: log.args.strategy.toString(),
@@ -27,12 +41,52 @@ export class LogsHandler implements Processor {
         jobId: `${chainId}-${log.blockNumber}-${address}`
       })
     }
+  }
 
-    const transferLogs = logs.filter(log => log.eventName === 'Transfer')
-    console.log('🪵', chainId, address, 'transferLogs', transferLogs.length)
+  private async handleHarvests(chainId: number, address: string, logs: any[]) {
     const batchSize = 250
     const batch = [] as any[]
-    for(const log of transferLogs) {
+    for(const log of logs) {
+      const harvest = {
+        chainId,
+        address: log.args.strategy.toString(),
+        profit: log.args.gain.toString(),
+        loss: log.args.loss.toString(),
+        gain: (BigInt(log.args.gain.toString()) - BigInt(log.args.loss.toString())).toString(),
+        blockNumber: log.blockNumber.toString(),
+        blockIndex: log.logIndex,
+        transactionHash: log.transactionHash
+      }
+
+      batch.push(harvest)
+
+      this.queues[mq.q.yearn.vault.extract].add(mq.q.yearn.vault.extractJobs.harvest, harvest, {
+        jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}`
+      })
+
+      this.queues[mq.q.compute].add(mq.job.compute.harvestApr, harvest, {
+        jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}-${mq.job.compute.harvestApr}`
+      })
+
+      if(batch.length >= batchSize) {
+        await this.queues[mq.q.load.name].add(mq.q.load.jobs.harvest, { batch }, {
+          attempts: 3, backoff: { type: 'exponential', delay: 1000 }
+        })
+        batch.length = 0
+      }
+    }
+
+    if(batch.length > 0) {
+      await this.queues[mq.q.load.name].add(mq.q.load.jobs.harvest, { batch }, {
+        attempts: 3, backoff: { type: 'exponential', delay: 1000 }
+      })
+    }
+  }
+
+  private async handleTransfers(chainId: number, address: string, logs: any[]) {
+    const batchSize = 250
+    const batch = [] as any[]
+    for(const log of logs) {
       const transfer = {
         chainId,
         address,

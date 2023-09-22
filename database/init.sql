@@ -34,7 +34,7 @@ CREATE TABLE vault (
 	activation_timestamp timestamp NULL,
 	activation_block_number int8 NULL,
 	as_of_block_number int8 NOT NULL,
-	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT vault_pkey PRIMARY KEY (chain_id, address)
 );
 
@@ -48,7 +48,7 @@ CREATE TABLE strategy (
 	activation_timestamp timestamp NULL,
 	activation_block_number int8 NULL,
 	as_of_block_number int8 NOT NULL,
-	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT strategy_pkey PRIMARY KEY (chain_id, address)
 );
 
@@ -58,7 +58,7 @@ CREATE TABLE withdrawal_queue (
 	queue_index int4 NOT NULL,
 	strategy_address text NULL,
 	as_of_block_number int8 NOT NULL,
-	updated_at timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT withdrawal_queue_pkey PRIMARY KEY (chain_id, vault_address, queue_index)
 );
 
@@ -109,3 +109,30 @@ CREATE TABLE transfer (
 );
 CREATE INDEX transfer_idx_address_sender ON transfer(address, sender);
 CREATE INDEX transfer_idx_address_receiver ON transfer(address, receiver);
+
+CREATE TABLE harvest (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	profit numeric NOT NULL,
+	loss numeric NOT NULL,
+	gain numeric NOT NULL,
+	gain_usd numeric(38,18) NULL,
+	block_number int8 NOT NULL,
+	block_index int4 NOT NULL,
+	block_timestamp timestamptz NULL,
+	transaction_hash text NOT NULL,
+	CONSTRAINT harvest_pkey PRIMARY KEY (chain_id, block_number, block_index)
+);
+CREATE INDEX harvest_idx_address ON harvest(address);
+
+CREATE TABLE apr (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	gross_apr numeric(38,18) NOT NULL,
+	net_apr numeric(38,18) NOT NULL,
+	block_number int8 NOT NULL,
+	block_timestamp timestamptz NOT NULL,
+	CONSTRAINT apr_pkey PRIMARY KEY (chain_id, address, block_timestamp)
+);
+
+SELECT create_hypertable('apr', 'block_timestamp');

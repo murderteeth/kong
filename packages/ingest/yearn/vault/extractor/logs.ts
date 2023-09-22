@@ -28,6 +28,15 @@ export class LogsExtractor implements Processor {
       toBlock: BigInt(to)
     }) as any[]
 
+    const harvests = await rpcs.next(chainId).getLogs({
+      address,
+      events: parseAbi([
+        `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 debtPaid, uint256 totalGain, uint256 totalLoss, uint256 totalDebt, uint256 debtAdded, uint256 debtRatio)`
+      ]),
+      fromBlock: BigInt(from), 
+      toBlock: BigInt(to)
+    }) as any[]
+
     const transfers = await rpcs.next(chainId).getLogs({
       address,
       event: parseAbiItem(`event Transfer(address indexed sender, address indexed receiver, uint256 value)`),
@@ -40,6 +49,7 @@ export class LogsExtractor implements Processor {
 
     const logs = [
       ...strategies, 
+      ...harvests,
       ...depositsAndWithdrawals
     ]
 
@@ -48,5 +58,4 @@ export class LogsExtractor implements Processor {
     console.log('⏱️', 'yearn-vault-extract-logs', milliseconds, 'ms')
     await this.handler.handle(chainId, address, logs)
   }
-
 }

@@ -5,6 +5,19 @@ const bull = { connection: {
   port: (process.env.REDIS_PORT || 6379) as number,
 }}
 
+export const job = {
+  compute: {
+    harvestApr: 'harvest-apr'
+  },
+
+  load: {
+    erc20: 'erc20',
+    transfer: 'transfer',
+    harvest: 'harvest',
+    apr: 'apr'
+  }
+}
+
 export const q = {
   __noJobName: '',
 
@@ -12,9 +25,13 @@ export const q = {
     name: 'load',
     jobs: { 
       erc20: 'erc20',
-      transfer: 'transfer'
+      transfer: 'transfer',
+      harvest: 'harvest',
+      apr: 'apr'
     }
   },
+
+  compute: 'compute',
 
   transfer: {
     extract: 'transfer-extract'
@@ -57,6 +74,7 @@ export const q = {
       extractJobs: {
         logs: 'logs',
         state: 'state',
+        harvest: 'harvest',
         tvl: 'tvl'
       },
       load: 'yearn-vault-load',

@@ -48,6 +48,9 @@ processorPools:
     size: 2
   - type: YearnStrategyLoader
     size: 2
+  - type: Computer
+    size: 2
+    concurrency: 4
   - type: Loader
     size: 2
     concurrency: 4

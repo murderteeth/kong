@@ -1,5 +1,5 @@
 import { mq, types } from 'lib'
-import db, { toUpsertWithAsOfQuery } from '../../db'
+import db, { toUpsertIfAsOfQuery } from '../../db'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 
@@ -16,7 +16,7 @@ export default class YearnVaultLoader implements Processor {
           if(!vault.asOfBlockNumber) throw new Error('!asOfBlockNumber')
 
           console.log('📀', 'vault', vault.chainId, vault.address, vault.asOfBlockNumber)
-          const query = toUpsertWithAsOfQuery('vault', 'chain_id, address', vault)
+          const query = toUpsertIfAsOfQuery('vault', 'chain_id, address', vault)
           const values = Object.values(vault)
           await db.query(query, values)
           break
@@ -29,7 +29,7 @@ export default class YearnVaultLoader implements Processor {
             if(!item.asOfBlockNumber) throw new Error('!asOfBlockNumber')
 
             console.log('📀', 'withdrawal queue', item.chainId, item.vaultAddress, item.queueIndex, item.asOfBlockNumber)
-            const query = toUpsertWithAsOfQuery('withdrawal_queue', 'chain_id, vault_address, queue_index', item)
+            const query = toUpsertIfAsOfQuery('withdrawal_queue', 'chain_id, vault_address, queue_index', item)
             const values = Object.values(item)
             await db.query(query, values)
           }

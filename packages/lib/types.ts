@@ -14,6 +14,15 @@ export interface Price {
   asOfTime: string
 }
 
+export interface APR {
+  chainId: number
+  address: string
+  grossApr: number
+  netApr: number
+  blockNumber: string
+  blockTimestamp: string
+}
+
 export interface TVL {
   chainId: number
   address: string
@@ -79,6 +88,19 @@ export interface Transfer {
   receiver: `0x${string}`
   amount: string
   amountUsd?: number
+  blockNumber: string
+  blockIndex: number
+  blockTimestamp: string
+  transactionHash: `0x${string}`
+}
+
+export interface Harvest {
+  chainId: number
+  address: `0x${string}`
+  profit: string
+  loss: string
+  gain: string
+  gainUsd?: number
   blockNumber: string
   blockIndex: number
   blockTimestamp: string
