@@ -98,8 +98,10 @@ export function queue(name: string, options?: QueueOptions) {
   return new Queue(name, {...bull, ...options})
 }
 
-export function worker(name: string, handler: (job: any) => Promise<any>, concurrency = 1) {
-  return new Worker(name, async job => {
+export function worker(queueName: string, handler: (job: any) => Promise<any>) {
+  let concurrency = 1
+  const queue = new Queue(queueName, bull)
+  const worker = new Worker(queueName, async job => {
     try {
       await handler(job)
     } catch(error) {
@@ -112,4 +114,48 @@ export function worker(name: string, handler: (job: any) => Promise<any>, concur
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 100 }
   })
+
+  const timer = setInterval(async () => {
+    const jobs = await queue.count()
+    const targetConcurrency = computeConcurrency(jobs)
+    console.log('🤔', queueName, jobs, targetConcurrency, concurrency)
+    if(targetConcurrency > concurrency) {
+      console.log('🚀', 'concurrency up', queueName, targetConcurrency)
+      concurrency = targetConcurrency
+      worker.concurrency = targetConcurrency
+    } else if(targetConcurrency < concurrency) {
+      console.log('🐌', 'concurrency down', queueName, targetConcurrency)
+      concurrency = targetConcurrency
+      worker.concurrency = targetConcurrency
+    }
+  }, 5000)
+
+  const _close = worker.close.bind(worker)
+  worker.close = async () => {
+    clearInterval(timer)
+    await queue.close()
+    await _close()
+  }
+
+  return worker
+}
+
+export function computeConcurrency(jobs: number) {
+  const minConcurrency = 1
+  const maxConcurrency = 100
+  const lowerJobLimit = 20
+  const upperJobLimit = 2000
+  const scalingFactor = 20
+  
+  let concurrency
+
+  if (jobs < lowerJobLimit) {
+    concurrency = minConcurrency
+  } else if (jobs > upperJobLimit) {
+    concurrency = maxConcurrency
+  } else {
+    concurrency = Math.ceil(jobs / scalingFactor)
+  }
+
+  return Math.min(Math.max(concurrency, minConcurrency), maxConcurrency)
 }

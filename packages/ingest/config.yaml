@@ -27,7 +27,7 @@ processorPools:
   - type: PriceLoader
     size: 2
   - type: TransferExtractor
-    size: 40
+    size: 2
   - type: TvlLoader
     size: 2
   - type: YearnIndexer
@@ -41,7 +41,7 @@ processorPools:
   - type: YearnVaultPointer
     size: 2
   - type: YearnVaultExtractor
-    size: 20
+    size: 2
   - type: YearnVaultLoader
     size: 2
   - type: YearnStrategyExtractor
@@ -50,7 +50,5 @@ processorPools:
     size: 2
   - type: Computer
     size: 2
-    concurrency: 4
   - type: Loader
     size: 2
-    concurrency: 4

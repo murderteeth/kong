@@ -4,7 +4,7 @@ import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import db from '../../../db'
 import { fetchErc20PriceUsd } from 'lib/prices'
-import { numberToBytes, parseAbi } from 'viem'
+import { parseAbi } from 'viem'
 
 export class HarvestExtractor implements Processor {
   queue: Queue | undefined

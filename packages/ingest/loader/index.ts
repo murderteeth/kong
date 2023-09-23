@@ -2,13 +2,11 @@ import { mq, types } from 'lib'
 import db, { toUpsertQuery } from '../db'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import config from '../config'
 
 export default class Loader implements Processor {
   worker: Worker | undefined
 
   async up() {
-    const loaderConfig = config.processorPools.find(pool => pool.type === 'Loader')
     this.worker = mq.worker(mq.q.load.name, async job => {
       if(job.name === mq.q.load.jobs.erc20) {
         const object = job.data as types.ERC20
@@ -31,7 +29,7 @@ export default class Loader implements Processor {
         await upsertApr(object)
 
       }
-    }, loaderConfig?.concurrency || 1)
+    })
   }
 
   async down() {

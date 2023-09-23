@@ -10,7 +10,6 @@ export default class Computer implements Processor {
 
   async up() {
     this.queue = mq.queue(mq.q.load.name)
-    const computerConfig = config.processorPools.find(pool => pool.type === 'Computer')
     this.worker = mq.worker(mq.q.compute, async job => {
       if(job.name === mq.job.compute.harvestApr) {
         const harvest = job.data as types.Harvest
@@ -27,9 +26,8 @@ export default class Computer implements Processor {
         } as types.APR, {
           jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}-harvest-apr`
         })
-
       }
-    }, computerConfig?.concurrency || 1)
+    })
   }
 
   async down() {
