@@ -1,5 +1,5 @@
 import { mq, types } from 'lib'
-import db, { toUpsertQuery } from '../db'
+import db, { toUpsertSql } from '../db'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 
@@ -64,7 +64,7 @@ export async function upsertHarvests(batch: types.Harvest[]) {
 
     for(const object of batch) {
       await client.query(
-        toUpsertQuery('harvest', 'chain_id, block_number, block_index', object),
+        toUpsertSql('harvest', 'chain_id, block_number, block_index', object),
         Object.values(object)
       )
     }
@@ -86,7 +86,7 @@ export async function upsertTransfers(batch: types.Transfer[]) {
 
     for(const object of batch) {
       await client.query(
-        toUpsertQuery('transfer', 'chain_id, block_number, block_index', object),
+        toUpsertSql('transfer', 'chain_id, block_number, block_index', object),
         Object.values(object)
       )
     }
@@ -102,7 +102,7 @@ export async function upsertTransfers(batch: types.Transfer[]) {
 
 export async function upsertApr(object: types.APR) {
   await db.query(
-    toUpsertQuery('apr', 'chain_id, address, block_timestamp', object),
+    toUpsertSql('apr', 'chain_id, address, block_timestamp', object),
     Object.values(object)
   )
 }

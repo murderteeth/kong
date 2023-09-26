@@ -48,6 +48,11 @@ ingest:
 	@docker compose down
 
 
+test:
+	@yarn workspace lib test
+	@yarn workspace ingest test
+
+
 down:
 	@docker compose down
 	-@tmux kill-server

@@ -1,8 +1,8 @@
 import { mq, types } from 'lib'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import config from '../config'
 import { rpcs } from 'lib/rpcs'
+import { compute as computeApr } from './apr'
 
 export default class Computer implements Processor {
   queue: Queue | undefined
@@ -33,12 +33,5 @@ export default class Computer implements Processor {
   async down() {
     await this.worker?.close()
     await this.queue?.close()
-  }
-}
-
-async function computeApr(harvest: types.Harvest) {
-  return {
-    gross: 0.0,
-    net: 0.0
   }
 }

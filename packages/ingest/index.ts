@@ -4,11 +4,10 @@ import { rpcs } from 'lib/rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
 import config, { toCamelPath } from './config'
 import { mq } from 'lib'
+import db from './db'
 
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
-
-rpcs.up()
 
 const processors = config.processorPools.filter(p => p.size > 0).map(p => {
   const path = `./${toCamelPath(p.type)}`
@@ -27,27 +26,29 @@ const crons = config.crons.map(cron => new Promise((resolve, reject) => {
   })
 }))
 
-Promise.all([...
-  processors.map(process => process.up()),
-]).then(() => {
-  Promise.all(crons).then(() => {
+up()
 
+function up() {
+  rpcs.up()
+  Promise.all([
+    ...processors.map(process => process.up()),
+    ...crons
+  ]).then(() => {
+  
     console.log('🐒 ingest up')
-
+  
   }).catch(error => {
     console.error('🤬', error)
-    process.exit(1)    
+    process.exit(1)
   })
-}).catch(error => {
-  console.error('🤬', error)
-  process.exit(1)
-})
+}
 
 function down() {
-  Promise.all([...
-    processors.map(process => process.down())
+  Promise.all([
+    ...processors.map(process => process.down()),
+    rpcs.down(),
+    db.end()
   ]).then(() => {
-    rpcs.down()
     console.log('🐒 ingest down')
     process.exit(0)
   }).catch(error => {

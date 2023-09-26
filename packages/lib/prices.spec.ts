@@ -6,7 +6,7 @@ describe('prices', function() {
   this.timeout(2 * 60_000) // TODO: pricemagic is in beta, expect delays for now
 
   before(async function() {
-    this.block = 18166519
+    this.block = 18166519n
   })
 
   it('returns oracle price for WETH', async function() {

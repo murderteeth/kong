@@ -61,7 +61,7 @@ export async function getErc20(chainId: number, address: string) {
   }
 }
 
-export function toUpsertQuery(table: string, pk: string, update: any) {
+export function toUpsertSql(table: string, pk: string, update: any) {
   const fields = Object.keys(update).map(key => 
     camelToSnake(key)
   ) as string[]
@@ -87,7 +87,7 @@ export function toUpsertQuery(table: string, pk: string, update: any) {
   `
 }
 
-export function toUpsertIfAsOfQuery(table: string, pk: string, update: any) {
+export function toUpsertIfAsOfSql(table: string, pk: string, update: any) {
   const fields = Object.keys(update).map(key => 
     camelToSnake(key)
   ) as string[]

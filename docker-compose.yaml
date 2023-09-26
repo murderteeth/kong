@@ -32,8 +32,11 @@ services:
 
   gql:
     depends_on:
+      - redis
       - postgres
     environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: user

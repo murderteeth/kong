@@ -55,7 +55,7 @@ export interface Vault {
 export interface Strategy {
   chainId: number
   address: `0x${string}`
-  apiVersion: string
+  apiVersion?: string
   name?: string,
   vaultAddress?: string,
   withdrawalQueueIndex?: number,
@@ -98,9 +98,14 @@ export interface Harvest {
   chainId: number
   address: `0x${string}`
   profit: string
+  profitUsd?: number
   loss: string
-  gain: string
-  gainUsd?: number
+  lossUsd?: number
+  totalProfit: string
+  totalProfitUsd?: number
+  totalLoss: string
+  totalLossUsd?: number
+  totalDebt?: string
   blockNumber: string
   blockIndex: number
   blockTimestamp: string

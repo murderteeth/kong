@@ -7,18 +7,19 @@ import { fetchErc20PriceUsd } from 'lib/prices'
 import { parseAbi } from 'viem'
 
 export class HarvestExtractor implements Processor {
-  queue: Queue | undefined
+  queues: { [key: string]: Queue } = {}
 
   async up() {
-    this.queue = mq.queue(mq.q.load.name)
+    this.queues[mq.q.compute] = mq.queue(mq.q.compute)
+    this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
   }
 
   async down() {
-    await this.queue?.close()
+    await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
   async extract(job: any) {
-    const harvest = job.data as types.Harvest
+    let harvest = job.data as types.Harvest
     console.log('⬇️ ', job.queueName, job.name, harvest.chainId, harvest.blockNumber, harvest.blockIndex, harvest.address)
 
     const block = await rpcs.next(harvest.chainId).getBlock({ blockNumber: BigInt(harvest.blockNumber) })
@@ -29,30 +30,41 @@ export class HarvestExtractor implements Processor {
       return
     }
 
-    const { price: assetPriceUsd } = await fetchErc20PriceUsd(harvest.chainId, asset.address, BigInt(harvest.blockNumber))
-    const gain = Number(BigInt(harvest.gain) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
-    const gainUsd = gain * assetPriceUsd
+    const { price } = await fetchErc20PriceUsd(harvest.chainId, asset.address, BigInt(harvest.blockNumber))
+    const profitUsd = price * Number(BigInt(harvest.profit) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
+    const lossUsd = price * Number(BigInt(harvest.loss) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
+    const totalProfitUsd = price * Number(BigInt(harvest.totalProfit) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
+    const totalLossUsd = price * Number(BigInt(harvest.totalLoss) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
 
-    await this.queue?.add(mq.q.load.jobs.harvest, {
-      batch: [{
-        ...harvest,
-        gainUsd,
-        blockTimestamp: block.timestamp.toString()
-      }]
+    harvest = {
+      ...harvest,
+      profitUsd,
+      lossUsd,
+      totalProfitUsd,
+      totalLossUsd,
+      blockTimestamp: block.timestamp.toString()
+    }
+
+    this.queues[mq.q.compute].add(mq.job.compute.harvestApr, harvest, {
+      jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}-${mq.job.compute.harvestApr}`
     })
+
+    await this.queues[mq.q.load.name].add(mq.q.load.jobs.harvest, { batch: [harvest] })
   }
 }
 
 export async function getAsset(chainId: number, address: `0x${string}`) {
   const result = await db.query(`
     SELECT 
-      asset_address as "assetAddress",
-      decimals
+      asset_address as address,
+      decimals,
+      'db' as source
     FROM vault
     WHERE chain_id = $1 AND address = $2
     UNION SELECT
-      v.asset_address as "assetAddress",
-      v.decimals
+      v.asset_address as address,
+      v.decimals,
+      'db' as source
     FROM vault v
     JOIN strategy s ON s.vault_address = v.address
     WHERE s.chain_id = $1 AND s.address = $2
@@ -60,7 +72,8 @@ export async function getAsset(chainId: number, address: `0x${string}`) {
   if(result.rows.length > 0) {
     return result.rows[0] as {
       address: `0x${string}`, 
-      decimals: number
+      decimals: number,
+      source: string
     }
   }
 
@@ -78,7 +91,8 @@ export async function getAsset(chainId: number, address: `0x${string}`) {
     }) as number
     return {
       address: want,
-      decimals
+      decimals: Number(decimals),
+      source: 'rpc'
     }
   }
 

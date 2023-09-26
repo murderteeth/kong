@@ -7,7 +7,6 @@ export class LogsHandler implements Processor {
 
   async up() {
     this.queues[mq.q.yearn.vault.extract] = mq.queue(mq.q.yearn.vault.extract)
-    this.queues[mq.q.compute] = mq.queue(mq.q.compute)
     this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
     this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
     this.queues[mq.q.transfer.extract] = mq.queue(mq.q.transfer.extract)
@@ -52,7 +51,9 @@ export class LogsHandler implements Processor {
         address: log.args.strategy.toString(),
         profit: log.args.gain.toString(),
         loss: log.args.loss.toString(),
-        gain: (BigInt(log.args.gain.toString()) - BigInt(log.args.loss.toString())).toString(),
+        totalProfit: log.args.totalGain.toString(),
+        totalLoss: log.args.totalLoss.toString(),
+        totalDebt: log.args.debtPaid.toString(),
         blockNumber: log.blockNumber.toString(),
         blockIndex: log.logIndex,
         transactionHash: log.transactionHash
@@ -62,10 +63,6 @@ export class LogsHandler implements Processor {
 
       this.queues[mq.q.yearn.vault.extract].add(mq.q.yearn.vault.extractJobs.harvest, harvest, {
         jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}`
-      })
-
-      this.queues[mq.q.compute].add(mq.job.compute.harvestApr, harvest, {
-        jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}-${mq.job.compute.harvestApr}`
       })
 
       if(batch.length >= batchSize) {

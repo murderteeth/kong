@@ -118,7 +118,6 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
   const timer = setInterval(async () => {
     const jobs = await queue.count()
     const targetConcurrency = computeConcurrency(jobs)
-    console.log('🤔', queueName, jobs, targetConcurrency, concurrency)
     if(targetConcurrency > concurrency) {
       console.log('🚀', 'concurrency up', queueName, targetConcurrency)
       concurrency = targetConcurrency

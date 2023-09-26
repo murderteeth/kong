@@ -20,9 +20,13 @@ make dev
 
 
 ## make
-`dev` - run dev services and terminal
+`dev` - run eveything in dev
 
-`down` - make sure your dev environment is shutdown
+`ingest` - just run ingest in dev
+
+`test` - test everything
+
+`down` - 'make' sure your dev environment is shutdown lol
 
 
 ## tmux cheats
@@ -72,3 +76,6 @@ timescale has to be manually installed on top of postgres in the render environm
 
 ### timescale cheats
 `hypertable size` - `SELECT hypertable_size('table name');`
+
+### viem, https://viem.sh
+Kong uses viem to interface with evms. Because viem is new and changing often, all of kong's package.json files are hardcoded with the same viem version. To upgrade viem, manually update all package/package.json files. Then run `yarn` from root.
