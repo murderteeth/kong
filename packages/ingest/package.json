@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "ts-node index.ts",
     "production": "ts-node --transpile-only index.ts",
-    "pretest": "docker compose up -d redis && docker compose up -d postgres && wait-on tcp:localhost:5432 tcp:localhost:6379",
-    "test": "mocha",
+    "pretest": "docker compose up -d redis && docker compose up -d postgres && wait-on tcp:localhost:6379 && wait-on tcp:localhost:5432",
+    "test": "mocha; exit_code=$?; npm run posttest; exit $exit_code",
     "posttest": "docker compose down"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "@types/mocha": "^10.0.1",
     "chain": "^0.4.0",
     "mocha": "^10.2.0",
+    "wait-for-postgres": "^1.5.3",
     "wait-on": "^7.0.1"
   }
 }

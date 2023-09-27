@@ -1,5 +1,6 @@
 import prompts from 'prompts'
 import registriesPrompt from './registries'
+import pollPrompt from './poll'
 import vaultsPrompt from './vaults'
 import indexPrompt from './_index'
 import extractPrompt from './extract'
@@ -12,6 +13,7 @@ export interface MenuAction {
 }
 
 const actions = [
+  pollPrompt,
   registriesPrompt,
   vaultsPrompt,
   indexPrompt,

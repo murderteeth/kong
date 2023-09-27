@@ -79,9 +79,22 @@ export const yvwethDb = {
       toUpsertSql('harvest', 'chain_id, block_number, block_index', harvest),
       Object.values(harvest)
     )
+    await db.query(
+      toUpsertSql('harvest', 'chain_id, block_number, block_index', harvest),
+      Object.values({
+        ...harvest,
+        profit: '194459789900456241429',
+        totalProfit: '1399531006762014020040',
+        totalDebt: '33677195107170865265139',
+        blockNumber: '18116044',
+        blockTimestamp: (70 * 24 * 60 * 60 + (9 * 60 * 60)).toString(),
+        transactionHash: '0x0000000002'
+      })
+    )
   },
 
   down: async () => {
+    await db.query('DELETE FROM apr WHERE chain_id = $1 AND address = $2', [1, addresses.strategystEthAccumulator_v2])
     await db.query('DELETE FROM harvest WHERE chain_id = $1 AND address = $2', [1, addresses.strategystEthAccumulator_v2])
     await db.query('DELETE FROM strategy WHERE chain_id = $1 AND vault_address = $2', [1, addresses.yvweth])
     await db.query('DELETE FROM vault WHERE chain_id = $1 AND address = $2', [1, addresses.yvweth])
@@ -90,7 +103,13 @@ export const yvwethDb = {
 
 export function useYvWethDb(fn: (this: any) => Promise<void>) {
   return async function(this: any) {
-    await yvwethDb.up()
+    try {
+      await yvwethDb.up()
+    } catch(e) {
+      console.error(e)
+      throw e
+    }
+
     try {
       await fn.call(this)
     } finally {

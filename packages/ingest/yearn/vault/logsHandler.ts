@@ -53,7 +53,7 @@ export class LogsHandler implements Processor {
         loss: log.args.loss.toString(),
         totalProfit: log.args.totalGain.toString(),
         totalLoss: log.args.totalLoss.toString(),
-        totalDebt: log.args.debtPaid.toString(),
+        totalDebt: log.args.totalDebt.toString(),
         blockNumber: log.blockNumber.toString(),
         blockIndex: log.logIndex,
         transactionHash: log.transactionHash

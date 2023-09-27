@@ -6,6 +6,10 @@ const bull = { connection: {
 }}
 
 export const job = {
+  poll: {
+    harvestApr: 'harvest-apr'
+  },
+
   compute: {
     harvestApr: 'harvest-apr'
   },
@@ -20,6 +24,8 @@ export const job = {
 
 export const q = {
   __noJobName: '',
+
+  poll: 'poll',
 
   load: {
     name: 'load',

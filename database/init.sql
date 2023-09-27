@@ -129,6 +129,8 @@ CREATE TABLE harvest (
 	CONSTRAINT harvest_pkey PRIMARY KEY (chain_id, block_number, block_index)
 );
 CREATE INDEX harvest_idx_address ON harvest(address);
+CREATE INDEX harvest_idx_address_blocknumber ON harvest (address, block_number);
+CREATE INDEX harvest_idx_chainid_address_blocknumber ON harvest (chain_id, address, block_number);
 
 CREATE TABLE apr (
 	chain_id int4 NOT NULL,
@@ -139,5 +141,6 @@ CREATE TABLE apr (
 	block_timestamp timestamptz NOT NULL,
 	CONSTRAINT apr_pkey PRIMARY KEY (chain_id, address, block_timestamp)
 );
+CREATE INDEX apr_idx_chainid_address_blocknumber ON harvest (chain_id, address, block_number);
 
 SELECT create_hypertable('apr', 'block_timestamp');

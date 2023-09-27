@@ -16,8 +16,8 @@ crons:
 processRecycleMs: 600_000 # 10 minutes
 
 processorPools:
-  - type: BlockWatcher
-    size: 0
+  # - type: BlockWatcher
+  #   size: 2
   - type: BlockPoller
     size: 2
   - type: BlockLoader
@@ -26,12 +26,14 @@ processorPools:
     size: 2
   - type: PriceLoader
     size: 2
+  - type: TransferExtractor
+    size: 2
   - type: TvlLoader
     size: 2
   - type: YearnIndexer
     size: 2
-  - type: YearnRegistryWatcher
-    size: 0
+  # - type: YearnRegistryWatcher
+  #   size: 2
   - type: YearnRegistryBlockPointer
     size: 2
   - type: YearnRegistryExtractor
@@ -45,6 +47,8 @@ processorPools:
   - type: YearnStrategyExtractor
     size: 2
   - type: YearnStrategyLoader
+    size: 2
+  - type: Poller
     size: 2
   - type: Computer
     size: 2

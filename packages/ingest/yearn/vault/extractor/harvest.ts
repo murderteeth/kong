@@ -10,7 +10,6 @@ export class HarvestExtractor implements Processor {
   queues: { [key: string]: Queue } = {}
 
   async up() {
-    this.queues[mq.q.compute] = mq.queue(mq.q.compute)
     this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
   }
 
@@ -44,10 +43,6 @@ export class HarvestExtractor implements Processor {
       totalLossUsd,
       blockTimestamp: block.timestamp.toString()
     }
-
-    this.queues[mq.q.compute].add(mq.job.compute.harvestApr, harvest, {
-      jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}-${mq.job.compute.harvestApr}`
-    })
 
     await this.queues[mq.q.load.name].add(mq.q.load.jobs.harvest, { batch: [harvest] })
   }

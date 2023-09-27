@@ -1,21 +1,23 @@
-import { math, types } from "lib"
-import db from "../db"
-import { rpcs } from "lib/rpcs"
-import { parseAbi } from "viem"
+import { math, types } from 'lib'
+import db from '../db'
+import { rpcs } from 'lib/rpcs'
+import { parseAbi } from 'viem'
 
-export async function compute(latest: types.Harvest) {
+export async function compute(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const query = `
     SELECT 
       total_profit as "totalProfit",
       total_loss as "totalLoss",
-      block_timestamp as "blockTimestamp"
+      total_debt as "totalDebt",
+      block_number as "blockNumber",
+      FLOOR(EXTRACT(EPOCH FROM block_timestamp)) as "blockTimestamp"
     FROM harvest 
-    WHERE chain_id = $1 AND address = $2 AND block_number < $3
+    WHERE chain_id = $1 AND address = $2 AND block_number <= $3
     ORDER BY block_number desc
-    LIMIT 1`
-  const [ previous ] = (await db.query(query, [latest.chainId, latest.address, latest.blockNumber])).rows as types.Harvest[]
-  if(!previous) return { gross: 0.0, net: 0.0 }
-  if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return { gross: 0.0, net: 0.0 }
+    LIMIT 2`
+  const [ latest, previous ] = (await db.query(query, [chainId, address, blockNumber])).rows as types.Harvest[]
+  if(!(latest && previous)) return null
+  if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return null
 
   const profit = BigInt(latest.totalProfit || 0) - BigInt(previous.totalProfit || 0)
   const loss = BigInt(latest.totalLoss || 0) - BigInt(previous.totalLoss || 0)
@@ -28,12 +30,12 @@ export async function compute(latest: types.Harvest) {
   const hoursInOneYear = 24 * 365
   const gross = performance * hoursInOneYear / periodInHours
 
-  const { vault, delegatedAssets } = await getStrategyInfo(latest.chainId, latest.address, BigInt(latest.blockNumber))
-  const fees = await getFees(latest.chainId, vault, BigInt(latest.blockNumber))
+  const { vault, delegatedAssets } = await getStrategyInfo(chainId, address, BigInt(latest.blockNumber))
+  const fees = await getFees(chainId, vault, BigInt(latest.blockNumber))
   const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(latest.totalDebt))
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))
 
-  return { gross, net }
+  return { gross, net, blockNumber: latest.blockNumber }
 }
 
 async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNumber: bigint) {
