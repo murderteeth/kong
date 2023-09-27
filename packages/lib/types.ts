@@ -2,16 +2,6 @@ export interface LatestBlock {
   chainId: number
   blockNumber: string
   blockTimestamp: string
-  queueTimestamp: string
-}
-
-export interface Price {
-  chainId: number
-  address: string
-  symbol: string
-  priceUsd: number
-  asOfBlockNumber: string
-  asOfTime: string
 }
 
 export interface APR {

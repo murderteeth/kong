@@ -23,6 +23,12 @@ interface MonitorResults {
     active: number
     failed: number
   }[]
+  db: {
+    databaseSize: number
+    indexHitRate: number
+    cacheHitRate: number
+    clients: number
+  }
   redis: {
     uptime: number
     clients: number
@@ -62,6 +68,12 @@ const GRAPHQL_QUERY = `query Data {
       active
       failed
     }
+    db {
+      databaseSize
+      indexHitRate
+      cacheHitRate
+      clients
+    }
     redis {
       uptime
       clients
@@ -96,6 +108,12 @@ export default function DataProvider({children}: {children: ReactNode}) {
     vaults: [],
     monitor: {
       queues: [],
+      db: {
+        databaseSize: 0,
+        indexHitRate: 0,
+        cacheHitRate: 0,
+        clients: 0
+      },
       redis: {
         uptime: 0,
         clients: 0,
@@ -109,12 +127,18 @@ export default function DataProvider({children}: {children: ReactNode}) {
   } as DataContext)
 
   useEffect(() => {
-    const handle = setInterval(() => {
-      fetchData().then(data => setData(data))
-    }, 2_000)
-    fetchData().then(data => setData(data))
-    return () => clearInterval(handle)
-  }, [])
+    let handle: NodeJS.Timeout
+    const fetchAndKeepFetching = async () => {
+      try {
+        const data = await fetchData()
+        setData(data)
+      } finally {
+        handle = setTimeout(fetchAndKeepFetching, 2_000)
+      }
+    }
+    fetchAndKeepFetching()
+    return () => clearTimeout(handle)
+  }, [setData])
 
   return <dataContext.Provider value={data}>{children}</dataContext.Provider>
 }

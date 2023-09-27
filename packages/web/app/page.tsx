@@ -5,14 +5,16 @@ import Vaults from '@/components/Vaults'
 import DataProvider from '@/hooks/useData'
 
 export default function Home() {
-  return <main className="w-full flex min-h-screen flex-col items-center gap-2">
-    <div className="w-full sm:w-[640px] flex flex-col items-center gap-2">
-      <DataProvider>
-        <Vaults />
-        <LatestBlocks />
-        <Monitor />
+  return <DataProvider>
+    <main className="w-full min-h-screen px-8 flex">
+      <div className="w-1/3">
         <Ahoy />
-      </DataProvider>
-    </div>
-  </main>
+        <Monitor />
+      </div>
+      <div className="w-1/3">
+        <LatestBlocks />
+        <Vaults />
+      </div>
+    </main>
+  </DataProvider>
 }

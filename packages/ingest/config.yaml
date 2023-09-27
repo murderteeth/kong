@@ -4,10 +4,6 @@ crons:
     queue: block-poll
     schedule: "*/5 * * * * *" # every 5 seconds
 
-  # - name: PricePoller
-  #   queue: price-poll
-  #   schedule: "*/30 * * * *" # every 30 minutes
-
   # - name: YearnVaultTvlCatchup
   #   queue: yearn-vault-pointer
   #   job: tvl-catchup
@@ -21,10 +17,6 @@ processorPools:
   - type: BlockPoller
     size: 2
   - type: BlockLoader
-    size: 2
-  - type: PricePoller
-    size: 2
-  - type: PriceLoader
     size: 2
   - type: TransferExtractor
     size: 2

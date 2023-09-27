@@ -18,7 +18,6 @@ export default class BlockWatcher implements Processor {
             chainId: rpc.chain?.id,
             blockNumber: block.number.toString(),
             blockTimestamp: block.timestamp.toString(),
-            queueTimestamp: (Math.round(Date.now() / 1000)).toString(),
           } as types.LatestBlock, {
             jobId: `${rpc.chain?.id}-${block.number}`,
           })

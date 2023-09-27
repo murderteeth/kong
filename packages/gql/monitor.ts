@@ -1,6 +1,6 @@
-import { Queue } from 'bullmq';
-import { Processor } from './processor'
-import { mq } from '.'
+import { Queue } from 'bullmq'
+import { mq } from 'lib'
+import { Processor } from 'lib/processor'
 import { parse as parseRedisRaw } from 'redis-info'
 
 export interface MonitorResults {
@@ -27,13 +27,17 @@ export interface MonitorResults {
 
 export class Monitor implements Processor {
   private queues: Queue[] = []
+  private redisClient: any | undefined
+  private timer: NodeJS.Timeout | undefined
+  private _latest: MonitorResults | undefined
 
   async up() {
     this.queues = [
+      mq.queue(mq.q.poll),
+      mq.queue(mq.q.compute),
       mq.queue(mq.q.load.name),
       mq.queue(mq.q.block.load),
       mq.queue(mq.q.transfer.extract),
-      mq.queue(mq.q.price.load),
       mq.queue(mq.q.tvl.load),
       mq.queue(mq.q.yearn.index),
       mq.queue(mq.q.yearn.registry.pointer),
@@ -45,13 +49,25 @@ export class Monitor implements Processor {
       mq.queue(mq.q.yearn.strategy.extract),
       mq.queue(mq.q.yearn.strategy.load),
     ]
+
+    this.redisClient = await this.queues[0].client
+
+    this.timer = setInterval(async () => {
+      this._latest = await this.getLatest()
+    }, 1000)
   }
 
   async down() {
+    clearInterval(this.timer)
+    this.redisClient = undefined
     await Promise.all(this.queues.map(q => q.close()))
   }
 
-  async latest() {
+  get latest() {
+    return this._latest
+  }
+
+  private async getLatest() {
     const result = {
       queues: [] as MonitorResults['queues'],
       redis: {} as MonitorResults['redis']
@@ -66,7 +82,7 @@ export class Monitor implements Processor {
       })
     }
 
-    const rawRedis = await (await this.queues[0].client).info()
+    const rawRedis = await this.redisClient.info()
     const redisInfo = parseRedisRaw(rawRedis)
 
     result.redis = {
@@ -86,3 +102,7 @@ export class Monitor implements Processor {
     return result
   }
 }
+
+const monitor = new Monitor()
+
+export default monitor

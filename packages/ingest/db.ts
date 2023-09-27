@@ -7,7 +7,8 @@ const db = new Pool({
   user: process.env.POSTGRES_USER || 'user',
   password: process.env.POSTGRES_PASSWORD || 'password',
   max: 40,
-  idleTimeoutMillis: 30_000,
+  idleTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 60_000,
 })
 
 export default db

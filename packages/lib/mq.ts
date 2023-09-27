@@ -48,11 +48,6 @@ export const q = {
     load: 'block-load'
   },
 
-  price: {
-    poll: 'price-poll',
-    load: 'price-load'
-  },
-
   tvl: {
     load: 'tvl-load'
   },

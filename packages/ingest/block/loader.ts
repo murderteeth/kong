@@ -21,21 +21,19 @@ export default class BlockLoader implements Processor {
 
 export async function upsert(block: types.LatestBlock) {
   const query = `
-    INSERT INTO public.latest_block (chain_id, block_number, block_timestamp, queue_timestamp, updated_at)
-    VALUES ($1, $2, to_timestamp($3::double precision), to_timestamp($4::double precision), NOW())
+    INSERT INTO public.latest_block (chain_id, block_number, block_timestamp, updated_at)
+    VALUES ($1, $2, to_timestamp($3::double precision), NOW())
     ON CONFLICT (chain_id)
     DO UPDATE SET 
       block_number = EXCLUDED.block_number,
       block_timestamp = EXCLUDED.block_timestamp,
-      queue_timestamp = EXCLUDED.queue_timestamp,
       updated_at = NOW()
     WHERE latest_block.block_number < EXCLUDED.block_number;
   `
   const values = [
     block.chainId, 
     block.blockNumber, 
-    block.blockTimestamp, 
-    block.queueTimestamp
+    block.blockTimestamp
   ]
 
   await db.query(query, values)

@@ -1,9 +1,8 @@
 CREATE TABLE latest_block (
 	chain_id int4 NOT NULL,
 	block_number int8 NOT NULL,
-	block_timestamp timestamp NOT NULL,
-	queue_timestamp timestamp NOT NULL,
-	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	block_timestamp timestamptz NOT NULL,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT latest_block_pkey PRIMARY KEY (chain_id)
 );
 
@@ -11,7 +10,7 @@ CREATE TABLE block_pointer (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
 	block_number int8 NOT NULL,
-	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT block_pointer_pkey PRIMARY KEY (chain_id, address)
 );
 
@@ -61,18 +60,6 @@ CREATE TABLE withdrawal_queue (
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT withdrawal_queue_pkey PRIMARY KEY (chain_id, vault_address, queue_index)
 );
-
-CREATE TABLE price (
-	chain_id int4 NOT NULL,
-	address text NOT NULL,
-	symbol text NOT NULL,
-	price_usd numeric NOT NULL,
-	as_of_block_number int8 NOT NULL,
-	as_of_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT price_pkey PRIMARY KEY (chain_id, address, as_of_time)
-);
-
-SELECT create_hypertable('price', 'as_of_time');
 
 CREATE TABLE tvl (
 	chain_id int4 NOT NULL,

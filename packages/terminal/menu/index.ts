@@ -4,7 +4,6 @@ import pollPrompt from './poll'
 import vaultsPrompt from './vaults'
 import indexPrompt from './_index'
 import extractPrompt from './extract'
-import monitorPrompt from './monitor'
 import quitPrompt from './quit'
 
 export interface MenuAction {
@@ -18,7 +17,6 @@ const actions = [
   vaultsPrompt,
   indexPrompt,
   extractPrompt,
-  monitorPrompt,
   quitPrompt,
 ] as MenuAction[]
 
