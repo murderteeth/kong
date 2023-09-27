@@ -11,6 +11,7 @@ const query = gql`
     bananas: String,
     latestBlocks(chainId: Int): [LatestBlock],
     vaults(chainId: Int): [Vault],
+    vault(chainId: Int!, address: String!): Vault,
     monitor: MonitorResults
   }
 `

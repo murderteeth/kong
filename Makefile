@@ -4,13 +4,8 @@ dev:
 	@docker compose up -d postgres
 	@tmux new-session -d -s devenv
 
-	# Split the window into two equal horizontal panes
 	@tmux splitw -v -p 50
-
-	# Select the top pane
 	@tmux selectp -t 0
-
-	# Split the top pane into three equal vertical panes
 	@tmux splitw -h -p 50
 	@tmux selectp -t 0 
 	@tmux splitw -h -p 50
