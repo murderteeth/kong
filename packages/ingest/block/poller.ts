@@ -14,7 +14,7 @@ export default class BlockPoller implements Processor {
       for(const rpc of Object.values(_rpcs)) {
         const block = await rpc.getBlock()
         console.log('💈', 'block', rpc.chain?.id, block.number)
-        await this.queue?.add(mq.q.__noJobName, {
+        await this.queue?.add(mq.job.__noname, {
           chainId: rpc.chain?.id,
           blockNumber: block.number.toString(),
           blockTimestamp: block.timestamp.toString()

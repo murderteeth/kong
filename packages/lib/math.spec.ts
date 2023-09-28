@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { div } from './math'
 
 describe('math', function() {
-  describe.only('div', function() {
+  describe('div', function() {
     it('NaN on zero denominator', async function() {
       expect(div(1n, 0n)).to.be.NaN
     })

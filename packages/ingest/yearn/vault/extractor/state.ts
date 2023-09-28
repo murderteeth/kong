@@ -13,7 +13,7 @@ export class StateExtractor implements Processor {
   } = {}
 
   async up() {
-    this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
+    this.queues[mq.q.load] = mq.queue(mq.q.load)
     this.queues[mq.q.yearn.vault.load] = mq.queue(mq.q.yearn.vault.load)
     this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
   }
@@ -38,8 +38,8 @@ export class StateExtractor implements Processor {
       asOfBlockNumber
     } as types.Vault
 
-    await this.queues[mq.q.load.name].add(
-      mq.q.load.jobs.erc20, {
+    await this.queues[mq.q.load].add(
+      mq.job.load.erc20, {
         chainId: vault.chainId,
         address: fields.assetAddress,
         name: asset.assetName,
@@ -48,8 +48,8 @@ export class StateExtractor implements Processor {
       }
     )
 
-    await this.queues[mq.q.load.name].add(
-      mq.q.load.jobs.erc20, {
+    await this.queues[mq.q.load].add(
+      mq.job.load.erc20, {
         chainId: vault.chainId,
         address: vault.address,
         name: fields.name,
@@ -173,7 +173,7 @@ export class StateExtractor implements Processor {
         activationBlockNumber: (await blocks.estimateHeight(chainId, activationTimestamp)).toString()
       }
     } catch(error) {
-      console.log('⚠', chainId, address, '!activation field')
+      console.warn('🚨', chainId, address, '!activation field')
       const createBlock = await estimateCreationBlock(chainId, address)
       return {
         activationTimestamp: createBlock.timestamp.toString(),

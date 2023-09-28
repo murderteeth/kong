@@ -30,7 +30,7 @@ CREATE TABLE vault (
 	asset_name text NULL,
 	asset_symbol text NULL,
 	total_assets numeric NULL,
-	activation_timestamp timestamp NULL,
+	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -44,7 +44,7 @@ CREATE TABLE strategy (
 	name text NULL,
 	vault_address text NOT NULL,
 	migrate_address text NULL,
-	activation_timestamp timestamp NULL,
+	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -65,12 +65,12 @@ CREATE TABLE tvl (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
 	tvl_usd numeric NOT NULL,
-	as_of_block_number int8 NOT NULL,
-	as_of_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT tvl_pkey PRIMARY KEY (chain_id, address, as_of_time)
+	block_number int8 NOT NULL,
+	block_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT tvl_pkey PRIMARY KEY (chain_id, address, block_time)
 );
 
-SELECT create_hypertable('tvl', 'as_of_time');
+SELECT create_hypertable('tvl', 'block_time');
 
 CREATE TABLE erc20 (
 	chain_id int4 NOT NULL,
@@ -131,3 +131,12 @@ CREATE TABLE apr (
 CREATE INDEX apr_idx_chainid_address_blocknumber ON harvest (chain_id, address, block_number);
 
 SELECT create_hypertable('apr', 'block_timestamp');
+
+CREATE TABLE sparkline (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	type text NOT NULL CHECK (type IN ('vault-tvl-7d', 'strategy-apr-harvest', 'vault-apy-7d')),
+	value numeric NOT NULL,
+	time timestamptz NOT NULL,
+	CONSTRAINT sparkline_pkey PRIMARY KEY (chain_id, address, type, time)
+);

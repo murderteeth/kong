@@ -17,8 +17,8 @@ export interface TVL {
   chainId: number
   address: string
   tvlUsd: number
-  asOfBlockNumber: string
-  asOfTime: string
+  blockNumber: string
+  blockTime: string
 }
 
 export interface Vault {

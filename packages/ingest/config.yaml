@@ -20,8 +20,6 @@ processorPools:
     size: 2
   - type: TransferExtractor
     size: 2
-  - type: TvlLoader
-    size: 2
   - type: YearnIndexer
     size: 2
   # - type: YearnRegistryWatcher

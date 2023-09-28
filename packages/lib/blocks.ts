@@ -1,6 +1,23 @@
+import { cache } from './cache'
 import { rpcs } from './rpcs'
 
+export async function getBlock(chainId: number, blockNumber: bigint) {
+  return cache.wrap(`getBlock:${chainId}:${blockNumber}`, async () => {
+    return await __getBlock(chainId, blockNumber)
+  })
+}
+
+async function __getBlock(chainId: number, blockNumber: bigint) {
+  return rpcs.next(chainId).getBlock({ blockNumber })
+}
+
 export async function estimateHeight(chainId: number, timestamp: number) {
+  return cache.wrap(`estimateHeight:${chainId}:${timestamp}`, async () => {
+    return await __estimateHeight(chainId, timestamp)
+  })
+}
+
+async function __estimateHeight(chainId: number, timestamp: number) {
   try {
     return await estimateHeightLlama(chainId, timestamp)
   } catch(error) {
@@ -26,7 +43,7 @@ async function estimateHeightManual(chainId: number, timestamp: number) {
 
   while ((hi - lo) > 1n) {
     const mid = (hi + lo) / 2n
-    block = await rpcs.next(chainId).getBlock({ blockNumber: mid })
+    block = await getBlock(chainId, mid)
     if (block.timestamp < timestamp) {
       lo = mid + 1n
     } else {
@@ -37,10 +54,16 @@ async function estimateHeightManual(chainId: number, timestamp: number) {
   return block.number
 }
 
+export async function estimateCreationBlock(chainId: number, contract: `0x${string}`) {
+  return cache.wrap(`estimateCreationBlock:${chainId}:${contract}`, async () => {
+    return await __estimateCreationBlock(chainId, contract)
+  })
+}
+
 // use bin search to estimate contract creat block
 // doesn't account for CREATE2 or SELFDESTRUCT
 // adapted from https://github.com/BobTheBuidler/ypricemagic/blob/5ba16b25302b47539b4e5a996554ba4c0a70e7c7/y/contracts.py#L68
-export async function estimateCreationBlock(chainId: number, contract: `0x${string}`) {
+async function __estimateCreationBlock(chainId: number, contract: `0x${string}`) {
   let counter = 0
   console.time()
   const height = await rpcs.next(chainId).getBlockNumber()
@@ -53,5 +76,5 @@ export async function estimateCreationBlock(chainId: number, contract: `0x${stri
   }
   console.log('💥', 'estimateCreationBlock', chainId, contract, counter, hi)
   console.timeEnd()
-  return await rpcs.next(chainId).getBlock({ blockNumber: hi })
+  return await getBlock(chainId, hi)
 }

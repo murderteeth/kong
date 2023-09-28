@@ -35,10 +35,9 @@ export class Monitor implements Processor {
     this.queues = [
       mq.queue(mq.q.poll),
       mq.queue(mq.q.compute),
-      mq.queue(mq.q.load.name),
+      mq.queue(mq.q.load),
       mq.queue(mq.q.block.load),
       mq.queue(mq.q.transfer.extract),
-      mq.queue(mq.q.tvl.load),
       mq.queue(mq.q.yearn.index),
       mq.queue(mq.q.yearn.registry.pointer),
       mq.queue(mq.q.yearn.registry.extract),

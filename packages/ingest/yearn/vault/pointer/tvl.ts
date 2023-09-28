@@ -36,8 +36,8 @@ export class CatchupTvl implements Processor {
 
     const latestTvlTimes = await getLatestTvlTimes(chainId)
     for(const tvlTime of latestTvlTimes) {
-      const { address, as_of_time } = tvlTime
-      const start = roundToNearestMinutes(Math.max(as_of_time || 0, defaultStart), periodMinutes)
+      const { address, blockTime } = tvlTime
+      const start = roundToNearestMinutes(Math.max(blockTime || 0, defaultStart), periodMinutes)
       const end = roundToNearestMinutes(new Date().getTime(), periodMinutes)
       for(let time = start; time < end; time += period) {
         await this.queue?.add(mq.q.yearn.vault.extractJobs.tvl, {
@@ -66,7 +66,7 @@ export async function getLatestTvlTimes(chainId: number) {
   const result = await db.query(`
     SELECT 
       v.address,
-      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.as_of_time))) * 1000 as as_of_time
+      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.block_time))) * 1000 as "blockTime"
     FROM vault v
     LEFT OUTER JOIN tvl
     ON v.chain_id = tvl.chain_id AND v.address = tvl.address
@@ -75,6 +75,6 @@ export async function getLatestTvlTimes(chainId: number) {
   `, [chainId])
   return result.rows as { 
     address: `0x${string}`, 
-    as_of_time: number | null
+    blockTime: number | null
   }[]
 }

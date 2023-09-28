@@ -7,7 +7,7 @@ export class LogsHandler implements Processor {
 
   async up() {
     this.queues[mq.q.yearn.vault.extract] = mq.queue(mq.q.yearn.vault.extract)
-    this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
+    this.queues[mq.q.load] = mq.queue(mq.q.load)
     this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
     this.queues[mq.q.transfer.extract] = mq.queue(mq.q.transfer.extract)
   }
@@ -66,7 +66,7 @@ export class LogsHandler implements Processor {
       })
 
       if(batch.length >= batchSize) {
-        await this.queues[mq.q.load.name].add(mq.q.load.jobs.harvest, { batch }, {
+        await this.queues[mq.q.load].add(mq.job.load.harvest, { batch }, {
           attempts: 3, backoff: { type: 'exponential', delay: 1000 }
         })
         batch.length = 0
@@ -74,7 +74,7 @@ export class LogsHandler implements Processor {
     }
 
     if(batch.length > 0) {
-      await this.queues[mq.q.load.name].add(mq.q.load.jobs.harvest, { batch }, {
+      await this.queues[mq.q.load].add(mq.job.load.harvest, { batch }, {
         attempts: 3, backoff: { type: 'exponential', delay: 1000 }
       })
     }
@@ -97,12 +97,12 @@ export class LogsHandler implements Processor {
 
       batch.push(transfer)
 
-      this.queues[mq.q.transfer.extract].add(mq.q.__noJobName, transfer, {
+      this.queues[mq.q.transfer.extract].add(mq.job.__noname, transfer, {
         jobId: `${transfer.chainId}-${transfer.blockNumber}-${transfer.blockIndex}`
       })
 
       if(batch.length >= batchSize) {
-        await this.queues[mq.q.load.name].add(mq.q.load.jobs.transfer, { batch }, {
+        await this.queues[mq.q.load].add(mq.job.load.transfer, { batch }, {
           attempts: 3, backoff: { type: 'exponential', delay: 1000 }
         })
         batch.length = 0
@@ -110,7 +110,7 @@ export class LogsHandler implements Processor {
     }
 
     if(batch.length > 0) {
-      await this.queues[mq.q.load.name].add(mq.q.load.jobs.transfer, { batch }, {
+      await this.queues[mq.q.load].add(mq.job.load.transfer, { batch }, {
         attempts: 3, backoff: { type: 'exponential', delay: 1000 }
       })
     }

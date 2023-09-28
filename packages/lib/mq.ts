@@ -5,39 +5,10 @@ const bull = { connection: {
   port: (process.env.REDIS_PORT || 6379) as number,
 }}
 
-export const job = {
-  poll: {
-    harvestApr: 'harvest-apr'
-  },
-
-  compute: {
-    harvestApr: 'harvest-apr'
-  },
-
-  load: {
-    erc20: 'erc20',
-    transfer: 'transfer',
-    harvest: 'harvest',
-    apr: 'apr'
-  }
-}
-
 export const q = {
-  __noJobName: '',
-
   poll: 'poll',
-
-  load: {
-    name: 'load',
-    jobs: { 
-      erc20: 'erc20',
-      transfer: 'transfer',
-      harvest: 'harvest',
-      apr: 'apr'
-    }
-  },
-
   compute: 'compute',
+  load: 'load', 
 
   transfer: {
     extract: 'transfer-extract'
@@ -46,10 +17,6 @@ export const q = {
   block: {
     poll: 'block-poll',
     load: 'block-load'
-  },
-
-  tvl: {
-    load: 'tvl-load'
   },
 
   yearn: {
@@ -91,6 +58,30 @@ export const q = {
       extractJobs: { logs: 'logs', state: 'state' },
       load: 'yearn-strategy-load',
       loadJobs: { strategy: 'strategy' }
+    }
+  }
+}
+
+export const job = {
+  __noname: '',
+
+  poll: {
+    harvestApr: 'harvest-apr'
+  },
+
+  compute: {
+    harvestApr: 'harvest-apr'
+  },
+
+  load: {
+    erc20: 'erc20',
+    transfer: 'transfer',
+    harvest: 'harvest',
+    apr: 'apr',
+    tvl: 'tvl',
+    sparkline: {
+      apr: 'sparkline-apr',
+      tvl: 'sparkline-tvl'
     }
   }
 }

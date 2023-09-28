@@ -14,7 +14,7 @@ export default class BlockWatcher implements Processor {
       this.watchers.push(rpc.watchBlocks({
         onBlock: async (block) => {
           console.log('👀', 'block', rpc.chain?.id, block.number)
-          await this.queue.add(mq.q.__noJobName, {
+          await this.queue.add(mq.job.__noname, {
             chainId: rpc.chain?.id,
             blockNumber: block.number.toString(),
             blockTimestamp: block.timestamp.toString(),

@@ -5,12 +5,13 @@ import { mq, types } from 'lib'
 import db from '../../../db'
 import { fetchErc20PriceUsd } from 'lib/prices'
 import { parseAbi } from 'viem'
+import { getBlock } from 'lib/blocks'
 
 export class HarvestExtractor implements Processor {
   queues: { [key: string]: Queue } = {}
 
   async up() {
-    this.queues[mq.q.load.name] = mq.queue(mq.q.load.name)
+    this.queues[mq.q.load] = mq.queue(mq.q.load)
   }
 
   async down() {
@@ -21,8 +22,7 @@ export class HarvestExtractor implements Processor {
     let harvest = job.data as types.Harvest
     console.log('⬇️ ', job.queueName, job.name, harvest.chainId, harvest.blockNumber, harvest.blockIndex, harvest.address)
 
-    const block = await rpcs.next(harvest.chainId).getBlock({ blockNumber: BigInt(harvest.blockNumber) })
-
+    const block = await getBlock(harvest.chainId, BigInt(harvest.blockNumber))
     const asset = await getAsset(harvest.chainId, harvest.address)
     if(!asset) { 
       console.warn('🚨', 'no asset', harvest.chainId, harvest.address)
@@ -44,7 +44,7 @@ export class HarvestExtractor implements Processor {
       blockTimestamp: block.timestamp.toString()
     }
 
-    await this.queues[mq.q.load.name].add(mq.q.load.jobs.harvest, { batch: [harvest] })
+    await this.queues[mq.q.load].add(mq.job.load.harvest, { batch: [harvest] })
   }
 }
 

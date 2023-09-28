@@ -1,3 +1,4 @@
+require('lib/json.monketpatch')
 import path from 'path'
 import dotenv from 'dotenv'
 import express from 'express'
@@ -6,6 +7,7 @@ import monitor from './monitor'
 import typeDefs from './typeDefs'
 import db from './db'
 import resolvers from './resolvers'
+import { cache } from 'lib'
 
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
@@ -20,6 +22,7 @@ const server = new ApolloServer({
 })
 
 Promise.all([
+  cache.up(),
   server.start(),
   monitor.up()
 ]).then(() => {
@@ -37,6 +40,7 @@ Promise.all([
 
 function down() {
   Promise.all([
+    cache.down(),
     monitor.down(),
     db.end()
   ]).then(() => {

@@ -4,13 +4,14 @@ import { Processor } from 'lib/processor'
 import { rpcs } from 'lib/rpcs'
 import { fetchErc20PriceUsd } from 'lib/prices'
 import { getErc20 } from '../db'
+import { getBlock } from 'lib/blocks'
 
 export default class TransferExtractor implements Processor {
   queue: Queue | undefined
   worker: Worker | undefined
 
   async up() {
-    this.queue = mq.queue(mq.q.load.name)
+    this.queue = mq.queue(mq.q.load)
     this.worker = mq.worker(mq.q.transfer.extract, async job => {
       const transfer = job.data as types.Transfer
 
@@ -22,11 +23,11 @@ export default class TransferExtractor implements Processor {
         BigInt(transfer.blockNumber)
       )
       const amountUsd =  tokens * price
-      const { timestamp } = await rpcs.next(transfer.chainId).getBlock({ blockNumber: BigInt(transfer.blockNumber) })
+      const { timestamp } = await getBlock(transfer.chainId, BigInt(transfer.blockNumber))
 
       transfer.amountUsd = amountUsd
       transfer.blockTimestamp = timestamp.toString()
-      await this.queue?.add(mq.q.load.jobs.transfer, { batch: [transfer] })
+      await this.queue?.add(mq.job.load.transfer, { batch: [transfer] })
     })
   }
 

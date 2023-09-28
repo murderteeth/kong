@@ -1,6 +1,7 @@
 import { arbitrum, base, fantom, mainnet, optimism } from 'viem/chains'
 import { parseAbi } from 'viem'
 import { rpcs } from './rpcs'
+import { cache } from './cache'
 
 export const lens = {
   [mainnet.id]: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030' as `0x${string}`,
@@ -11,6 +12,12 @@ export const lens = {
 }
 
 export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
+  return cache.wrap(`fetchErc20PriceUsd:${chainId}:${token}:${blockNumber}`, async () => {
+    return await __fetchErc20PriceUsd(chainId, token, blockNumber)
+  })
+}
+
+async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   let price = await fetchOraclePriceUsd(chainId, token, blockNumber)
   if(price !== 0) return { price, source: 'lens' }
 

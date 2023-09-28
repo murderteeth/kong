@@ -1,4 +1,5 @@
 export { chains } from './chains'
+export { cache } from './cache'
 export * as mq from './mq'
 export * as types from './types'
 export * as blocks from './blocks'
