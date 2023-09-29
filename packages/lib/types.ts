@@ -7,8 +7,8 @@ export interface LatestBlock {
 export interface APR {
   chainId: number
   address: string
-  grossApr: number
-  netApr: number
+  gross: number
+  net: number
   blockNumber: string
   blockTimestamp: string
 }

@@ -1,2 +1,4 @@
-import * as tvl from './tvl'
-export default { tvl: tvl.default }
+import apr from './apr'
+import tvl from './tvl'
+
+export default { tvl, apr }

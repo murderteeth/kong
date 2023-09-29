@@ -12,7 +12,7 @@ describe('loader sparkline tvl', function() {
 
   afterEach(async function() {
     await db.query(
-      `DELETE FROM sparkline WHERE chain_id = $1 and address = $2`, 
+      `DELETE FROM sparkline WHERE chain_id = $1 AND address = $2 AND type = 'vault-tvl-7d'`, 
       Object.values(this.data)
     )
   })
@@ -23,7 +23,7 @@ describe('loader sparkline tvl', function() {
     expect(result.length).to.equal(0)
   })
 
-  it('loads partial sparklines on partial data', withYvWethDb(async function(this: Mocha.Context) {
+  it('loads partial sparklines', withYvWethDb(async function(this: Mocha.Context) {
     const tvl = {
       chainId: mainnet.id,
       address: addresses.yvweth,

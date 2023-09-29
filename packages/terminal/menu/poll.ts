@@ -29,8 +29,8 @@ async function action() {
 
   if (confirm) {
     if(job === 'harvestApr') {
-      const queue = mq.queue(mq.q.poll)
-      await queue.add(mq.job.poll.harvestApr, {})
+      const queue = mq.queue(mq.q.fanout)
+      await queue.add(mq.job.fanout.harvestApr, {})
       await queue.close()
     }
   }

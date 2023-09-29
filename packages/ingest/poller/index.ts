@@ -9,9 +9,9 @@ export default class Poller implements Processor {
 
   async up() {
     await this.harvestApr.up()
-    this.worker = mq.worker(mq.q.poll, async job => {
+    this.worker = mq.worker(mq.q.fanout, async job => {
       console.log('💈', job.name)
-      if(job.name === mq.job.poll.harvestApr) {
+      if(job.name === mq.job.fanout.harvestApr) {
         await this.harvestApr?.do()
       }
     })

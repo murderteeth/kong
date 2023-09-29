@@ -22,8 +22,8 @@ export default class Computer implements Processor {
         await this.queue?.add(mq.job.load.apr, {
           chainId: chainId,
           address: address,
-          grossApr: apr.gross,
-          netApr: apr.net,
+          gross: apr.gross,
+          net: apr.net,
           blockNumber: apr.blockNumber.toString(),
           blockTimestamp: block.timestamp.toString()
         } as types.APR, {

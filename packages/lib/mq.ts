@@ -6,7 +6,7 @@ const bull = { connection: {
 }}
 
 export const q = {
-  poll: 'poll',
+  fanout: 'fanout',
   compute: 'compute',
   load: 'load', 
 
@@ -65,7 +65,7 @@ export const q = {
 export const job = {
   __noname: '',
 
-  poll: {
+  fanout: {
     harvestApr: 'harvest-apr'
   },
 

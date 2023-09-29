@@ -12,11 +12,15 @@ export default class Loader implements Processor {
     [mq.job.load.erc20]: data => upsert(data, 'erc20', 'chain_id, address'),
     [mq.job.load.harvest]: data => upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
     [mq.job.load.transfer]: data => upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
-    [mq.job.load.apr]: data => upsert(data, 'apr', 'chain_id, address, block_timestamp'),
+    [mq.job.load.apr]: data => Promise.all([
+      upsert(data, 'apr', 'chain_id, address, block_timestamp'),
+      this.queue?.add(mq.job.load.sparkline.apr, { chainId: data.chainId, address: data.address })
+    ]),
     [mq.job.load.tvl]: data => Promise.all([
       upsert(data, 'tvl', 'chain_id, address, block_time'),
       this.queue?.add(mq.job.load.sparkline.tvl, { chainId: data.chainId, address: data.address })
     ]),
+    [mq.job.load.sparkline.apr]: data => sparkline.apr(data),
     [mq.job.load.sparkline.tvl]: data => sparkline.tvl(data),
   }
 

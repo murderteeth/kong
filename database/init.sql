@@ -122,8 +122,8 @@ CREATE INDEX harvest_idx_chainid_address_blocknumber ON harvest (chain_id, addre
 CREATE TABLE apr (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
-	gross_apr numeric NOT NULL,
-	net_apr numeric NOT NULL,
+	gross numeric NOT NULL,
+	net numeric NOT NULL,
 	block_number int8 NOT NULL,
 	block_timestamp timestamptz NOT NULL,
 	CONSTRAINT apr_pkey PRIMARY KEY (chain_id, address, block_timestamp)
@@ -135,7 +135,7 @@ SELECT create_hypertable('apr', 'block_timestamp');
 CREATE TABLE sparkline (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
-	type text NOT NULL CHECK (type IN ('vault-tvl-7d', 'strategy-apr-harvest', 'vault-apy-7d')),
+	type text NOT NULL CHECK (type IN ('vault-tvl-7d', 'strategy-apr-7d', 'vault-apy-7d')),
 	value numeric NOT NULL,
 	time timestamptz NOT NULL,
 	CONSTRAINT sparkline_pkey PRIMARY KEY (chain_id, address, type, time)

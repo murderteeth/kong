@@ -18,17 +18,19 @@ export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, 
 }
 
 async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
-  let price = await fetchOraclePriceUsd(chainId, token, blockNumber)
+  let price = await fetchLensPriceUsd(chainId, token, blockNumber)
   if(price !== 0) return { price, source: 'lens' }
 
-  price = await fetchMagicPriceUsd(chainId, token, blockNumber)
-  if(price !== 0) return { price, source: 'magic' }
+  if(JSON.parse(process.env.YPRICE_ENABLED || 'false')) {
+    price = await fetchYPriceUsd(chainId, token, blockNumber)
+    if(price !== 0) return { price, source: 'yprice' }
+  }
 
   console.warn('🚨', 'no price', chainId, token, blockNumber)  
   return { price: 0, source: 'none' }
 }
 
-async function fetchMagicPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
+async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   if(!process.env.YPRICE_API) return 0
 
   try {
@@ -43,7 +45,7 @@ async function fetchMagicPriceUsd(chainId: number, token: `0x${string}`, blockNu
     return Number(await result.json())
 
   } catch(error) {
-    console.warn('🚨', 'magic price failed', chainId, token, blockNumber)
+    console.warn('🚨', 'yprice failed', chainId, token, blockNumber)
     console.warn()
     console.warn(error)
     console.warn()
@@ -51,7 +53,7 @@ async function fetchMagicPriceUsd(chainId: number, token: `0x${string}`, blockNu
   }
 }
 
-async function fetchOraclePriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
+async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   if(!(chainId in lens)) return 0
   try {
     const priceUSDC = await rpcs.next(chainId).readContract({
@@ -65,7 +67,7 @@ async function fetchOraclePriceUsd(chainId: number, token: `0x${string}`, blockN
     return Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000
 
   } catch(error) {
-    console.warn('🚨', 'no oracle price', chainId, token, blockNumber)
+    console.warn('🚨', 'no lens price', chainId, token, blockNumber)
     return 0
   }
 }

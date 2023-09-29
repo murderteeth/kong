@@ -7,11 +7,11 @@ WITH new_records AS (
   SELECT
     CAST($1 AS int4) AS chain_id,
     CAST($2 AS text) AS address,
-    'vault-tvl-7d' as type,
-    time_bucket('7 day', block_time) AS time,
-    LAST(tvl_usd, block_time) AS value
+    'strategy-apr-7d' as type,
+    time_bucket('7 day', block_timestamp) AS time,
+    LAST(net, block_timestamp) AS value
   FROM
-    tvl
+    apr
   WHERE
     chain_id = $1 AND address = $2
   GROUP BY
