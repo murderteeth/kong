@@ -101,3 +101,11 @@ export interface Harvest {
   blockTimestamp: string
   transactionHash: `0x${string}`
 }
+
+export interface SparklinePoint {
+  chainId: number
+  address: `0x${string}`
+  type: string
+  value: number
+  time: string
+}

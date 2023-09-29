@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { mainnet } from 'viem/chains'
 import { getAsset } from './harvest'
-import { addresses, useYvWethDb } from '../../../test.fixture'
+import { addresses, withYvWethDb } from '../../../test.fixture'
 
 describe('harvest', function() {
   it('gets asset for strategy via chain', async function() {
@@ -11,7 +11,7 @@ describe('harvest', function() {
     expect(asset?.source).to.equal('rpc')
   })
 
-  it('gets asset for strategy via db', useYvWethDb(async function() {
+  it('gets asset for strategy via db', withYvWethDb(async function() {
     const asset = await getAsset(mainnet.id, addresses.genericLevCompFarmWeth)
     expect(asset?.address).to.equal(addresses.weth)
     expect(asset?.decimals).to.equal(18)

@@ -1,10 +1,10 @@
 import { expect } from 'chai'
 import HarvestAprPoller from './harvestApr'
 import { mq } from 'lib'
-import { useYvWethDb } from '../test.fixture'
+import { withYvWethDb } from '../test.fixture'
 
 describe('harvest apr poller', function() {
-  it('finds harvests missing aprs', useYvWethDb(async function(this: Mocha.Context) {
+  it('finds harvests missing aprs', withYvWethDb(async function(this: Mocha.Context) {
     const q = mq.queue(mq.q.compute)
     const poller = new HarvestAprPoller()
     await poller.up()

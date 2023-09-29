@@ -2,21 +2,22 @@ import path from 'path'
 import dotenv from 'dotenv'
 import { rpcs } from 'lib/rpcs'
 import db, { toUpsertSql } from './db'
-import { types } from 'lib'
+import { cache, types } from 'lib'
 
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
 export const mochaGlobalSetup = async function() {
   await rpcs.up()
-  console.log('⬆', 'rpcs up')
+  await cache.up()
+  console.log('⬆', 'test fixture up')
 }
 
 export const mochaGlobalTeardown = async () => {
   await db.end()
-  console.log('⬇', 'db down')
+  await cache.down()
   await rpcs.down()
-  console.log('⬇', 'rpcs down')
+  console.log('⬇', 'test fixture down')
 }
 
 export const addresses = {
@@ -101,7 +102,7 @@ export const yvwethDb = {
   }
 }
 
-export function useYvWethDb(fn: (this: any) => Promise<void>) {
+export function withYvWethDb(fn: (this: any) => Promise<void>) {
   return async function(this: any) {
     try {
       await yvwethDb.up()

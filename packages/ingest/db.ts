@@ -1,4 +1,10 @@
-import { Pool } from 'pg'
+import { types } from 'lib'
+import { Pool, types as pgTypes } from 'pg'
+
+// tell pg to parse numeric as float
+// otherwise it returns numerics as strings
+// 1700 is pg's oid for NUMERIC
+pgTypes.setTypeParser(1700, 'text', parseFloat)
 
 const db = new Pool({
   host: process.env.POSTGRES_HOST || 'localhost',
@@ -62,15 +68,27 @@ export async function getErc20(chainId: number, address: string) {
   }
 }
 
-export function toUpsertSql(table: string, pk: string, update: any) {
-  const fields = Object.keys(update).map(key => 
+export async function getSparkline(chainId: number, address: string, type: string) {
+  const result = await db.query(`
+    SELECT
+      chain_id as "chainId", address, type, value,
+      FLOOR(EXTRACT(EPOCH FROM time)) AS time
+    FROM sparkline
+    WHERE chain_id = $1 AND address = $2 AND type = $3
+    ORDER BY time ASC
+  `, [chainId, address, type])
+  return result.rows as types.SparklinePoint[]
+}
+
+export function toUpsertSql(table: string, pk: string, data: any) {
+  const fields = Object.keys(data).map(key => 
     camelToSnake(key)
   ) as string[]
 
   const columns = fields.join(', ')
 
   const values = fields.map((field, index) => 
-    field.endsWith('_timestamp') 
+    (field.endsWith('timestamp') || field.endsWith('time')) 
     ? `to_timestamp($${index + 1}::double precision)`
     : `$${index + 1}`
   ).join(', ')
@@ -88,8 +106,8 @@ export function toUpsertSql(table: string, pk: string, update: any) {
   `
 }
 
-export function toUpsertIfAsOfSql(table: string, pk: string, update: any) {
-  const fields = Object.keys(update).map(key => 
+export function toUpsertIfAsOfSql(table: string, pk: string, data: any) {
+  const fields = Object.keys(data).map(key => 
     camelToSnake(key)
   ) as string[]
 
