@@ -76,6 +76,8 @@ export const job = {
   load: {
     erc20: 'erc20',
     transfer: 'transfer',
+    vault: 'vault',
+    strategy: 'strategy',
     harvest: 'harvest',
     apr: 'apr',
     tvl: 'tvl',
@@ -133,20 +135,13 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
 
 export function computeConcurrency(jobs: number) {
   const minConcurrency = 1
-  const maxConcurrency = 100
-  const lowerJobLimit = 20
+  const maxConcurrency = 400
   const upperJobLimit = 2000
-  const scalingFactor = 20
-  
-  let concurrency
+  const scalingFactor = 10
 
-  if (jobs < lowerJobLimit) {
-    concurrency = minConcurrency
-  } else if (jobs > upperJobLimit) {
-    concurrency = maxConcurrency
-  } else {
-    concurrency = Math.ceil(jobs / scalingFactor)
-  }
+  let concurrency = jobs > upperJobLimit
+  ? maxConcurrency
+  : Math.ceil(jobs / scalingFactor)
 
   return Math.min(Math.max(concurrency, minConcurrency), maxConcurrency)
 }

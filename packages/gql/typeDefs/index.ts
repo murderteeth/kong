@@ -3,6 +3,8 @@ import latestBlock from './latestBlock'
 import strategy from './strategy'
 import vault from './vault'
 import monitorResults from './monitorResults'
+import sparklineItem from './sparklineItem'
+import tvl from './tvl'
 
 const query = gql`
   scalar BigInt
@@ -19,6 +21,8 @@ const query = gql`
 export default [
   query, 
   latestBlock, 
+  sparklineItem,
+  tvl,
   strategy, 
   vault, 
   monitorResults

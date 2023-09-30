@@ -1,4 +1,4 @@
-import { mq } from 'lib'
+import { mq, types } from 'lib'
 import db, { toUpsertSql } from '../db'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
@@ -10,16 +10,34 @@ export default class Loader implements Processor {
 
   handlers: Record<string, (data: any, queue?: Queue) => Promise<any>> = {
     [mq.job.load.erc20]: data => upsert(data, 'erc20', 'chain_id, address'),
+    [mq.job.load.vault]: data => upsert(data, 'vault', 'chain_id, address'),
+    [mq.job.load.strategy]: data => upsert(data, 'strategy', 'chain_id, address'),
     [mq.job.load.harvest]: data => upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
     [mq.job.load.transfer]: data => upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
-    [mq.job.load.apr]: data => Promise.all([
+
+    [mq.job.load.apr]: (data: types.APR) => Promise.all([
       upsert(data, 'apr', 'chain_id, address, block_timestamp'),
+      this.queue?.add(mq.job.load.strategy, { 
+        chainId: data.chainId, 
+        address: data.address, 
+        grossApr: data.gross, 
+        netApr: data.net,
+        asOfBlockNumber: data.blockNumber
+      }),
       this.queue?.add(mq.job.load.sparkline.apr, { chainId: data.chainId, address: data.address })
     ]),
-    [mq.job.load.tvl]: data => Promise.all([
+
+    [mq.job.load.tvl]: (data: types.TVL) => Promise.all([
       upsert(data, 'tvl', 'chain_id, address, block_time'),
+      this.queue?.add(mq.job.load.vault, { 
+        chainId: data.chainId, 
+        address: data.address, 
+        tvlUsd: data.tvlUsd,
+        asOfBlockNumber: data.blockNumber
+      }),
       this.queue?.add(mq.job.load.sparkline.tvl, { chainId: data.chainId, address: data.address })
     ]),
+
     [mq.job.load.sparkline.apr]: data => sparkline.apr(data),
     [mq.job.load.sparkline.tvl]: data => sparkline.tvl(data),
   }

@@ -5,7 +5,7 @@ type Strategy {
   chainId: Int!
   address: String!
   apiVersion: String!
-  vaultAddress: String!    
+  vaultAddress: String!
   name: String
   activationTimestamp: String
   activationBlockNumber: String

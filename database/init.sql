@@ -32,6 +32,9 @@ CREATE TABLE vault (
 	total_assets numeric NULL,
 	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
+	tvl_usd numeric NULL,
+	gross_apy numeric NULL,
+	net_apy numeric NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT vault_pkey PRIMARY KEY (chain_id, address)
@@ -42,10 +45,12 @@ CREATE TABLE strategy (
 	address text NOT NULL,
 	api_version text NULL,
 	name text NULL,
-	vault_address text NOT NULL,
+	vault_address text NULL,
 	migrate_address text NULL,
 	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
+	gross_apr numeric NULL,
+	net_apr numeric NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT strategy_pkey PRIMARY KEY (chain_id, address)

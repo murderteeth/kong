@@ -1,15 +1,6 @@
 import { gql } from 'apollo-server-express'
 
 export default gql`
-type Tvl {
-  open: Float!
-  high: Float!
-  low: Float!
-  close: Float!
-  period: String!
-  time: String!
-}
-
 type Vault {
   chainId: Int!
   address: String!
@@ -26,9 +17,9 @@ type Vault {
   assetSymbol: String
   assetName: String
   withdrawalQueue: [Strategy]
+  tvlSparkline: [SparklineItem]
   activationTimestamp: String
   activationBlockNumber: String
   asOfBlockNumber: String
-  tvlSparkline: [Tvl]
 }
 `
