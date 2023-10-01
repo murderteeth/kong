@@ -7,6 +7,8 @@ type Strategy {
   apiVersion: String!
   vaultAddress: String!
   name: String
+  grossApr: Float
+  netApr: Float
   activationTimestamp: String
   activationBlockNumber: String
   asOfBlockNumber: String

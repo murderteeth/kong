@@ -17,6 +17,7 @@ type Vault {
   assetSymbol: String
   assetName: String
   withdrawalQueue: [Strategy]
+  tvlUsd: Float
   tvlSparkline: [SparklineItem]
   activationTimestamp: String
   activationBlockNumber: String

@@ -13,6 +13,8 @@ export default async (_: any, args: { chainId?: number }) => {
           'name', s.name,
           'apiVersion', s.api_version,
           'vaultAddress', v.address,
+          'grossApr', s.gross_apr,
+          'netApr', s.net_apr,
           'activationTimestamp', s.activation_timestamp,
           'activationBlockNumber', s.activation_block_number,
           'asOfBlockNumber', s.as_of_block_number,
@@ -63,6 +65,7 @@ export default async (_: any, args: { chainId?: number }) => {
       v.asset_symbol as "assetSymbol", 
       v.activation_timestamp as "activationTimestamp",
       v.activation_block_number as "activationBlockNumber",
+      v.tvl_usd as "tvlUsd",
       v.as_of_block_number as "asOfBlockNumber",
       withdrawal_queue_agg.results AS "withdrawalQueue",
       COALESCE(tvl_agg.results, '[]'::json) AS "tvlSparkline"

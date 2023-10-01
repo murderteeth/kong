@@ -10,10 +10,21 @@ interface LatestBlock {
 interface Vault {
   chainId: number
   address: string
+  name: string
   apiVersion: string
   apetaxType: string
   apetaxStatus: string
   registryStatus: string
+  tvlUsd: number
+  tvlSparkline: {
+    time: number
+    value: number
+  }[]
+  withdrawalQueue: {
+    name: string
+    address: string
+    netApr: number
+  }[]
 }
 
 interface MonitorResults {
@@ -55,10 +66,21 @@ const GRAPHQL_QUERY = `query Data {
   vaults {
     chainId
     address
+    name
     apetaxStatus
     apetaxType
     apiVersion
     registryStatus
+    tvlUsd
+    tvlSparkline {
+      value
+      time
+    }
+    withdrawalQueue {
+      name
+      address
+      netApr
+    }
   }
 
   monitor {
