@@ -3,14 +3,14 @@ import colors from 'tailwindcss/colors'
 import React, { ReactNode } from 'react'
 
 export default function Frosty(
-  { _key, disabled, children } :
-  { _key: string, disabled?: boolean, children: ReactNode }
+  { _key, disabled, className, children } :
+  { _key: string, disabled?: boolean, className?: string, children: ReactNode }
 ) {
   return <motion.div key={_key}
     transition={{ease: 'easeInOut', duration: .75}}
     initial={{color: colors.yellow[300]}}
     animate={{color: disabled ? colors.yellow[950] : colors.yellow[700]}}
-    className="whitepspace-pre">
+    className={className}>
       {children}
   </motion.div>
 }

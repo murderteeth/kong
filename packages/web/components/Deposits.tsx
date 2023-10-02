@@ -1,8 +1,60 @@
-import React, { ReactNode } from 'react'
-import Panel from './Panel'
+'use client'
 
-export default function Deposits() {
-  return <Panel>
-    <div className="font-bold text-lg">Deposit Flow</div>
+import React, { useMemo } from 'react'
+import Panel from './Panel'
+import { Transfer, useData } from '@/hooks/useData'
+import { zeroAddress } from 'viem'
+import { fEvmAddress, fUSD } from '@/util/format'
+import ReactTimeago from 'react-timeago'
+
+function TransferComponent({ transfer }: { transfer: Transfer }) {
+  if(!transfer) return null
+
+  const isDeposit = useMemo(() => transfer.sender === zeroAddress, [transfer])
+  const label = useMemo(() => isDeposit ? '[+] deposit' : '[-] withdrawal', [transfer])
+  const address = useMemo(() => isDeposit ? transfer.receiver : transfer.sender, [transfer])
+  const labelColor = useMemo(() => isDeposit ? 'text-green-500' : 'text-red-500', [transfer])
+  const amountColor = useMemo(() => isDeposit ? 'text-green-700' : 'text-red-700', [transfer])
+
+  return <div className="w-full flex flex-col items-center justify-between">
+    <div className="w-full flex items-center justify-between">
+      <div className={`text-xs ${labelColor}`}>{label}</div>
+      <div className={amountColor}>{fUSD(transfer.amountUsd || NaN, { fixed: 2 })}</div>
+    </div>
+    <div className="w-full flex items-center justify-between">
+      <div className={`text-xs ${labelColor}`}>{'chain'}</div>
+      <div className={`text-xs ${amountColor}`}>{transfer.chainId}</div>
+    </div>
+    <div className="w-full flex items-center justify-between">
+      <div className={`text-xs ${labelColor}`}>{'vault'}</div>
+      <div className={`text-xs ${amountColor}`}>{fEvmAddress(transfer.address)}</div>
+    </div>
+    <div className="w-full flex items-center justify-between">
+      <div className={`text-xs ${labelColor}`}>{'address'}</div>
+      <div className={`text-xs ${amountColor}`}>{fEvmAddress(address)}</div>
+    </div>
+    <div className="w-full flex items-center justify-between">
+      <div className={`text-xs ${labelColor}`}>{'tx hash'}</div>
+      <div className={`text-xs ${amountColor}`}>{fEvmAddress(transfer.transactionHash)}</div>
+    </div>
+    <div className="w-full flex items-center justify-between">
+      <div className={`text-xs ${labelColor}`}>{'time'}</div>
+      <div className={`text-xs ${amountColor}`}>
+        <ReactTimeago date={Number(transfer.blockTimestamp)} />
+      </div>
+    </div>
+  </div>
+}
+
+export default function Deposits({ className }: { className?: string }) {
+  const { transfers } = useData()
+
+  return <Panel className={`flex flex-col ${className}`}>
+    <div className="font-bold text-lg">Deposits x Withdrawals</div>
+    <div className="grow overflow-auto flex flex-col gap-2">
+      {transfers.map((transfer, index) => 
+        <TransferComponent key={index} transfer={transfer} />
+      )}
+    </div>
   </Panel>
 }
