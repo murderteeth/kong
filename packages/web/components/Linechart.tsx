@@ -93,7 +93,7 @@ export default function Linechart({ title, series }: { title?: string, series: n
         }]
       });
     }
-  }, [chart, series, setData])
+  }, [chart, series, title, setData])
 
   return <Line ref={chart} options={options} data={data} />
 }

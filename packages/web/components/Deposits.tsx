@@ -8,8 +8,6 @@ import { fEvmAddress, fUSD } from '@/util/format'
 import ReactTimeago from 'react-timeago'
 
 function TransferComponent({ transfer }: { transfer: Transfer }) {
-  if(!transfer) return null
-
   const isDeposit = useMemo(() => transfer.sender === zeroAddress, [transfer])
   const label = useMemo(() => isDeposit ? '[+] deposit' : '[-] withdrawal', [transfer])
   const address = useMemo(() => isDeposit ? transfer.receiver : transfer.sender, [transfer])
