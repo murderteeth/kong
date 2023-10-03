@@ -1,0 +1,56 @@
+
+crons:
+  - name: BlockPoller
+    queue: block-poll
+    schedule: "*/5 * * * * *" # every 5 seconds
+
+  - name: CatchupVaultBlockPointers
+    queue: yearn-vault-pointer
+    job: catchup-block
+    schedule: "*/5 * * * *" # every 5 minutes
+
+  - name: CatchupVaultTvlPointers
+    queue: yearn-vault-pointer
+    job: catchup-tvl
+    schedule: "*/5 * * * *" # every 5 minutes
+
+  - name: FanoutHarvestApr
+    queue: fanout
+    job: harvest-apr
+    schedule: "*/5 * * * *" # every 5 minutes
+
+processRecycleMs: 600_000 # 10 minutes
+
+processorPools:
+  # - type: BlockWatcher
+  #   size: 2
+  - type: BlockPoller
+    size: 2
+  - type: BlockLoader
+    size: 2
+  - type: TransferExtractor
+    size: 2
+  - type: YearnIndexer
+    size: 2
+  # - type: YearnRegistryWatcher
+  #   size: 2
+  - type: YearnRegistryBlockPointer
+    size: 2
+  - type: YearnRegistryExtractor
+    size: 2
+  - type: YearnVaultPointer
+    size: 2
+  - type: YearnVaultExtractor
+    size: 2
+  - type: YearnVaultLoader
+    size: 2
+  - type: YearnStrategyExtractor
+    size: 2
+  - type: YearnStrategyLoader
+    size: 2
+  - type: Poller
+    size: 2
+  - type: Computer
+    size: 2
+  - type: Loader
+    size: 2

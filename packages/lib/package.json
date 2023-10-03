@@ -1,0 +1,27 @@
+{
+  "name": "lib",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "pretest": "docker compose up -d redis && docker compose up -d postgres && wait-on tcp:localhost:6379 && wait-on tcp:localhost:5432",
+    "test": "mocha; exit_code=$?; npm run posttest; exit $exit_code",
+    "posttest": "docker compose down"
+  },
+  "dependencies": {
+    "bullmq": "^4.7.3",
+    "cache-manager": "^5.2.3",
+    "cache-manager-redis-yet": "^4.1.2",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.3.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6",
+    "viem": "1.6.3"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.8",
+    "mocha": "^10.2.0"
+  }
+}

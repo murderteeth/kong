@@ -3,11 +3,12 @@ version: '3.1'
 services:
   redis:
     image: redis:latest
+    command: ["redis-server", "--maxclients", "250", "--maxmemory", "256mb"]
     ports:
       - "6379:6379"
 
   postgres:
-    image: postgres:latest
+    image: timescale/timescaledb-ha:pg14-latest
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -32,8 +33,11 @@ services:
 
   gql:
     depends_on:
+      - redis
       - postgres
     environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: user

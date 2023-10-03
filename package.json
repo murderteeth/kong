@@ -5,11 +5,5 @@
   "author": "murderteeth <murdertxxth@gmail.com>",
   "license": "MIT",
   "private": true,
-  "workspaces": [
-    "gql",
-    "ingest",
-    "lib",
-    "web",
-    "terminal"
-  ]
+  "workspaces": [ "packages/*" ]
 }
