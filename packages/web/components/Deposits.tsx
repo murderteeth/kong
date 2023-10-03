@@ -9,10 +9,10 @@ import ReactTimeago from 'react-timeago'
 
 function TransferComponent({ transfer }: { transfer: Transfer }) {
   const isDeposit = useMemo(() => transfer.sender === zeroAddress, [transfer])
-  const label = useMemo(() => isDeposit ? '[+] deposit' : '[-] withdrawal', [isDeposit, transfer])
+  const label = useMemo(() => isDeposit ? '[+] deposit' : '[-] withdrawal', [isDeposit])
   const address = useMemo(() => isDeposit ? transfer.receiver : transfer.sender, [isDeposit, transfer])
-  const labelColor = useMemo(() => isDeposit ? 'text-green-500' : 'text-red-500', [isDeposit, transfer])
-  const amountColor = useMemo(() => isDeposit ? 'text-green-700' : 'text-red-700', [isDeposit, transfer])
+  const labelColor = useMemo(() => isDeposit ? 'text-green-500' : 'text-red-500', [isDeposit])
+  const amountColor = useMemo(() => isDeposit ? 'text-green-700' : 'text-red-700', [isDeposit])
 
   return <div className="w-full flex flex-col items-center justify-between">
     <div className="w-full flex items-center justify-between">
