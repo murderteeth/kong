@@ -3,7 +3,7 @@ previewsEnabled: true
 databases:
   - name: postgres
     region: ohio
-    plan: starter
+    plan: standard
     ipAllowList: []
 
 services:
