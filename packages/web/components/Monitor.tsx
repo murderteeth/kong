@@ -49,9 +49,9 @@ export default function Monitor() {
         <div className="whitespace-nowrap">clients</div>
         <AsciiMeter
           current={monitor.redis.clients}
-          max={1_000}
-          label={`${monitor.redis.clients} / 1000`} />
-      </div> 
+          max={250}
+          label={`${monitor.redis.clients} / 250`} />
+      </div>
     </div>
 
     <div className="font-bold text-lg mt-4">Postgres</div>

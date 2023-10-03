@@ -16,11 +16,21 @@ export class CatchupBlockPointer implements Processor {
   }
 
   async catchup(job: any) {
+    const { chainId } = job.data
+    if(chainId) {
+      await this.catchupChain(chainId)
+    } else {
+      const chainIds = [1, 250, 137, 56, 43114]
+      for(const chainId of chainIds) {
+        await this.catchupChain(chainId)
+      }
+    }
+  }
+
+  private async catchupChain(chainId: number) {
     if(!this.queue) throw new Error('!queue')
 
-    const { chainId } = job.data
     const latestBlock = await getLatestBlock(chainId)
-    if(!latestBlock) throw new Error(`no latest block for chain ${chainId}`)
 
     const pointers = await getVaultBlockPointers(chainId)
     for(const pointer of pointers) {
@@ -34,7 +44,7 @@ export class CatchupBlockPointer implements Processor {
       })
 
       await saveBlockPointer(chainId, pointer.address, latestBlock)
-    }  
+    }
   }
 }
 

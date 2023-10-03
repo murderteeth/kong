@@ -91,7 +91,7 @@ export class Monitor implements Processor {
       uptime: +redisInfo.uptime_in_seconds,
       clients: +redisInfo.connected_clients,
       memory: {
-        total: +redisInfo.total_system_memory || +redisInfo.maxmemory,
+        total: +redisInfo.maxmemory,
         used: +redisInfo.used_memory,
         peak: +redisInfo.used_memory_peak,
         fragmentation: +redisInfo.mem_fragmentation_ratio

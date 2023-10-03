@@ -4,10 +4,20 @@ crons:
     queue: block-poll
     schedule: "*/5 * * * * *" # every 5 seconds
 
-  # - name: YearnVaultTvlCatchup
-  #   queue: yearn-vault-pointer
-  #   job: tvl-catchup
-  #   schedule: "*/5 * * * *" # every 5 minutes
+  - name: CatchupVaultBlockPointers
+    queue: yearn-vault-pointer
+    job: catchup-block
+    schedule: "*/5 * * * *" # every 5 minutes
+
+  - name: CatchupVaultTvlPointers
+    queue: yearn-vault-pointer
+    job: catchup-tvl
+    schedule: "*/5 * * * *" # every 5 minutes
+
+  - name: FanoutHarvestApr
+    queue: fanout
+    job: harvest-apr
+    schedule: "*/5 * * * *" # every 5 minutes
 
 processRecycleMs: 600_000 # 10 minutes
 

@@ -14,9 +14,9 @@ export default function AsciiMeter(
   }, [current, max])
 
   return <div className={'relative flex items-center'}>
-    <span className={'absolute right-1 text-xs text-yellow-600'}>{label}</span>
+    <span className={'absolute right-1 text-xs text-yellow-800'}>{label}</span>
     <span className={'text-[10px] text-yellow-300'}>
-      {Array(currentScaled).fill('▓').join('')}
+      {Array(currentScaled).fill('▒').join('')}
     </span>
     <span className={'text-[10px] text-yellow-800'}>
       {Array(scale - currentScaled).fill('░').join('')}

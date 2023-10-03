@@ -25,6 +25,7 @@ FROM
   harvest
 WHERE
   (chain_id = $1 OR $1 IS NULL) AND (address = $2 OR $2 IS NULL)
+  AND block_timestamp IS NOT NULL
 ORDER BY
   chain_id, block_timestamp DESC, block_index DESC
 LIMIT 100;

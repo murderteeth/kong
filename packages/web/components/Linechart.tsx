@@ -59,7 +59,7 @@ export default function Linechart({ title, series }: { title?: string, series: n
         ticks: {
           color: colors.yellow[700],
           callback: (value: number) => {
-            return fUSD(value, { hideUsd: true })
+            return fUSD(value, { fixed: 0, hideUsd: true })
           }
         }
       }

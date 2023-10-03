@@ -8,7 +8,7 @@ export function fEvmAddress(address: string) {
 }
 
 export function fUSD(amount: number, options?: { fixed?: number, hideUsd?: boolean }) {
-  const fixed = options?.fixed || 2
+  const fixed = Number.isInteger(options?.fixed) ? options?.fixed : 2
   let result = ''
   if(!Number.isFinite(amount)) result = 'NaN'
   else if (amount < 1000) result = amount.toFixed(fixed)

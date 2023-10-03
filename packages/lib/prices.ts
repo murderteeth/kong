@@ -14,7 +14,7 @@ export const lens = {
 export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   return cache.wrap(`fetchErc20PriceUsd:${chainId}:${token}:${blockNumber}`, async () => {
     return await __fetchErc20PriceUsd(chainId, token, blockNumber)
-  })
+  }, 5_000)
 }
 
 async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
