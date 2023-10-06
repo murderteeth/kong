@@ -6,6 +6,7 @@ import tvls from './tvls'
 import harvests from './harvests'
 import transfers from './transfers'
 import monitor from './monitor'
+import fail from './fail'
 
 export default {
   Query: {
@@ -16,6 +17,7 @@ export default {
     tvls,
     harvests,
     transfers,
-    monitor
+    monitor,
+    fail
   }
 }

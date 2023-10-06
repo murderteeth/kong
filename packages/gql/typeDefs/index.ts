@@ -7,6 +7,7 @@ import sparklineItem from './sparklineItem'
 import tvl from './tvl'
 import transfer from './transfer'
 import harvest from './harvest'
+import fail from './fail'
 
 const query = gql`
   scalar BigInt
@@ -19,7 +20,8 @@ const query = gql`
     tvls(chainId: Int!, address: String!): [Tvl],
     harvests(chainId: Int, address: String): [Harvest],
     transfers(chainId: Int, address: String): [Transfer],
-    monitor: MonitorResults
+    monitor: MonitorResults,
+    fail(queueName: String!): [Fail]
   }
 `
 
@@ -32,5 +34,6 @@ export default [
   vault, 
   monitorResults,
   harvest,
-  transfer
+  transfer,
+  fail
 ]

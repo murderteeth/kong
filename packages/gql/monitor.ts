@@ -33,14 +33,12 @@ export class Monitor implements Processor {
 
   async up() {
     this.queues = [
+      mq.queue(mq.q.poll),
       mq.queue(mq.q.fanout),
+      mq.queue(mq.q.extract),
       mq.queue(mq.q.compute),
       mq.queue(mq.q.load),
-      mq.queue(mq.q.block.load),
       mq.queue(mq.q.transfer.extract),
-      mq.queue(mq.q.yearn.index),
-      mq.queue(mq.q.yearn.registry.pointer),
-      mq.queue(mq.q.yearn.registry.extract),
       mq.queue(mq.q.yearn.vault.pointer),
       mq.queue(mq.q.yearn.vault.extract),
       mq.queue(mq.q.yearn.vault.load),
@@ -64,6 +62,10 @@ export class Monitor implements Processor {
 
   get latest() {
     return this._latest
+  }
+
+  async failed(queueName: string) {
+    return (await this.queues.find(q => q.name === queueName)?.getJobs('failed')) || []
   }
 
   private async getLatest() {

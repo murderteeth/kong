@@ -6,7 +6,9 @@ const bull = { connection: {
 }}
 
 export const q = {
+  poll: 'poll',
   fanout: 'fanout',
+  extract: 'extract',
   compute: 'compute',
   load: 'load', 
 
@@ -14,24 +16,7 @@ export const q = {
     extract: 'transfer-extract'
   },
 
-  block: {
-    poll: 'block-poll',
-    load: 'block-load'
-  },
-
   yearn: {
-    index: 'yearn-index',
-    indexJobs: { registry: 'registry', vault: 'vault' }, 
-
-    registry: {
-      pointer: 'yearn-registry-pointer',
-      pointerJobs: { catchup: {
-        block: 'block-catchup'
-      } },
-      extract: 'yearn-registry-extract',
-      extractJobs: { logs: 'logs', apetax: 'apetax' },
-    }, 
-
     vault: {
       pointer: 'yearn-vault-pointer',
       pointerJobs: { catchup: {
@@ -65,8 +50,18 @@ export const q = {
 export const job = {
   __noname: '',
 
+  poll: {
+    block: 'block'
+  },
+
   fanout: {
-    harvestApr: 'harvest-apr'
+    harvestApr: 'harvest-apr',
+    registry: 'registry'
+  },
+
+  extract: {
+    evmlogs: 'evmlogs',
+    apetax: 'apetax',
   },
 
   compute: {
@@ -74,6 +69,7 @@ export const job = {
   },
 
   load: {
+    block: 'block',
     erc20: 'erc20',
     transfer: 'transfer',
     vault: 'vault',

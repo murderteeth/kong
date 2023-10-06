@@ -39,7 +39,7 @@ export async function getBlockPointer(chainId: number, address: `0x${string}`) {
   return BigInt(result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function saveBlockPointer(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+export async function setBlockPointer(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   await db.query(`
     INSERT INTO public.block_pointer (chain_id, address, block_number)
     VALUES ($1, $2, $3)
@@ -80,7 +80,7 @@ export async function getSparkline(chainId: number, address: string, type: strin
   return result.rows as types.SparklinePoint[]
 }
 
-export function toUpsertSql(table: string, pk: string, data: any) {
+export function toUpsertSql(table: string, pk: string, data: any, where?: string) {
   const fields = Object.keys(data).map(key => 
     camelToSnake(key)
   ) as string[]
@@ -102,7 +102,8 @@ export function toUpsertSql(table: string, pk: string, data: any) {
     VALUES (${values})
     ON CONFLICT (${pk})
     DO UPDATE SET 
-      ${updates};
+      ${updates}
+    ${where || ''};
   `
 }
 

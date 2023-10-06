@@ -31,7 +31,7 @@ export default function Monitor() {
           <span dangerouslySetInnerHTML={{ __html: `a ${formatNumber(queue.active)}` }} />
         </Frosty>
         <Frosty _key={`${queue.name}-f-${formatNumber(queue.failed)}`} disabled={queue.failed < 1}>
-          <span dangerouslySetInnerHTML={{ __html: `f ${formatNumber(queue.failed)}` }} />
+          <span dangerouslySetInnerHTML={{ __html: `e ${formatNumber(queue.failed)}` }} />
         </Frosty>
       </div>
     </div>)}

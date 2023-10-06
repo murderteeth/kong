@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq'
-import db, { getLatestBlock, saveBlockPointer } from '../../../db'
+import db, { getLatestBlock, setBlockPointer } from '../../../db'
 import { indexLogs } from '../indexLogs'
 import { Processor } from 'lib/processor'
 import { mq } from 'lib'
@@ -43,7 +43,7 @@ export class CatchupBlockPointer implements Processor {
         chainId, address: pointer.address, from, to: latestBlock
       })
 
-      await saveBlockPointer(chainId, pointer.address, latestBlock)
+      await setBlockPointer(chainId, pointer.address, latestBlock)
     }
   }
 }

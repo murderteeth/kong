@@ -33,10 +33,6 @@ type RedisInfo {
 type DbInfo {
   clients: Int!
   databaseSize: BigInt!
-  vaultTableSize: BigInt!
-  strategyTableSize: BigInt!
-  tvlTableSize: BigInt!
-  transferTableSize: BigInt!
   indexHitRate: Float!
   cacheHitRate: Float!
 }

@@ -3,7 +3,7 @@ import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import db from '../db'
 
-export default class HarvestAprPoller implements Processor {
+export default class HarvestAprFanout implements Processor {
   queues: { [key: string]: Queue } = {}
 
   async up() {

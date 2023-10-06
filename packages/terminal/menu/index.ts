@@ -1,10 +1,10 @@
 import prompts from 'prompts'
-import registriesPrompt from './registries'
 import pollPrompt from './poll'
 import vaultsPrompt from './vaults'
-import indexPrompt from './_index'
 import extractPrompt from './extract'
 import quitPrompt from './quit'
+import toolsPrompt from './tools'
+import fanoutPrompt from './fanout'
 
 export interface MenuAction {
   action: () => Promise<void>,
@@ -12,12 +12,12 @@ export interface MenuAction {
 }
 
 const actions = [
+  fanoutPrompt,
   pollPrompt,
-  registriesPrompt,
   vaultsPrompt,
-  indexPrompt,
   extractPrompt,
-  quitPrompt,
+  toolsPrompt,
+  quitPrompt
 ] as MenuAction[]
 
 export async function menuPrompt() {

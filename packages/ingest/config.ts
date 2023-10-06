@@ -11,10 +11,8 @@ export interface YamlConfig {
 
   processRecycleMs: number
 
-  processorPools: {
-    type: string
-    size: number
-    concurrency?: number
+  processors: {
+    name: string
   }[]
 }
 

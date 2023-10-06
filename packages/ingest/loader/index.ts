@@ -9,13 +9,22 @@ export default class Loader implements Processor {
   queue?: Queue
 
   handlers: Record<string, (data: any, queue?: Queue) => Promise<any>> = {
-    [mq.job.load.erc20]: data => upsert(data, 'erc20', 'chain_id, address'),
-    [mq.job.load.vault]: data => upsert(data, 'vault', 'chain_id, address'),
-    [mq.job.load.strategy]: data => upsert(data, 'strategy', 'chain_id, address'),
-    [mq.job.load.harvest]: data => upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
-    [mq.job.load.transfer]: data => upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
+    [mq.job.load.block]: async data => {
+      await db.query(
+        `${toUpsertSql(
+          'latest_block', 'chain_id', data, 
+          'WHERE latest_block.block_number < EXCLUDED.block_number')}`,
+        Object.values(data)
+      )
+    },
 
-    [mq.job.load.apr]: (data: types.APR) => Promise.all([
+    [mq.job.load.erc20]: async data => await upsert(data, 'erc20', 'chain_id, address'),
+    [mq.job.load.vault]: async data => await upsert(data, 'vault', 'chain_id, address'),
+    [mq.job.load.strategy]: async data => await upsert(data, 'strategy', 'chain_id, address'),
+    [mq.job.load.harvest]: async data => await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
+    [mq.job.load.transfer]: async data => await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
+
+    [mq.job.load.apr]: async (data: types.APR) => await Promise.all([
       upsert(data, 'apr', 'chain_id, address, block_timestamp'),
       this.queue?.add(mq.job.load.strategy, { 
         chainId: data.chainId, 
@@ -27,7 +36,7 @@ export default class Loader implements Processor {
       this.queue?.add(mq.job.load.sparkline.apr, { chainId: data.chainId, address: data.address })
     ]),
 
-    [mq.job.load.tvl]: (data: types.TVL) => Promise.all([
+    [mq.job.load.tvl]: async (data: types.TVL) => await Promise.all([
       upsert(data, 'tvl', 'chain_id, address, block_time'),
       this.queue?.add(mq.job.load.vault, { 
         chainId: data.chainId, 
@@ -38,8 +47,8 @@ export default class Loader implements Processor {
       this.queue?.add(mq.job.load.sparkline.tvl, { chainId: data.chainId, address: data.address })
     ]),
 
-    [mq.job.load.sparkline.apr]: data => sparkline.apr(data),
-    [mq.job.load.sparkline.tvl]: data => sparkline.tvl(data),
+    [mq.job.load.sparkline.apr]: async data => await sparkline.apr(data),
+    [mq.job.load.sparkline.tvl]: async data => await sparkline.tvl(data),
   }
 
   async up() {

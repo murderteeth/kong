@@ -1,3 +1,4 @@
+import DataProvider from '@/hooks/useData'
 import './globals.css'
 import type { Metadata } from 'next'
 import { JetBrains_Mono } from 'next/font/google'
@@ -16,7 +17,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={font.className}>{children}</body>
+      <body className={font.className}>
+        <DataProvider>
+          {children}
+        </DataProvider>
+      </body>
     </html>
   )
 }

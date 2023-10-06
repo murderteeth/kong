@@ -6,10 +6,6 @@ export default async () => {
     const query = `
       SELECT 'databaseSize' as property, pg_database_size($1) as value
       UNION SELECT 'clients', count(*) FROM pg_stat_activity
-      UNION SELECT 'vaultTableSize', pg_total_relation_size('vault')
-      UNION SELECT 'strategyTableSize', pg_total_relation_size('strategy')
-      UNION SELECT 'tvlTableSize', hypertable_size('tvl')
-      UNION SELECT 'transferTableSize',  pg_total_relation_size('transfer')
       UNION SELECT 
         'cacheHitRate',
         ROUND(SUM(heap_blks_hit) / (SUM(heap_blks_hit) + SUM(heap_blks_read)), 4) AS value

@@ -10,11 +10,11 @@ import db from './db'
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
-const processors = config.processorPools.filter(p => p.size > 0).map(p => {
-  const path = `./${toCamelPath(p.type)}`
+const processors = config.processors.map(p => {
+  const path = `./${toCamelPath(p.name)}`
   const ProcessorClass = require(path).default
-  console.log('⬆', 'processor up', p.size, `(${p.concurrency || 1})`, path)
-  return new ProcessorPool(ProcessorClass, p.size, config.processRecycleMs)
+  console.log('⬆', 'processor up', path)
+  return new ProcessorPool(ProcessorClass, 2, config.processRecycleMs)
 }) as Processor[]
 
 const crons = config.crons.map(cron => new Promise((resolve, reject) => {
@@ -26,8 +26,6 @@ const crons = config.crons.map(cron => new Promise((resolve, reject) => {
     queue.close().then(resolve).catch(reject)
   })
 }))
-
-up()
 
 function up() {
   rpcs.up()
@@ -60,5 +58,6 @@ function down() {
   })
 }
 
+up()
 process.on('SIGINT', down)
 process.on('SIGTERM', down)

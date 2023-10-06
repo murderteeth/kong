@@ -43,8 +43,8 @@ async function action() {
       }
 
       case 'apetax': {
-        const queue = mq.queue(mq.q.yearn.registry.extract)
-        await queue.add(mq.q.yearn.registry.extractJobs.apetax, {})
+        const queue = mq.queue(mq.q.extract)
+        await queue.add(mq.job.extract.apetax, {})
         await queue.close()
         break
       }

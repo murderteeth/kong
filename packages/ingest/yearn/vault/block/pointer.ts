@@ -1,7 +1,7 @@
 import { Queue, Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from 'lib/processor'
-import db, { getLatestBlock, saveBlockPointer } from '../../../db'
+import db, { getLatestBlock, setBlockPointer } from '../../../db'
 import { indexLogs } from '../indexLogs'
 
 export default class YearnVaultBlockPointer implements Processor {
@@ -30,7 +30,7 @@ export default class YearnVaultBlockPointer implements Processor {
               chainId, address: pointer.address, from, to: latestBlock
             })
 
-            await saveBlockPointer(chainId, pointer.address, latestBlock)
+            await setBlockPointer(chainId, pointer.address, latestBlock)
           }
 
           break

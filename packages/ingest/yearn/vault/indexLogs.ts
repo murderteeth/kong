@@ -13,7 +13,7 @@ export async function indexLogs(queue: Queue,
   if(!from) throw new Error(`no activation block for ${chainId} ${address}`)
 
   const to = options.to || await getLatestBlock(chainId)
-  const stride = 100_000n
+  const stride = BigInt(process.env.LOG_STRIDE || 100_000)
   const throttle = 16
 
   console.log('🗂️ ', 'index vault logs', chainId, address, from, to)
