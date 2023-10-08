@@ -5,7 +5,7 @@ export interface YamlConfig {
   crons: {
     name: string
     queue: string
-    job?: string
+    job: string
     schedule: string
   }[]
 

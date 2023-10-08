@@ -7,6 +7,7 @@ import { TvlExtractor } from './tvl'
 import { VaultExtractor } from './vault'
 import { HarvestExtractor } from './harvest'
 import { StrategyExtractor } from './strategy'
+import { TransferExtractor } from './transfer'
 
 export default class Extract implements Processor {
   worker: Worker | undefined
@@ -17,7 +18,8 @@ export default class Extract implements Processor {
     [mq.job.extract.strategy]: new StrategyExtractor(),
     [mq.job.extract.harvest]: new HarvestExtractor(),
     [mq.job.extract.tvl]: new TvlExtractor(),
-    [mq.job.extract.apetax]: new ApetaxExtractor()
+    [mq.job.extract.apetax]: new ApetaxExtractor(),
+    [mq.job.extract.transfer]: new TransferExtractor()
   }
 
   async up() {

@@ -37,8 +37,7 @@ export class Monitor implements Processor {
       mq.queue(mq.q.fanout),
       mq.queue(mq.q.extract),
       mq.queue(mq.q.compute),
-      mq.queue(mq.q.load),
-      mq.queue(mq.q.transfer.extract)
+      mq.queue(mq.q.load)
     ]
 
     this.redisClient = await this.queues[0].client

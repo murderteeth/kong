@@ -1,5 +1,15 @@
 import { Queue, QueueOptions, Worker } from 'bullmq'
 
+// https://github.com/taskforcesh/bullmq/blob/a01bb0b0345509cde6c74843323de6b67729f310/docs/gitbook/guide/jobs/prioritized.md
+// -= job priority in bullmq =-
+// no priority set = highest (default)
+// 1 = next highest
+// 2 ** 21 = lowest
+// adding prioritized jobs to a queue goes like O(log(n))
+// where n is the number of prioritized jobs in the queue
+// (ie, total jobs - non-prioritized jobs)
+export const LOWEST_PRIORITY = 2 ** 21
+
 const bull = { connection: {
   host: process.env.REDIS_HOST || 'localhost',
   port: (process.env.REDIS_PORT || 6379) as number,
@@ -10,15 +20,10 @@ export const q = {
   fanout: 'fanout',
   extract: 'extract',
   compute: 'compute',
-  load: 'load',
-  transfer: {
-    extract: 'transfer-extract'
-  }
+  load: 'load'
 }
 
 export const job = {
-  __noname: '',
-
   poll: {
     block: 'block'
   },
@@ -37,7 +42,8 @@ export const job = {
     vault: 'vault',
     strategy: 'strategy',
     harvest: 'harvest',
-    tvl: 'tvl',
+    transfer: 'transfer',
+    tvl: 'tvl'
   },
 
   compute: {

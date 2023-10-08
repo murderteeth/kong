@@ -4,7 +4,7 @@ import { rpcs } from './rpcs'
 export async function getBlock(chainId: number, blockNumber: bigint) {
   return cache.wrap(`getBlock:${chainId}:${blockNumber}`, async () => {
     return await __getBlock(chainId, blockNumber)
-  }, 5_000)
+  }, 10_000)
 }
 
 async function __getBlock(chainId: number, blockNumber: bigint) {
@@ -14,7 +14,7 @@ async function __getBlock(chainId: number, blockNumber: bigint) {
 export async function estimateHeight(chainId: number, timestamp: number) {
   return cache.wrap(`estimateHeight:${chainId}:${timestamp}`, async () => {
     return await __estimateHeight(chainId, timestamp)
-  }, 5_000)
+  }, 10_000)
 }
 
 async function __estimateHeight(chainId: number, timestamp: number) {
@@ -57,7 +57,7 @@ async function estimateHeightManual(chainId: number, timestamp: number) {
 export async function estimateCreationBlock(chainId: number, contract: `0x${string}`) {
   return cache.wrap(`estimateCreationBlock:${chainId}:${contract}`, async () => {
     return await __estimateCreationBlock(chainId, contract)
-  })
+  }, 10_000)
 }
 
 // use bin search to estimate contract creat block

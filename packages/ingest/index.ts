@@ -19,7 +19,7 @@ const processors = config.processors.map(p => {
 
 const crons = config.crons.map(cron => new Promise((resolve, reject) => {
   const queue = mq.queue(cron.queue)
-  queue.add(cron.job || mq.job.__noname, {}, {
+  queue.add(cron.job, {}, {
     repeat: { pattern: cron.schedule }
   }).then(() => {
     console.log('⬆', 'cron up', cron.name)

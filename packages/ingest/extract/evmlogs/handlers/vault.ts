@@ -8,7 +8,6 @@ export class VaultHandler implements Handler {
   async up() {
     this.queues[mq.q.extract] = mq.queue(mq.q.extract)
     this.queues[mq.q.load] = mq.queue(mq.q.load)
-    this.queues[mq.q.transfer.extract] = mq.queue(mq.q.transfer.extract)
   }
 
   async down() {
@@ -96,8 +95,9 @@ export class VaultHandler implements Handler {
 
       batch.push(transfer)
 
-      this.queues[mq.q.transfer.extract].add(mq.job.__noname, transfer, {
-        jobId: `${transfer.chainId}-${transfer.blockNumber}-${transfer.blockIndex}`
+      this.queues[mq.q.extract].add(mq.job.extract.transfer, transfer, {
+        jobId: `${transfer.chainId}-${transfer.blockNumber}-${transfer.blockIndex}`,
+        priority: mq.LOWEST_PRIORITY
       })
 
       if(batch.length >= batchSize) {

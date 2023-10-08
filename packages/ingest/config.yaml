@@ -40,5 +40,3 @@ processors:
   - name: Extract
   - name: Compute
   - name: Loader
-
-  - name: TransferExtractor

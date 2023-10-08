@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { addresses, withYvWethDb, yvwethDb } from '../test.fixture'
+import { addresses, withYvWethDb } from '../test.fixture'
 import { compute } from './harvestApr'
 import { mainnet } from 'viem/chains'
 
