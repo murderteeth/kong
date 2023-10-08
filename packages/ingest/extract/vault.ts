@@ -14,7 +14,7 @@ export class VaultExtractor implements Processor {
 
   async up() {
     this.queues[mq.q.load] = mq.queue(mq.q.load)
-    this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
+    this.queues[mq.q.extract] = mq.queue(mq.q.extract)
   }
 
   async down() {
@@ -70,8 +70,8 @@ export class VaultExtractor implements Processor {
 
     for(const strategy of withdrawalQueue) {
       if(!strategy || strategy === zeroAddress) continue
-      await this.queues[mq.q.yearn.strategy.extract].add(
-        mq.q.yearn.strategy.extractJobs.state, {
+      await this.queues[mq.q.extract].add(
+        mq.job.extract.strategy, {
           chainId: vault.chainId,
           address: strategy,
           vaultAddress: vault.address,

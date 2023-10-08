@@ -29,7 +29,8 @@ export default class Loader implements Processor {
     ),
 
     [mq.job.load.strategy]: async data => await upsert(
-      data, 'strategy', 'chain_id, address'
+      data, 'strategy', 'chain_id, address',
+      'WHERE strategy.as_of_block_number < EXCLUDED.as_of_block_number'
     ),
 
     [mq.job.load.harvest]: async data => await upsertBatch(

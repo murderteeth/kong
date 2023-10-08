@@ -1,24 +1,22 @@
 import { mq, types } from 'lib'
-import { blocks } from 'lib'
-import { PublicClient, parseAbi, zeroAddress } from 'viem'
+import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'
-import db from '../../../db'
 
-export class StateExtractor implements Processor {
+export class StrategyExtractor implements Processor {
   queue: Queue | undefined
 
   async up() {
-    this.queue = mq.queue(mq.q.yearn.strategy.load)
+    this.queue = mq.queue(mq.q.load)
   }
 
   async down() {
     await this.queue?.close()
   }
 
-  async extract(job: any) {
-    const strategy = job.data as types.Strategy
+  async extract(data: any) {
+    const strategy = data as types.Strategy
 
     const asOfBlockNumber = (await rpcs.next(strategy.chainId).getBlockNumber()).toString()
     const fields = await this.extractFields(strategy.chainId, strategy.address)
@@ -31,7 +29,7 @@ export class StateExtractor implements Processor {
     } as types.Strategy
 
     await this.queue?.add(
-      mq.q.yearn.strategy.loadJobs.strategy, update
+      mq.job.load.strategy, update
     )
   }
 

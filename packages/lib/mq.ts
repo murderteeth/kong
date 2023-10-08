@@ -10,23 +10,9 @@ export const q = {
   fanout: 'fanout',
   extract: 'extract',
   compute: 'compute',
-  load: 'load', 
-
+  load: 'load',
   transfer: {
     extract: 'transfer-extract'
-  },
-
-  yearn: {
-    strategy: {
-      pointer: 'yearn-strategy-pointer',
-      pointerJobs: { catchup: {
-        block: 'catchup-block'
-      } },
-      extract: 'yearn-strategy-extract',
-      extractJobs: { logs: 'logs', state: 'state' },
-      load: 'yearn-strategy-load',
-      loadJobs: { strategy: 'strategy' }
-    }
   }
 }
 
@@ -40,6 +26,7 @@ export const job = {
   fanout: {
     registry: 'registry',
     vault: 'vault',
+    strategy: 'strategy',
     tvl: 'tvl',
     harvestApr: 'harvest-apr'
   },
@@ -48,6 +35,7 @@ export const job = {
     evmlogs: 'evmlogs',
     apetax: 'apetax',
     vault: 'vault',
+    strategy: 'strategy',
     harvest: 'harvest',
     tvl: 'tvl',
   },

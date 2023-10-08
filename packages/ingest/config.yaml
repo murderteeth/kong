@@ -41,6 +41,4 @@ processors:
   - name: Compute
   - name: Loader
 
-  - name: YearnStrategyExtractor
-  - name: YearnStrategyLoader
   - name: TransferExtractor

@@ -8,7 +8,6 @@ export class VaultHandler implements Handler {
   async up() {
     this.queues[mq.q.extract] = mq.queue(mq.q.extract)
     this.queues[mq.q.load] = mq.queue(mq.q.load)
-    this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
     this.queues[mq.q.transfer.extract] = mq.queue(mq.q.transfer.extract)
   }
 
@@ -32,7 +31,7 @@ export class VaultHandler implements Handler {
 
   private async handleStrategies(chainId: number, address: string, logs: any[]) {
     for(const log of logs) {
-      await this.queues[mq.q.yearn.strategy.extract].add(mq.q.yearn.strategy.extractJobs.state, {
+      await this.queues[mq.q.extract].add(mq.job.extract.strategy, {
         chainId, 
         address: log.args.strategy.toString(),
         vaultAddress: address

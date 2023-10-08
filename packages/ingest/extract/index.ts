@@ -6,6 +6,7 @@ import { ApetaxExtractor } from './apetax'
 import { TvlExtractor } from './tvl'
 import { VaultExtractor } from './vault'
 import { HarvestExtractor } from './harvest'
+import { StrategyExtractor } from './strategy'
 
 export default class Extract implements Processor {
   worker: Worker | undefined
@@ -13,6 +14,7 @@ export default class Extract implements Processor {
   extractors = {
     [mq.job.extract.evmlogs]: new EvmLogsExtractor(),
     [mq.job.extract.vault]: new VaultExtractor(),
+    [mq.job.extract.strategy]: new StrategyExtractor(),
     [mq.job.extract.harvest]: new HarvestExtractor(),
     [mq.job.extract.tvl]: new TvlExtractor(),
     [mq.job.extract.apetax]: new ApetaxExtractor()
