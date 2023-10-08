@@ -28,8 +28,8 @@ async function action() {
   if (confirm) {
     switch(target) {
       case 'yweth': {
-        const queue = mq.queue(mq.q.yearn.vault.extract)
-        await queue.add(mq.q.yearn.vault.extractJobs.state, {
+        const queue = mq.queue(mq.q.extract)
+        await queue.add(mq.job.extract.vault, {
           chainId: 1,
           type: 'vault',
           registryStatus: 'endorsed',

@@ -4,17 +4,16 @@ import { parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'
-import db from '../../../db'
+import db from '../db'
 import { estimateCreationBlock } from 'lib/blocks'
 
-export class StateExtractor implements Processor {
+export class VaultExtractor implements Processor {
   queues: {
     [name: string]: Queue
   } = {}
 
   async up() {
     this.queues[mq.q.load] = mq.queue(mq.q.load)
-    this.queues[mq.q.yearn.vault.load] = mq.queue(mq.q.yearn.vault.load)
     this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
   }
 
@@ -22,8 +21,8 @@ export class StateExtractor implements Processor {
     await Promise.all(Object.values(this.queues).map(queue => queue.close()))
   }
 
-  async extract(job: any) {
-    const vault = job.data as types.Vault
+  async extract(data: any) {
+    const vault = data as types.Vault
     const asOfBlockNumber = (await rpcs.next(vault.chainId).getBlockNumber()).toString()
     const fields = await this.extractFields(vault.chainId, vault.address)
     const asset = await this.extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
@@ -58,16 +57,16 @@ export class StateExtractor implements Processor {
       }
     )
 
-    await this.queues[mq.q.yearn.vault.load].add(
-      mq.q.yearn.vault.loadJobs.vault, update
+    await this.queues[mq.q.load].add(
+      mq.job.load.vault, update
     )
 
-    await this.queues[mq.q.yearn.vault.load].add(
-      mq.q.yearn.vault.loadJobs.withdrawalQueue, withdrawalQueue.map((strategyAddress, queueIndex) => ({
+    await this.queues[mq.q.load].add(
+      mq.job.load.withdrawalQueue, { batch: withdrawalQueue.map((strategyAddress, queueIndex) => ({
         chainId: vault.chainId,
         vaultAddress: vault.address,
         queueIndex, strategyAddress, asOfBlockNumber
-    })) as types.WithdrawalQueueItem[])
+    })) as types.WithdrawalQueueItem[] })
 
     for(const strategy of withdrawalQueue) {
       if(!strategy || strategy === zeroAddress) continue

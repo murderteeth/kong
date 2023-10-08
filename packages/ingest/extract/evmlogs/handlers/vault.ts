@@ -1,12 +1,12 @@
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
-import { Processor } from 'lib/processor'
+import { Handler } from '..'
 
-export class LogsHandler implements Processor {
+export class VaultHandler implements Handler {
   queues: { [key: string]: Queue } = {}
 
   async up() {
-    this.queues[mq.q.yearn.vault.extract] = mq.queue(mq.q.yearn.vault.extract)
+    this.queues[mq.q.extract] = mq.queue(mq.q.extract)
     this.queues[mq.q.load] = mq.queue(mq.q.load)
     this.queues[mq.q.yearn.strategy.extract] = mq.queue(mq.q.yearn.strategy.extract)
     this.queues[mq.q.transfer.extract] = mq.queue(mq.q.transfer.extract)
@@ -18,15 +18,15 @@ export class LogsHandler implements Processor {
 
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
     const strategies = logs.filter(log => log.eventName === 'StrategyAdded')
-    console.log('🪵', chainId, address, 'strategies', strategies.length)
+    console.log('📋', chainId, address, 'strategies', strategies.length)
     await this.handleStrategies(chainId, address, strategies)
 
     const harvests = logs.filter(log => log.eventName === 'StrategyReported')
-    console.log('🪵', chainId, address, 'harvests', harvests.length)
+    console.log('📋', chainId, address, 'harvests', harvests.length)
     await this.handleHarvests(chainId, address, harvests)
 
     const transfers = logs.filter(log => log.eventName === 'Transfer')
-    console.log('🪵', chainId, address, 'transfers', transfers.length)
+    console.log('📋', chainId, address, 'transfers', transfers.length)
     await this.handleTransfers(chainId, address, transfers)
   }
 
@@ -61,7 +61,7 @@ export class LogsHandler implements Processor {
 
       batch.push(harvest)
 
-      this.queues[mq.q.yearn.vault.extract].add(mq.q.yearn.vault.extractJobs.harvest, harvest, {
+      this.queues[mq.q.extract].add(mq.job.extract.harvest, harvest, {
         jobId: `${harvest.chainId}-${harvest.blockNumber}-${harvest.blockIndex}`
       })
 

@@ -1,12 +1,12 @@
 import { setTimeout } from 'timers/promises'
-import { contracts } from 'lib/contracts/yearn/registries'
 import { chains, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { getBlockPointer, getLatestBlock, setBlockPointer } from '../db'
+import { getLatestBlock, getVaultBlockPointers, setBlockPointer } from '../db'
+import { parseAbi } from 'viem'
 import { max } from 'lib/math'
 
-export default class RegistryFanout implements Processor {
+export default class VaultFanout implements Processor {
   queues: { [key: string]: Queue } = {}
 
   async up() {
@@ -19,20 +19,22 @@ export default class RegistryFanout implements Processor {
 
   async do() {
     for(const chain of chains) {
-      const registries = contracts.for(chain.id)
-      for(const key of Object.keys(registries)) {
-        const registry = contracts.at(chain.id, key)
-        const blockPointer = await getBlockPointer(chain.id, registry.address)
-        const from = max(blockPointer, registry.incept)
+      const pointers = await getVaultBlockPointers(chain.id)
+      for(const pointer of pointers) {
+        const from = max(pointer.blockNumber, pointer.activationBlockNumber)
         const to = await getLatestBlock(chain.id)
 
         await this.fanoutExtract(
         chain.id,
-        registry.address,
-        registry.events, 
+        pointer.address,
+        parseAbi([
+          `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
+          `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 debtPaid, uint256 totalGain, uint256 totalLoss, uint256 totalDebt, uint256 debtAdded, uint256 debtRatio)`,
+          `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
+        ]),
         from, to)
 
-        await setBlockPointer(chain.id, registry.address, to)
+        await setBlockPointer(chain.id, pointer.address, to)       
       }
     }
   }
@@ -47,7 +49,7 @@ export default class RegistryFanout implements Processor {
         chainId, address,
         events: JSON.stringify(events),
         from: block, to: toBlock,
-        handler: 'registry'
+        handler: 'vault'
       }
       await this.queues[mq.q.extract].add(mq.job.extract.evmlogs, options)
       await setTimeout(throttle)

@@ -9,20 +9,36 @@ export default class Loader implements Processor {
   queue?: Queue
 
   handlers: Record<string, (data: any, queue?: Queue) => Promise<any>> = {
-    [mq.job.load.block]: async data => {
-      await db.query(
-        `${toUpsertSql(
-          'latest_block', 'chain_id', data, 
-          'WHERE latest_block.block_number < EXCLUDED.block_number')}`,
-        Object.values(data)
-      )
-    },
+    [mq.job.load.block]: async data => await upsert(
+      data, 'latest_block', 'chain_id', 
+      'WHERE latest_block.block_number < EXCLUDED.block_number'
+    ),
 
-    [mq.job.load.erc20]: async data => await upsert(data, 'erc20', 'chain_id, address'),
-    [mq.job.load.vault]: async data => await upsert(data, 'vault', 'chain_id, address'),
-    [mq.job.load.strategy]: async data => await upsert(data, 'strategy', 'chain_id, address'),
-    [mq.job.load.harvest]: async data => await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
-    [mq.job.load.transfer]: async data => await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
+    [mq.job.load.erc20]: async data => await upsert(
+      data, 'erc20', 'chain_id, address'
+    ),
+
+    [mq.job.load.vault]: async data => await upsert(
+      data, 'vault', 'chain_id, address', 
+      'WHERE vault.as_of_block_number < EXCLUDED.as_of_block_number'
+    ),
+
+    [mq.job.load.withdrawalQueue]: async data => await upsertBatch(
+      data.batch, 'withdrawal_queue', 'chain_id, vault_address, queue_index', 
+      'WHERE withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
+    ),
+
+    [mq.job.load.strategy]: async data => await upsert(
+      data, 'strategy', 'chain_id, address'
+    ),
+
+    [mq.job.load.harvest]: async data => await upsertBatch(
+      data.batch, 'harvest', 'chain_id, block_number, block_index'
+    ),
+
+    [mq.job.load.transfer]: async data => await upsertBatch(
+      data.batch, 'transfer', 'chain_id, block_number, block_index'
+    ),
 
     [mq.job.load.apr]: async (data: types.APR) => await Promise.all([
       upsert(data, 'apr', 'chain_id, address, block_timestamp'),
@@ -70,20 +86,20 @@ export default class Loader implements Processor {
   }
 }
 
-async function upsert(data: any, table: string, pk: string) {
+async function upsert(data: any, table: string, pk: string, where?: string) {
   await db.query(
-    toUpsertSql(table, pk, data),
+    toUpsertSql(table, pk, data, where),
     Object.values(data)
   )
 }
 
-async function upsertBatch(batch: any[], table: string, pk: string) {
+async function upsertBatch(batch: any[], table: string, pk: string, where?: string) {
   const client = await db.connect()
   try {
     await client.query('BEGIN')
     for(const object of batch) {
       await client.query(
-        toUpsertSql(table, pk, object),
+        toUpsertSql(table, pk, object, where),
         Object.values(object)
       )
     }

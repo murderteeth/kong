@@ -15,14 +15,21 @@ crons:
   #   job: catchup-tvl
   #   schedule: "*/5 * * * *" # every 5 minutes
 
+  # ####################################
+
+  # - name: IndexVaultRegistries
+  #   queue: fanout
+  #   job: registry
+  #   schedule: "*/5 * * * *" # every 5 minutes
+
   # - name: ComputeHarvestApr
   #   queue: fanout
   #   job: harvest-apr
   #   schedule: "*/5 * * * *" # every 5 minutes
 
-  # - name: IndexVaultRegistries
-  #   queue: fanout
-  #   job: registry
+  # - name: IndexApeTaxVaults
+  #   queue: extract
+  #   job: apetax
   #   schedule: "*/5 * * * *" # every 5 minutes
 
 processRecycleMs: 600_000 # 10 minutes
@@ -34,9 +41,6 @@ processors:
   - name: Compute
   - name: Loader
 
-  - name: YearnVaultPointer
-  - name: YearnVaultExtractor
-  - name: YearnVaultLoader
   - name: YearnStrategyExtractor
   - name: YearnStrategyLoader
   - name: TransferExtractor

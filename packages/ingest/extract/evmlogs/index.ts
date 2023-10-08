@@ -1,51 +1,33 @@
-import { Queue } from 'bullmq'
-import { mq, types } from 'lib'
 import { Processor } from 'lib/processor'
+import { rpcs } from 'lib/rpcs'
+import { RegistryHandler } from './handlers/registry'
+import { VaultHandler } from './handlers/vault'
 
-interface Handler {
-  handle: (chainId: number, address: string, logs: any[]) => Promise<void>
+export interface Handler extends Processor {
+  handle: (chainId: number, address: `0x${string}`, logs: any[]) => Promise<void>
 }
 
-export class Handlers implements Processor {
-  __handlers: { [key: string]: Handler } = {}
-  queues: { [key: string]: Queue } = {}
+export class EvmLogsExtractor implements Processor {
+  handlers = {
+    registry: new RegistryHandler(),
+    vault: new VaultHandler()
+  } as { [key: string]: Handler }
 
   async up() {
-    this.queues[mq.q.yearn.vault.extract] = mq.queue(mq.q.yearn.vault.extract)
+    await Promise.all(Object.values(this.handlers).map(h => h.up()))
   }
 
   async down() {
-    await Promise.all(Object.values(this.queues).map(q => q.close()))
+    await Promise.all(Object.values(this.handlers).map(h => h.down()))
   }
 
-  get(key: string) {
-    return this.__handlers[key]
-  }
-
-  constructor() {
-    this.__handlers['registry'] = { handle: async (chainId: number, address: string, logs: any[]) => {
-      const newVaultEvents = ['NewExperimentalVault', 'NewVault', 'NewEndorsedVault']
-
-      for(const log of logs) {
-        if(newVaultEvents.includes(log.eventName)) {
-          console.log('📋', chainId, address, log.blockNumber, log.eventName)
-
-          const vault = {
-            chainId,
-            type: 'vault',
-            address: log.args.vault.toString(),
-            registryStatus: log.eventName === 'NewExperimentalVault' ? 'experimental' : 'endorsed',
-            registryAddress: address,
-            apiVersion: log.args.api_version?.toString() || log.args.apiVersion?.toString(),
-            assetAddress: log.args.token.toString(),
-            asOfBlockNumber: log.blockNumber.toString()
-          } as types.Vault
-
-          await this.queues[mq.q.yearn.vault.extract].add(mq.q.yearn.vault.extractJobs.state, vault, {
-            jobId: `${chainId}-${log.blockNumber}-${vault.address}`
-          })
-        }
-      }
-    }}
+  async extract(data: any) {
+    const { chainId, address, events, from, to, handler } = data
+    const logs = await rpcs.next(chainId).getLogs({
+      address,
+      events: JSON.parse(events),
+      fromBlock: BigInt(from), toBlock: BigInt(to)
+    })
+    await this.handlers[handler].handle(chainId, address, logs)
   }
 }

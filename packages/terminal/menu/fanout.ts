@@ -14,7 +14,10 @@ async function action() {
       name: 'job',
       message: 'pick a fanout job',
       choices: [
-        { title: 'index vault registries', value: 'registry' }
+        { title: 'index registry events', value: mq.job.fanout.registry },
+        { title: 'index vault events', value: mq.job.fanout.vault },
+        { title: 'compute tvls', value: mq.job.fanout.tvl },
+        { title: 'compute harvest aprs', value: mq.job.fanout.harvestApr },
       ]
     },
     {
@@ -25,13 +28,8 @@ async function action() {
   ])
 
   if (confirm) {
-    switch(job) {
-      case 'registry': {
-        const queue = mq.queue(mq.q.fanout)
-        await queue.add(mq.job.fanout.registry, {})
-        await queue.close()
-        break
-      }
-    }
+    const queue = mq.queue(mq.q.fanout)
+    await queue.add(job, {})
+    await queue.close()
   }
 }

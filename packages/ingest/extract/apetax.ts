@@ -21,7 +21,7 @@ export class ApetaxExtractor implements Processor {
   queue: Queue | undefined
 
   async up() {
-    this.queue = mq.queue(mq.q.yearn.vault.extract)    
+    this.queue = mq.queue(mq.q.extract)
   }
 
   async down() {
@@ -30,6 +30,7 @@ export class ApetaxExtractor implements Processor {
 
   async extract(_: any) {
     console.log('🦍', 'extract apetax registry')
+
     const vaults = Object.values(await(
       await fetch(this.url)
     ).json()) as ApetaxVault[]
@@ -43,7 +44,7 @@ export class ApetaxExtractor implements Processor {
       const latestBlock = latestBlocks[vault.CHAIN_ID] || await rpc.getBlockNumber()
       latestBlocks[vault.CHAIN_ID] = latestBlock
 
-      await this.queue?.add(mq.q.yearn.vault.extractJobs.state, {
+      await this.queue?.add(mq.job.extract.vault, {
         chainId: vault.CHAIN_ID,
         apetaxType: vault.VAULT_TYPE,
         apetaxStatus: vault.VAULT_STATUS,

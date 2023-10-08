@@ -2,7 +2,7 @@ import { Processor } from 'lib/processor'
 import { rpcs } from 'lib/rpcs'
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
-import db from '../../../db'
+import db from '../db'
 import { fetchErc20PriceUsd } from 'lib/prices'
 import { parseAbi } from 'viem'
 import { getBlock } from 'lib/blocks'
@@ -18,9 +18,8 @@ export class HarvestExtractor implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async extract(job: any) {
-    let harvest = job.data as types.Harvest
-    console.log('⬇️ ', job.queueName, job.name, harvest.chainId, harvest.blockNumber, harvest.blockIndex, harvest.address)
+  async extract(data: any) {
+    let harvest = data as types.Harvest
 
     const block = await getBlock(harvest.chainId, BigInt(harvest.blockNumber))
     const asset = await getAsset(harvest.chainId, harvest.address)

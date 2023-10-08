@@ -3,7 +3,7 @@ import { rpcs } from 'lib/rpcs'
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import { estimateHeight, getBlock } from 'lib/blocks'
-import db from '../../../db'
+import db from '../db'
 import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
 
@@ -18,9 +18,8 @@ export class TvlExtractor implements Processor {
     await this.queue?.close()
   }
 
-  async extract(job: any) {
-    const { chainId, address, time } = job.data
-    console.log('⬇️ ', job.queueName, job.name, chainId, address, time)
+  async extract(data: any) {
+    const { chainId, address, time } = data
 
     const blockNumber = await estimateHeight(chainId, time)
     const block = await getBlock(chainId, blockNumber)

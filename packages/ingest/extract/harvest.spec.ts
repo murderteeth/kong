@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { mainnet } from 'viem/chains'
 import { getAsset } from './harvest'
-import { addresses, withYvWethDb } from '../../../test.fixture'
+import { addresses, withYvWethDb } from '../test.fixture'
 
 describe('harvest', function() {
   it('gets asset for strategy via chain', async function() {

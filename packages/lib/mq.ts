@@ -17,23 +17,6 @@ export const q = {
   },
 
   yearn: {
-    vault: {
-      pointer: 'yearn-vault-pointer',
-      pointerJobs: { catchup: {
-        block: 'catchup-block',
-        tvl: 'catchup-tvl',
-      } },
-      extract: 'yearn-vault-extract',
-      extractJobs: {
-        logs: 'logs',
-        state: 'state',
-        harvest: 'harvest',
-        tvl: 'tvl'
-      },
-      load: 'yearn-vault-load',
-      loadJobs: { vault: 'vault', withdrawalQueue: 'withdrawal-queue' }
-    }, 
-
     strategy: {
       pointer: 'yearn-strategy-pointer',
       pointerJobs: { catchup: {
@@ -55,13 +38,18 @@ export const job = {
   },
 
   fanout: {
-    harvestApr: 'harvest-apr',
-    registry: 'registry'
+    registry: 'registry',
+    vault: 'vault',
+    tvl: 'tvl',
+    harvestApr: 'harvest-apr'
   },
 
   extract: {
     evmlogs: 'evmlogs',
     apetax: 'apetax',
+    vault: 'vault',
+    harvest: 'harvest',
+    tvl: 'tvl',
   },
 
   compute: {
@@ -73,6 +61,7 @@ export const job = {
     erc20: 'erc20',
     transfer: 'transfer',
     vault: 'vault',
+    withdrawalQueue: 'withdrawal-queue',
     strategy: 'strategy',
     harvest: 'harvest',
     apr: 'apr',

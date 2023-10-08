@@ -5,7 +5,7 @@ import db, { getSparkline, toUpsertSql } from '../../db'
 import { mainnet } from 'viem/chains'
 import { types } from 'lib'
 
-describe.only('loader sparkline tvl', function() {
+describe('loader sparkline tvl', function() {
   before(async function() { 
     this.data = { chainId: mainnet.id, address: addresses.strategystEthAccumulator_v2 }
   })

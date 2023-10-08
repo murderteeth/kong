@@ -7,3 +7,11 @@ export function div(a: bigint, b: bigint, precision: number = 6) {
   const fractionalPart = quotient % scaleFactor
   return Number(wholePart + '.' + fractionalPart.toString().padStart(precision, '0'))
 }
+
+export function min(a: bigint, b: bigint) {
+  return a < b ? a : b
+}
+
+export function max(a: bigint, b: bigint) {
+  return a > b ? a : b
+}

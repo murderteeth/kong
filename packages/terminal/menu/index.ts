@@ -1,6 +1,4 @@
 import prompts from 'prompts'
-import pollPrompt from './poll'
-import vaultsPrompt from './vaults'
 import extractPrompt from './extract'
 import quitPrompt from './quit'
 import toolsPrompt from './tools'
@@ -13,8 +11,6 @@ export interface MenuAction {
 
 const actions = [
   fanoutPrompt,
-  pollPrompt,
-  vaultsPrompt,
   extractPrompt,
   toolsPrompt,
   quitPrompt
