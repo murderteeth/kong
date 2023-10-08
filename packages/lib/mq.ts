@@ -1,20 +1,5 @@
 import { Queue, QueueOptions, Worker } from 'bullmq'
 
-// https://github.com/taskforcesh/bullmq/blob/a01bb0b0345509cde6c74843323de6b67729f310/docs/gitbook/guide/jobs/prioritized.md
-// -= job priority in bullmq =-
-// no priority set = highest (default)
-// 1 = next highest
-// 2 ** 21 = lowest
-// adding prioritized jobs to a queue goes like O(log(n))
-// where n is the number of prioritized jobs in the queue
-// (ie, total jobs - non-prioritized jobs)
-export const LOWEST_PRIORITY = 2 ** 21
-
-const bull = { connection: {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: (process.env.REDIS_PORT || 6379) as number,
-}}
-
 export const q = {
   fanout: 'fanout',
   extract: 'extract',
@@ -55,13 +40,24 @@ export const job = {
     strategy: 'strategy',
     harvest: 'harvest',
     apr: 'apr',
-    tvl: 'tvl',
-    sparkline: {
-      apr: 'sparkline-apr',
-      tvl: 'sparkline-tvl'
-    }
+    tvl: 'tvl'
   }
 }
+
+// https://github.com/taskforcesh/bullmq/blob/a01bb0b0345509cde6c74843323de6b67729f310/docs/gitbook/guide/jobs/prioritized.md
+// -= job priority in bullmq =-
+// no priority set = highest (default)
+// 1 = next highest
+// 2 ** 21 = lowest
+// adding prioritized jobs to a queue goes like O(log(n))
+// where n is the number of prioritized jobs in the queue
+// (ie, total jobs - non-prioritized jobs)
+export const LOWEST_PRIORITY = 2 ** 21
+
+const bull = { connection: {
+  host: process.env.REDIS_HOST || 'localhost',
+  port: (process.env.REDIS_PORT || 6379) as number,
+}}
 
 export function queue(name: string, options?: QueueOptions) {
   return new Queue(name, {...bull, ...options})
@@ -87,14 +83,17 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
   const timer = setInterval(async () => {
     const jobs = await queue.count()
     const targetConcurrency = computeConcurrency(jobs)
+
     if(targetConcurrency > concurrency) {
       console.log('🚀', 'concurrency up', queueName, targetConcurrency)
       concurrency = targetConcurrency
       worker.concurrency = targetConcurrency
+
     } else if(targetConcurrency < concurrency) {
       console.log('🐌', 'concurrency down', queueName, targetConcurrency)
       concurrency = targetConcurrency
       worker.concurrency = targetConcurrency
+
     }
   }, 5000)
 

@@ -23,7 +23,7 @@ export default async (_: any, args: { chainId: number, address: string }) => {
         ) AS results
       FROM vault v
       JOIN withdrawal_queue wq ON v.chain_id = wq.chain_id AND v.address = wq.vault_address
-      JOIN strategy s ON wq.chain_id = s.chain_id AND wq.strategy_address = s.address
+      JOIN strategy_gql s ON wq.chain_id = s.chain_id AND wq.strategy_address = s.address
       WHERE v.chain_id = $1 AND v.address = $2
       GROUP BY v.address
     ),
@@ -34,15 +34,13 @@ export default async (_: any, args: { chainId: number, address: string }) => {
         json_agg(json_build_object(
           'chainId', s.chain_id,
           'address', s.address,
-          'type', s.type,
           'value', s.value,
           'time', s.time
         ) ORDER BY s.time ASC
         ) AS results
       FROM vault v
-      JOIN sparkline s
-        ON s.type = 'vault-tvl-7d' 
-        AND v.chain_id = s.chain_id 
+      JOIN sparkline_tvl s
+        ON v.chain_id = s.chain_id 
         AND v.address = s.address
       WHERE v.chain_id = $1 AND v.address = $2
       GROUP BY v.address
@@ -69,7 +67,7 @@ export default async (_: any, args: { chainId: number, address: string }) => {
       v.as_of_block_number as "asOfBlockNumber",
       withdrawal_queue_agg.results AS "withdrawalQueue",
       COALESCE(tvl_agg.results, '[]'::json) AS "tvlSparkline"
-    FROM vault v
+    FROM vault_gql v
     JOIN withdrawal_queue_agg ON v.address = withdrawal_queue_agg.address
     LEFT JOIN tvl_agg ON v.address = tvl_agg.address
     WHERE v.chain_id = $1 AND v.address = $2;

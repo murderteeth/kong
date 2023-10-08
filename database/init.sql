@@ -32,9 +32,6 @@ CREATE TABLE vault (
 	total_assets numeric NULL,
 	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
-	tvl_usd numeric NULL,
-	gross_apy numeric NULL,
-	net_apy numeric NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT vault_pkey PRIMARY KEY (chain_id, address)
@@ -49,8 +46,6 @@ CREATE TABLE strategy (
 	migrate_address text NULL,
 	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
-	gross_apr numeric NULL,
-	net_apr numeric NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT strategy_pkey PRIMARY KEY (chain_id, address)
@@ -137,11 +132,64 @@ CREATE INDEX apr_idx_chainid_address_blocknumber ON harvest (chain_id, address, 
 
 SELECT create_hypertable('apr', 'block_timestamp');
 
-CREATE TABLE sparkline (
-	chain_id int4 NOT NULL,
-	address text NOT NULL,
-	type text NOT NULL CHECK (type IN ('vault-tvl-7d', 'strategy-apr-7d', 'vault-apy-7d')),
-	value numeric NOT NULL,
-	time timestamptz NOT NULL,
-	CONSTRAINT sparkline_pkey PRIMARY KEY (chain_id, address, type, time)
-);
+
+--------------------------------------
+-------------
+--- VIEWS
+CREATE VIEW vault_gql AS
+SELECT 
+  v.*,
+  t.tvl_usd AS tvl_usd
+FROM vault v
+LEFT JOIN LATERAL (
+  SELECT 
+    tvl_usd
+  FROM tvl
+  WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
+  ORDER BY block_time DESC
+  LIMIT 1
+) t ON TRUE;
+
+CREATE VIEW strategy_gql AS
+SELECT 
+  s.*,
+  a.gross AS gross_apr,
+  a.net AS net_apr
+FROM strategy s
+LEFT JOIN LATERAL (
+  SELECT 
+    gross,
+    net
+  FROM apr
+  WHERE s.chain_id = apr.chain_id AND s.address = apr.address
+  ORDER BY block_timestamp DESC
+  LIMIT 1
+) a ON TRUE;
+
+CREATE VIEW sparkline_tvl AS
+SELECT
+  chain_id,
+  address,
+  time_bucket('7 day', block_time) AS time,
+  LAST(tvl_usd, block_time) AS value
+FROM
+  tvl
+GROUP BY
+  chain_id, address, time
+ORDER BY
+  chain_id, address, time DESC
+LIMIT 3;
+
+CREATE VIEW sparkline_apr AS
+SELECT
+  chain_id,
+  address,
+  time_bucket('7 day', block_timestamp) AS time,
+  LAST(net, block_timestamp) AS value
+FROM
+  apr
+GROUP BY
+  chain_id, address, time
+ORDER BY
+  chain_id, address, time DESC
+LIMIT 3;

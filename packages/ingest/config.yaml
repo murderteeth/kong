@@ -5,26 +5,14 @@ crons:
     job: block
     schedule: "*/5 * * * * *" # every 5 seconds
 
-  # - name: CatchupVaultBlockPointers
-  #   queue: yearn-vault-pointer
-  #   job: catchup-block
-  #   schedule: "*/5 * * * *" # every 5 minutes
-
-  # - name: CatchupVaultTvlPointers
-  #   queue: yearn-vault-pointer
-  #   job: catchup-tvl
-  #   schedule: "*/5 * * * *" # every 5 minutes
-
-  # ####################################
-
-  # - name: IndexVaultRegistries
+  # - name: IndexRegistries
   #   queue: fanout
   #   job: registry
   #   schedule: "*/5 * * * *" # every 5 minutes
 
-  # - name: ComputeHarvestApr
+  # - name: IndexVaults
   #   queue: fanout
-  #   job: harvest-apr
+  #   job: vault
   #   schedule: "*/5 * * * *" # every 5 minutes
 
   # - name: IndexApeTaxVaults
@@ -32,10 +20,20 @@ crons:
   #   job: apetax
   #   schedule: "*/5 * * * *" # every 5 minutes
 
-processRecycleMs: 600_000 # 10 minutes
+  # - name: ComputeTvl
+  #   queue: fanout
+  #   job: tvl
+  #   schedule: "*/5 * * * *" # every 5 minutes
+
+  # - name: ComputeHarvestApr
+  #   queue: fanout
+  #   job: harvest-apr
+  #   schedule: "*/5 * * * *" # every 5 minutes
 
 processors:
   - name: Fanout
   - name: Extract
   - name: Compute
   - name: Loader
+
+processRecycleMs: 600_000 # 10 minutes
