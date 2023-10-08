@@ -1,7 +1,7 @@
 
 crons:
-  - name: PollBlock
-    queue: poll
+  - name: LatestBlocks
+    queue: extract
     job: block
     schedule: "*/5 * * * * *" # every 5 seconds
 
@@ -35,7 +35,6 @@ crons:
 processRecycleMs: 600_000 # 10 minutes
 
 processors:
-  - name: Poll
   - name: Fanout
   - name: Extract
   - name: Compute

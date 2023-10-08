@@ -16,7 +16,6 @@ const bull = { connection: {
 }}
 
 export const q = {
-  poll: 'poll',
   fanout: 'fanout',
   extract: 'extract',
   compute: 'compute',
@@ -24,10 +23,6 @@ export const q = {
 }
 
 export const job = {
-  poll: {
-    block: 'block'
-  },
-
   fanout: {
     registry: 'registry',
     vault: 'vault',
@@ -37,16 +32,17 @@ export const job = {
   },
 
   extract: {
+    block: 'block',
     evmlogs: 'evmlogs',
     apetax: 'apetax',
     vault: 'vault',
     strategy: 'strategy',
     harvest: 'harvest',
     transfer: 'transfer',
-    tvl: 'tvl'
   },
 
   compute: {
+    tvl: 'tvl',
     harvestApr: 'harvest-apr'
   },
 

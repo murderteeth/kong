@@ -1,9 +1,42 @@
-import { math, types } from 'lib'
+import { math, mq, types } from 'lib'
 import db from '../db'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
+import { Processor } from 'lib/processor'
+import { Queue } from 'bullmq'
+import { getBlock } from 'lib/blocks'
 
-export async function compute(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+export class HarvestAprComputer implements Processor {
+  queue: Queue | undefined
+
+  async up() {
+    this.queue = mq.queue(mq.q.load)
+  }
+
+  async down() {
+    await this.queue?.close()
+  }
+
+  async compute(data: any) {
+    const { chainId, address, blockNumber, blockIndex } = data as { chainId: number, address: `0x${string}`, blockNumber: string, blockIndex: number }
+    const apr = await computeHarvestApr(chainId, address, BigInt(blockNumber))
+    if(apr === null) return
+
+    const block = await getBlock(chainId, BigInt(apr.blockNumber))
+    await this.queue?.add(mq.job.load.apr, {
+      chainId: chainId,
+      address: address,
+      gross: apr.gross,
+      net: apr.net,
+      blockNumber: apr.blockNumber,
+      blockTimestamp: block.timestamp.toString()
+    } as types.APR, {
+      jobId: `${chainId}-${blockNumber}-${blockIndex}-harvest-apr`
+    })
+  }
+}
+
+export async function computeHarvestApr(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const query = `
     SELECT 
       total_profit as "totalProfit",

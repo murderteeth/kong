@@ -8,7 +8,7 @@ export default class TvlFanout implements Processor {
   queue: Queue | undefined
 
   async up() {
-    this.queue = mq.queue(mq.q.extract)
+    this.queue = mq.queue(mq.q.compute)
   }
 
   async down() {
@@ -27,7 +27,7 @@ export default class TvlFanout implements Processor {
         const start = roundToNearestMinutes(Math.max(blockTime || 0, defaultStart), periodMinutes)
         const end = roundToNearestMinutes(new Date().getTime(), periodMinutes)
         for(let time = start; time < end; time += period) {
-          await this.queue?.add(mq.job.extract.tvl, {
+          await this.queue?.add(mq.job.compute.tvl, {
             chainId: chain.id, address, time: time / 1000
           })
         }
