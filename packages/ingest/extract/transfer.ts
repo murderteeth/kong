@@ -30,7 +30,7 @@ export class TransferExtractor implements Processor {
     const { timestamp } = await getBlock(transfer.chainId, BigInt(transfer.blockNumber))
 
     transfer.amountUsd = amountUsd
-    transfer.blockTimestamp = timestamp.toString()
+    transfer.blockTime = timestamp.toString()
     await this.queue?.add(mq.job.load.transfer, { batch: [transfer] }, {
       priority: mq.LOWEST_PRIORITY
     })

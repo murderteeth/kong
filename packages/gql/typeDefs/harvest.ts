@@ -15,7 +15,7 @@ type Harvest {
   totalDebt: Float!
   blockNumber: Int!
   blockIndex: Int!
-  blockTimestamp: String!
+  blockTime: String!
   transactionHash: String!
 }
 `

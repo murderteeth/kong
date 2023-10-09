@@ -19,7 +19,7 @@ type Vault {
   withdrawalQueue: [Strategy]
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
-  activationTimestamp: String
+  activationBlockTime: String
   activationBlockNumber: String
   asOfBlockNumber: String
 }

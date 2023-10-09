@@ -59,16 +59,16 @@ export class StrategyExtractor implements Processor {
   
   //   if(activationBlockNumber > 0n) return {}
   
-  //   const activationTimestamp = (await rpc.readContract({
+  //   const activationBlockTime = (await rpc.readContract({
   //     address, functionName: 'activation' as never,
   //     abi: parseAbi(['function activation() returns (uint256)'])
   //   }) || 0) as number
   
-  //   if(!activationTimestamp) return {}
+  //   if(!activationBlockTime) return {}
   
   //   return {
-  //     activationTimestamp: activationTimestamp.toString(),
-  //     activationBlockNumber: (await blocks.estimateHeight(rpc, activationTimestamp)).toString()
+  //     activationBlockTime: activationBlockTime.toString(),
+  //     activationBlockNumber: (await blocks.estimateHeight(rpc, activationBlockTime)).toString()
   //   }
   // }
 }

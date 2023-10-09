@@ -1,7 +1,7 @@
 export interface LatestBlock {
   chainId: number
   blockNumber: string
-  blockTimestamp: string
+  blockTime: string
 }
 
 export interface APR {
@@ -10,7 +10,7 @@ export interface APR {
   gross: number
   net: number
   blockNumber: string
-  blockTimestamp: string
+  blockTime: string
 }
 
 export interface TVL {
@@ -37,7 +37,7 @@ export interface Vault {
   assetName?: string,
   assetSymbol?: string,
   totalAssets?: string,
-  activationTimestamp?: string,
+  activationBlockTime?: string,
   activationBlockNumber?: string,
   asOfBlockNumber: string
 }
@@ -50,7 +50,7 @@ export interface Strategy {
   vaultAddress?: string,
   withdrawalQueueIndex?: number,
   migrateAddress?: string,
-  activationTimestamp?: string,
+  activationBlockTime?: string,
   activationBlockNumber?: string,
   asOfBlockNumber: string
 }
@@ -80,7 +80,7 @@ export interface Transfer {
   amountUsd?: number
   blockNumber: string
   blockIndex: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: `0x${string}`
 }
 
@@ -98,7 +98,7 @@ export interface Harvest {
   totalDebt?: string
   blockNumber: string
   blockIndex: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: `0x${string}`
 }
 

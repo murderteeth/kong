@@ -40,7 +40,7 @@ export class HarvestExtractor implements Processor {
       lossUsd,
       totalProfitUsd,
       totalLossUsd,
-      blockTimestamp: block.timestamp.toString()
+      blockTime: block.timestamp.toString()
     }
 
     await this.queues[mq.q.load].add(mq.job.load.harvest, { batch: [harvest] })

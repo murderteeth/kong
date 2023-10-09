@@ -42,7 +42,7 @@ export interface Transfer {
   sender: string
   receiver: string
   amountUsd: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: string
 }
 
@@ -51,7 +51,7 @@ export interface Harvest {
   address: string
   lossUsd: number
   profitUsd: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: string
 }
 
@@ -153,7 +153,7 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
     sender
     receiver
     amountUsd
-    blockTimestamp
+    blockTime
     transactionHash
   }
 
@@ -162,7 +162,7 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
     address
     lossUsd
     profitUsd
-    blockTimestamp
+    blockTime
     transactionHash
   }
 }`

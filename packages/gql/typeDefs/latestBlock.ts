@@ -4,6 +4,6 @@ export default gql`
 type LatestBlock {
   chainId: Int!
   blockNumber: BigInt!
-  blockTimestamp: BigInt!
+  blockTime: BigInt!
 }
 `

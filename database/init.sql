@@ -1,7 +1,7 @@
 CREATE TABLE latest_block (
 	chain_id int4 NOT NULL,
 	block_number int8 NOT NULL,
-	block_timestamp timestamptz NOT NULL,
+	block_time timestamptz NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT latest_block_pkey PRIMARY KEY (chain_id)
 );
@@ -30,8 +30,8 @@ CREATE TABLE vault (
 	asset_name text NULL,
 	asset_symbol text NULL,
 	total_assets numeric NULL,
-	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
+	activation_block_time timestamptz NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT vault_pkey PRIMARY KEY (chain_id, address)
@@ -44,8 +44,8 @@ CREATE TABLE strategy (
 	name text NULL,
 	vault_address text NULL,
 	migrate_address text NULL,
-	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
+	activation_block_time timestamptz NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT strategy_pkey PRIMARY KEY (chain_id, address)
@@ -90,7 +90,7 @@ CREATE TABLE transfer (
 	amount_usd numeric NULL,
 	block_number int8 NOT NULL,
 	block_index int4 NOT NULL,
-	block_timestamp timestamptz NULL,
+	block_time timestamptz NULL,
 	transaction_hash text NOT NULL,
 	CONSTRAINT transfer_pkey PRIMARY KEY (chain_id, block_number, block_index)
 );
@@ -111,7 +111,7 @@ CREATE TABLE harvest (
 	total_debt numeric NULL,
 	block_number int8 NOT NULL,
 	block_index int4 NOT NULL,
-	block_timestamp timestamptz NULL,
+	block_time timestamptz NULL,
 	transaction_hash text NOT NULL,
 	CONSTRAINT harvest_pkey PRIMARY KEY (chain_id, block_number, block_index)
 );
@@ -125,12 +125,12 @@ CREATE TABLE apr (
 	gross numeric NOT NULL,
 	net numeric NOT NULL,
 	block_number int8 NOT NULL,
-	block_timestamp timestamptz NOT NULL,
-	CONSTRAINT apr_pkey PRIMARY KEY (chain_id, address, block_timestamp)
+	block_time timestamptz NOT NULL,
+	CONSTRAINT apr_pkey PRIMARY KEY (chain_id, address, block_time)
 );
 CREATE INDEX apr_idx_chainid_address_blocknumber ON harvest (chain_id, address, block_number);
 
-SELECT create_hypertable('apr', 'block_timestamp');
+SELECT create_hypertable('apr', 'block_time');
 
 
 --------------------------------------
@@ -162,7 +162,7 @@ LEFT JOIN LATERAL (
     net
   FROM apr
   WHERE s.chain_id = apr.chain_id AND s.address = apr.address
-  ORDER BY block_timestamp DESC
+  ORDER BY block_time DESC
   LIMIT 1
 ) a ON TRUE;
 
@@ -184,8 +184,8 @@ CREATE VIEW sparkline_apr AS
 SELECT
   chain_id,
   address,
-  time_bucket('7 day', block_timestamp) AS time,
-  LAST(net, block_timestamp) AS value
+  time_bucket('7 day', block_time) AS time,
+  LAST(net, block_time) AS value
 FROM
   apr
 GROUP BY

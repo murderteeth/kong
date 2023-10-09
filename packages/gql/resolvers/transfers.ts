@@ -14,15 +14,15 @@ SELECT
   amount_usd AS "amountUsd",
   block_number AS "blockNumber",
   block_index AS "blockIndex",
-  block_timestamp AS "blockTimestamp",
+  block_time AS "blockTime",
   transaction_hash AS "transactionHash"
 FROM
   transfer
 WHERE
   (chain_id = $1 OR $1 IS NULL) AND (address = $2 OR $2 IS NULL)
-  AND amount_usd > 0 AND block_timestamp IS NOT NULL
+  AND amount_usd > 0 AND block_time IS NOT NULL
 ORDER BY
-  chain_id, block_timestamp DESC, block_index DESC
+  chain_id, block_time DESC, block_index DESC
 LIMIT 100;
 
     `, [chainId, address])

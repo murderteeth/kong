@@ -21,7 +21,7 @@ export class BlockExtractor implements Processor {
       await this.queue?.add(mq.job.load.block, {
         chainId: rpc.chain?.id,
         blockNumber: block.number.toString(),
-        blockTimestamp: block.timestamp.toString()
+        blockTime: block.timestamp.toString()
       } as types.LatestBlock, {
         jobId: `${rpc.chain?.id}-${block.number}`,
       })

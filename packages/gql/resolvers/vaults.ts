@@ -15,7 +15,7 @@ export default async (_: any, args: { chainId?: number }) => {
           'vaultAddress', v.address,
           'grossApr', s.gross_apr,
           'netApr', s.net_apr,
-          'activationTimestamp', s.activation_timestamp,
+          'activationBlockTime', s.activation_block_time,
           'activationBlockNumber', s.activation_block_number,
           'asOfBlockNumber', s.as_of_block_number,
           'queueIndex', wq.queue_index
@@ -61,7 +61,7 @@ export default async (_: any, args: { chainId?: number }) => {
       v.asset_address as "assetAddress", 
       v.asset_name as "assetName", 
       v.asset_symbol as "assetSymbol", 
-      v.activation_timestamp as "activationTimestamp",
+      v.activation_block_time as "activationBlockTime",
       v.activation_block_number as "activationBlockNumber",
       v.tvl_usd as "tvlUsd",
       v.as_of_block_number as "asOfBlockNumber",

@@ -9,7 +9,7 @@ type Strategy {
   name: String
   grossApr: Float
   netApr: Float
-  activationTimestamp: String
+  activationBlockTime: String
   activationBlockNumber: String
   asOfBlockNumber: String
 }

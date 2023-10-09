@@ -38,7 +38,7 @@ function TransferComponent({ transfer }: { transfer: Transfer }) {
     <div className="w-full flex items-center justify-between">
       <div className={`text-xs ${labelColor}`}>{'time'}</div>
       <div className={`text-xs ${amountColor}`}>
-        <ReactTimeago date={Number(transfer.blockTimestamp)} />
+        <ReactTimeago date={Number(transfer.blockTime)} />
       </div>
     </div>
   </div>

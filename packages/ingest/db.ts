@@ -45,8 +45,7 @@ export async function setBlockPointer(chainId: number, address: `0x${string}`, b
     VALUES ($1, $2, $3)
     ON CONFLICT (chain_id, address)
     DO UPDATE SET
-      block_number = EXCLUDED.block_number,
-      updated_at = NOW();
+      block_number = EXCLUDED.block_number;
   `, [chainId, address, blockNumber])
 }
 
@@ -59,7 +58,7 @@ export async function getVaultBlockPointers(chainId: number) {
     FROM vault v
     LEFT JOIN block_pointer p
     ON v.chain_id = p.chain_id AND v.address = p.address
-    WHERE v.chain_id = $1
+    WHERE v.chain_id = $1;
   `, [chainId])
   return result.rows.map(r => ({
     address: r.address,
@@ -76,7 +75,7 @@ export async function getErc20(chainId: number, address: string) {
       symbol,
       decimals
     FROM erc20
-    WHERE chain_id = $1 AND address = $2
+    WHERE chain_id = $1 AND address = $2;
   `, [chainId, address])
   return result.rows[0] as {
     address: `0x${string}`, 
@@ -93,7 +92,7 @@ export async function getSparkline(chainId: number, address: string, type: strin
       FLOOR(EXTRACT(EPOCH FROM time)) AS time
     FROM sparkline
     WHERE chain_id = $1 AND address = $2 AND type = $3
-    ORDER BY time ASC
+    ORDER BY time ASC;
   `, [chainId, address, type])
   return result.rows as types.SparklinePoint[]
 }

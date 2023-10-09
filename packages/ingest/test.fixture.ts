@@ -72,7 +72,7 @@ export const yvwethDb = {
       totalLoss: '0',
       totalDebt: '25247124300383549383601',
       blockNumber: '17613565',
-      blockTimestamp: '1',
+      blockTime: '1',
       blockIndex: 1,
       transactionHash: '0x0000000001'
     } as types.Harvest
@@ -88,7 +88,7 @@ export const yvwethDb = {
         totalProfit: '1399531006762014020040',
         totalDebt: '33677195107170865265139',
         blockNumber: '18116044',
-        blockTimestamp: (70 * 24 * 60 * 60 + (9 * 60 * 60)).toString(),
+        blockTime: (70 * 24 * 60 * 60 + (9 * 60 * 60)).toString(),
         transactionHash: '0x0000000002'
       })
     )

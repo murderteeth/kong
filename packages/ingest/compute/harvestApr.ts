@@ -29,7 +29,7 @@ export class HarvestAprComputer implements Processor {
       gross: apr.gross,
       net: apr.net,
       blockNumber: apr.blockNumber,
-      blockTimestamp: block.timestamp.toString()
+      blockTime: block.timestamp.toString()
     } as types.APR, {
       jobId: `${chainId}-${blockNumber}-${blockIndex}-harvest-apr`
     })
@@ -43,7 +43,7 @@ export async function computeHarvestApr(chainId: number, address: `0x${string}`,
       total_loss as "totalLoss",
       total_debt as "totalDebt",
       block_number as "blockNumber",
-      FLOOR(EXTRACT(EPOCH FROM block_timestamp)) as "blockTimestamp"
+      FLOOR(EXTRACT(EPOCH FROM block_time)) as "blockTime"
     FROM harvest 
     WHERE chain_id = $1 AND address = $2 AND block_number <= $3
     ORDER BY block_number desc
@@ -59,7 +59,7 @@ export async function computeHarvestApr(chainId: number, address: `0x${string}`,
   ? math.div(-loss, BigInt(latest.totalDebt))
   : math.div(profit, BigInt(latest.totalDebt))
 
-  const periodInHours = Number((BigInt(latest.blockTimestamp) - BigInt(previous.blockTimestamp)) / BigInt(60 * 60)) || 1
+  const periodInHours = Number((BigInt(latest.blockTime) - BigInt(previous.blockTime)) / BigInt(60 * 60)) || 1
   const hoursInOneYear = 24 * 365
   const gross = performance * hoursInOneYear / periodInHours
 

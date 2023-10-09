@@ -37,7 +37,7 @@ export default class Loader implements Processor {
     await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
 
     [mq.job.load.apr]: async (data: types.APR) => 
-    await upsert(data, 'apr', 'chain_id, address, block_timestamp'),
+    await upsert(data, 'apr', 'chain_id, address, block_time'),
 
     [mq.job.load.tvl]: async (data: types.TVL) => 
     await upsert(data, 'tvl', 'chain_id, address, block_time')

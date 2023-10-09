@@ -145,9 +145,9 @@ export class VaultExtractor implements Processor {
   }
 
   private async extractActivation(chainId: number, address: `0x${string}`) {
-    const { activation_timestamp, activation_block_number } = (await db.query(
+    const { activation_block_time, activation_block_number } = (await db.query(
       `SELECT
-        FLOOR(EXTRACT(EPOCH FROM activation_timestamp)) as activation_timestamp,
+        FLOOR(EXTRACT(EPOCH FROM activation_block_time)) as activation_block_time,
         activation_block_number
       FROM
         vault
@@ -156,26 +156,26 @@ export class VaultExtractor implements Processor {
       [chainId, address]
     )).rows[0] || {}
 
-    if(activation_timestamp) return {
-      activationTimestamp: activation_timestamp.toString(),
+    if(activation_block_time) return {
+      activationBlockTime: activation_block_time.toString(),
       activationBlockNumber: activation_block_number as bigint
     }
 
     try {
-      const activationTimestamp = await rpcs.next(chainId).readContract({
+      const activationBlockTime = await rpcs.next(chainId).readContract({
         address, functionName: 'activation' as never,
         abi: parseAbi(['function activation() returns (uint256)'])
       }) as number
 
       return {
-        activationTimestamp: activationTimestamp.toString(),
-        activationBlockNumber: (await blocks.estimateHeight(chainId, activationTimestamp)).toString()
+        activationBlockTime: activationBlockTime.toString(),
+        activationBlockNumber: (await blocks.estimateHeight(chainId, activationBlockTime)).toString()
       }
     } catch(error) {
       console.warn('🚨', chainId, address, '!activation field')
       const createBlock = await estimateCreationBlock(chainId, address)
       return {
-        activationTimestamp: createBlock.timestamp.toString(),
+        activationBlockTime: createBlock.timestamp.toString(),
         activationBlockNumber: createBlock.number.toString()
       }
     }
