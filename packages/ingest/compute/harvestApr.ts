@@ -1,4 +1,4 @@
-import { math, mq, types } from 'lib'
+import { math, mq, multicall3, types } from 'lib'
 import db from '../db'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
@@ -19,6 +19,12 @@ export class HarvestAprComputer implements Processor {
 
   async compute(data: any) {
     const { chainId, address, blockNumber, blockIndex } = data as { chainId: number, address: `0x${string}`, blockNumber: string, blockIndex: number }
+
+    if(!multicall3.supportsBlock(chainId, BigInt(blockNumber))) {
+      console.warn('🚨', 'block not supported', chainId, blockNumber)
+      return
+    }
+
     const apr = await computeHarvestApr(chainId, address, BigInt(blockNumber))
     if(apr === null) return
 

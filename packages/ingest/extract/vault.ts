@@ -1,4 +1,4 @@
-import { mq, types } from 'lib'
+import { mq, multicall3, types } from 'lib'
 import { blocks } from 'lib'
 import { parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
@@ -24,6 +24,12 @@ export class VaultExtractor implements Processor {
   async extract(data: any) {
     const vault = data as types.Vault
     const asOfBlockNumber = (await rpcs.next(vault.chainId).getBlockNumber()).toString()
+
+    if(!multicall3.supportsBlock(vault.chainId, BigInt(asOfBlockNumber))) {
+      console.warn('🚨', 'block not supported', vault.chainId, asOfBlockNumber)
+      return
+    }
+
     const fields = await this.extractFields(vault.chainId, vault.address)
     const asset = await this.extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
     const activation = await this.extractActivation(vault.chainId, vault.address)

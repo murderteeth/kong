@@ -1,4 +1,4 @@
-import { mq, types } from 'lib'
+import { mq, multicall3, types } from 'lib'
 import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
@@ -17,8 +17,13 @@ export class StrategyExtractor implements Processor {
 
   async extract(data: any) {
     const strategy = data as types.Strategy
-
     const asOfBlockNumber = (await rpcs.next(strategy.chainId).getBlockNumber()).toString()
+
+    if(!multicall3.supportsBlock(strategy.chainId, BigInt(asOfBlockNumber))) {
+      console.warn('🚨', 'block not supported', strategy.chainId, asOfBlockNumber)
+      return
+    }
+
     const fields = await this.extractFields(strategy.chainId, strategy.address)
     // const activation = await this.extractActivation(rpc, strategy.address)
 
