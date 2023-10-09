@@ -27,7 +27,7 @@ export default async (_: any, args: { chainId?: number }) => {
       WHERE v.chain_id = $1 OR $1 IS NULL
       GROUP BY v.address
     ),
-    
+
     tvl_agg AS (
       SELECT
         v.address,

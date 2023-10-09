@@ -21,9 +21,9 @@ export default function Monitor() {
   return <Panel className={'w-full flex flex-col items-start'}>
     <div className="font-bold text-lg">Message Queue</div>
     {monitor.queues.map((queue, index) => <div key={queue.name} className={`
-      w-full flex items-center justify-between gap-2 text-xs`}>
-      <div className="whitespace-nowrap">{queue.name}</div>
-      <div className="flex items-center gap-2 whitespace-nowrap">
+      w-full flex items-center justify-between gap-2`}>
+      <div className="text-xs whitespace-nowrap">{queue.name}</div>
+      <div className="flex items-center gap-2 text-sm whitespace-nowrap">
         <Frosty _key={`${queue.name}-w-${formatNumber(queue.waiting)}`} disabled={queue.waiting < 1}>
           <span dangerouslySetInnerHTML={{ __html: `w ${formatNumber(queue.waiting)}` }} />
         </Frosty>

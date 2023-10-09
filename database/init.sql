@@ -177,8 +177,7 @@ FROM
 GROUP BY
   chain_id, address, time
 ORDER BY
-  chain_id, address, time DESC
-LIMIT 3;
+  chain_id, address, time DESC;
 
 CREATE VIEW sparkline_apr AS
 SELECT
@@ -191,5 +190,4 @@ FROM
 GROUP BY
   chain_id, address, time
 ORDER BY
-  chain_id, address, time DESC
-LIMIT 3;
+  chain_id, address, time DESC;
