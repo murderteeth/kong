@@ -1,10 +1,12 @@
 import { mq, types } from 'lib'
 import db, { toUpsertSql } from '../db'
-import { Worker } from 'bullmq'
+import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
+import sparkline from './sparkline'
 
 export default class Loader implements Processor {
   worker?: Worker
+  queue?: Queue
 
   handlers: Record<string, (data: any) => Promise<any>> = {
     [mq.job.load.block]: async data => 
@@ -36,14 +38,29 @@ export default class Loader implements Processor {
     [mq.job.load.transfer]: async data => 
     await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
 
-    [mq.job.load.apr]: async (data: types.APR) => 
-    await upsert(data, 'apr', 'chain_id, address, block_time'),
+    [mq.job.load.apr]: async (data: types.APR) => {
+      await upsert(data, 'apr', 'chain_id, address, block_time')
+      await this.queue?.add(mq.job.load.sparkline.apr, { 
+        chainId: data.chainId, address: data.address 
+      })
+    },
 
-    [mq.job.load.tvl]: async (data: types.TVL) => 
-    await upsert(data, 'tvl', 'chain_id, address, block_time')
+    [mq.job.load.tvl]: async (data: types.TVL) => {
+      await upsert(data, 'tvl', 'chain_id, address, block_time'),
+      await this.queue?.add(mq.job.load.sparkline.tvl, { 
+        chainId: data.chainId, address: data.address 
+      })
+    },
+
+    [mq.job.load.sparkline.apr]: async data => 
+    await sparkline.apr(data),
+
+    [mq.job.load.sparkline.tvl]: async data => 
+    await sparkline.tvl(data),
   }
 
   async up() {
+    this.queue = mq.queue(mq.q.load)
     this.worker = mq.worker(mq.q.load, async job => {
       const handler = this.handlers[job.name]
       if(handler) {
@@ -57,6 +74,7 @@ export default class Loader implements Processor {
 
   async down() {
     await this.worker?.close()
+    await this.queue?.close()
   }
 }
 

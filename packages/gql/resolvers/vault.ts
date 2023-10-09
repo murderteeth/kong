@@ -34,13 +34,15 @@ export default async (_: any, args: { chainId: number, address: string }) => {
         json_agg(json_build_object(
           'chainId', s.chain_id,
           'address', s.address,
+          'type', s.type,
           'value', s.value,
           'time', s.time
         ) ORDER BY s.time ASC
         ) AS results
       FROM vault v
-      JOIN sparkline_tvl s
-        ON v.chain_id = s.chain_id 
+      JOIN sparkline s
+        ON s.type = 'vault-tvl-7d'
+        AND v.chain_id = s.chain_id 
         AND v.address = s.address
       WHERE v.chain_id = $1 AND v.address = $2
       GROUP BY v.address

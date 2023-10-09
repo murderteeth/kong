@@ -132,6 +132,14 @@ CREATE INDEX apr_idx_chainid_address_blocknumber ON harvest (chain_id, address, 
 
 SELECT create_hypertable('apr', 'block_time');
 
+CREATE TABLE sparkline (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	type text NOT NULL CHECK (type IN ('vault-tvl-7d', 'strategy-apr-7d', 'vault-apy-7d')),
+	value numeric NOT NULL,
+	time timestamptz NOT NULL,
+	CONSTRAINT sparkline_pkey PRIMARY KEY (chain_id, address, type, time)
+);
 
 --------------------------------------
 -------------
@@ -165,29 +173,3 @@ LEFT JOIN LATERAL (
   ORDER BY block_time DESC
   LIMIT 1
 ) a ON TRUE;
-
-CREATE VIEW sparkline_tvl AS
-SELECT
-  chain_id,
-  address,
-  time_bucket('7 day', block_time) AS time,
-  LAST(tvl_usd, block_time) AS value
-FROM
-  tvl
-GROUP BY
-  chain_id, address, time
-ORDER BY
-  chain_id, address, time DESC;
-
-CREATE VIEW sparkline_apr AS
-SELECT
-  chain_id,
-  address,
-  time_bucket('7 day', block_time) AS time,
-  LAST(net, block_time) AS value
-FROM
-  apr
-GROUP BY
-  chain_id, address, time
-ORDER BY
-  chain_id, address, time DESC;

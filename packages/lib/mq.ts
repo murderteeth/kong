@@ -40,7 +40,11 @@ export const job = {
     strategy: 'strategy',
     harvest: 'harvest',
     apr: 'apr',
-    tvl: 'tvl'
+    tvl: 'tvl',
+    sparkline: {
+      apr: 'sparkline-apr',
+      tvl: 'sparkline-tvl'
+    }
   }
 }
 
