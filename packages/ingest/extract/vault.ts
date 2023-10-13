@@ -1,6 +1,6 @@
-import { mq, multicall3, types } from 'lib'
+import { math, mq, multicall3, types } from 'lib'
 import { blocks } from 'lib'
-import { parseAbi, zeroAddress } from 'viem'
+import { parseAbi, stringToBytes, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'
@@ -23,9 +23,9 @@ export class VaultExtractor implements Processor {
 
   async extract(data: any) {
     const vault = data as types.Vault
-    const asOfBlockNumber = (await rpcs.next(vault.chainId).getBlockNumber()).toString()
+    const asOfBlockNumber = await rpcs.next(vault.chainId).getBlockNumber()
 
-    if(!multicall3.supportsBlock(vault.chainId, BigInt(asOfBlockNumber))) {
+    if(!multicall3.supportsBlock(vault.chainId, asOfBlockNumber)) {
       console.warn('🚨', 'block not supported', vault.chainId, asOfBlockNumber)
       return
     }
@@ -33,7 +33,7 @@ export class VaultExtractor implements Processor {
     const fields = await this.extractFields(vault.chainId, vault.address)
     const asset = await this.extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
     const activation = await this.extractActivation(vault.chainId, vault.address)
-    const withdrawalQueue = await this.extractWithdrawalQueue(vault.chainId, vault.address)
+    const withdrawalQueue = await extractWithdrawalQueue(vault.chainId, vault.address, asOfBlockNumber)
 
     const update = {
       ...vault,
@@ -171,7 +171,7 @@ export class VaultExtractor implements Processor {
       const activationBlockTime = await rpcs.next(chainId).readContract({
         address, functionName: 'activation' as never,
         abi: parseAbi(['function activation() returns (uint256)'])
-      }) as number
+      }) as bigint
 
       return {
         activationBlockTime: activationBlockTime.toString(),
@@ -186,48 +186,74 @@ export class VaultExtractor implements Processor {
       }
     }
   }
+}
 
-  private async extractWithdrawalQueue(chainId: number, address: `0x${string}`) {
-    const withdrawalQueue = []
-
-    // TODO: y dis no work? runtime error 'property abi cannot be destructured'
-    // const contracts = Array(20).map((_, i) => ({
-    //   address, functionName: 'withdrawalQueue', args: [BigInt(i)],
-    //   abi: parseAbi(['function withdrawalQueue(uint256) returns (address)'])    
-    // }))
-    // const results = await rpc.multicall({ contracts })
-    //
-
-    const results = await rpcs.next(chainId).multicall({ contracts: [
-      { args: [0n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [1n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [2n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [3n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [4n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [5n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [6n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [7n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [8n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [9n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [10n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [11n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [12n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [13n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [14n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [15n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [16n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [17n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [18n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-      { args: [19n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    ]})
-
-    for(const result of results) {
-      const strategy = result.status === 'failure' || result.result === zeroAddress
-      ? null
-      : result.result as `0x${string}`
-      withdrawalQueue.push(strategy)
-    }
-
-    return withdrawalQueue
+export async function extractFees(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  const bps = await extractFeesBps(chainId, address, blockNumber)
+  return {
+    performance: math.div(bps.performance, 10_000n),
+    management: math.div(bps.management, 10_000n)
   }
+}
+
+export async function extractFeesBps(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
+    {
+      address, functionName: 'performanceFee',
+      abi: parseAbi(['function performanceFee() returns (uint256)'])
+    },
+    {
+      address, functionName: 'managementFee',
+      abi: parseAbi(['function managementFee() returns (uint256)'])
+    }
+  ], blockNumber })
+
+  return {
+    performance: multicallResult[0].result || 0n,
+    management: multicallResult[1].result || 0n
+  }
+}
+
+export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  const withdrawalQueue = []
+
+  // TODO: y dis no work? runtime error 'property abi cannot be destructured'
+  // const contracts = Array(20).map((_, i) => ({
+  //   address, functionName: 'withdrawalQueue', args: [BigInt(i)],
+  //   abi: parseAbi(['function withdrawalQueue(uint256) returns (address)'])    
+  // }))
+  // const results = await rpc.multicall({ contracts })
+  //
+
+  const results = await rpcs.next(chainId).multicall({ contracts: [
+    { args: [0n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [1n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [2n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [3n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [4n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [5n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [6n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [7n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [8n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [9n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [10n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [11n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [12n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [13n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [14n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [15n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [16n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [17n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [18n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+    { args: [19n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
+  ], blockNumber})
+
+  for(const result of results) {
+    const strategy = result.status === 'failure' || result.result === zeroAddress
+    ? null
+    : result.result as `0x${string}`
+    withdrawalQueue.push(strategy)
+  }
+
+  return withdrawalQueue
 }

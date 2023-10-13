@@ -13,6 +13,25 @@ export interface APR {
   blockTime: string
 }
 
+export interface APY {
+  chainId: number
+  address: `0x${string}`
+  weeklyNet: number,
+  weeklyPricePerShare: bigint,
+  weeklyBlockNumber: bigint,
+  monthlyNet: number,
+  monthlyPricePerShare: bigint,
+  monthlyBlockNumber: bigint,
+  inceptionNet: number,
+  inceptionPricePerShare: bigint,
+  inceptionBlockNumber: bigint
+  net: number
+  grossApr: number
+  pricePerShare: bigint
+  blockNumber: bigint
+  blockTime: bigint
+}
+
 export interface TVL {
   chainId: number
   address: string
@@ -39,7 +58,7 @@ export interface Vault {
   totalAssets?: string,
   activationBlockTime?: string,
   activationBlockNumber?: string,
-  asOfBlockNumber: string
+  asOfBlockNumber: bigint
 }
 
 export interface Strategy {
@@ -52,7 +71,7 @@ export interface Strategy {
   migrateAddress?: string,
   activationBlockTime?: string,
   activationBlockNumber?: string,
-  asOfBlockNumber: string
+  asOfBlockNumber: bigint
 }
 
 export interface WithdrawalQueueItem {
@@ -60,7 +79,7 @@ export interface WithdrawalQueueItem {
   vaultAddress: `0x${string}`
   queueIndex: number
   strategyAddress?: `0x${string}`
-  asOfBlockNumber: string
+  asOfBlockNumber: bigint
 }
 
 export interface ERC20 {

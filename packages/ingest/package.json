@@ -15,6 +15,7 @@
     "@types/node": "^20.5.0",
     "@types/pg": "^8.10.2",
     "bullmq": "^4.7.3",
+    "compare-versions": "^6.1.0",
     "cross-env": "5.0.5",
     "dotenv": "^16.3.1",
     "js-yaml": "^4.1.0",

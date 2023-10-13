@@ -28,6 +28,7 @@ export const job = {
 
   compute: {
     tvl: 'tvl',
+    apy: 'apy',
     harvestApr: 'harvest-apr'
   },
 
@@ -40,16 +41,18 @@ export const job = {
     strategy: 'strategy',
     harvest: 'harvest',
     apr: 'apr',
+    apy: 'apy',
     tvl: 'tvl',
     sparkline: {
       apr: 'sparkline-apr',
+      apy: 'sparkline-apy',
       tvl: 'sparkline-tvl'
     }
   }
 }
 
-// https://github.com/taskforcesh/bullmq/blob/a01bb0b0345509cde6c74843323de6b67729f310/docs/gitbook/guide/jobs/prioritized.md
 // -= job priority in bullmq =-
+// https://github.com/taskforcesh/bullmq/blob/a01bb0b0345509cde6c74843323de6b67729f310/docs/gitbook/guide/jobs/prioritized.md
 // no priority set = highest (default)
 // 1 = next highest
 // 2 ** 21 = lowest

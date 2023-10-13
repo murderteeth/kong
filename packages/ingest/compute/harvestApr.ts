@@ -5,6 +5,7 @@ import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { getBlock } from 'lib/blocks'
+import { extractFees } from '../extract/vault'
 
 export class HarvestAprComputer implements Processor {
   queue: Queue | undefined
@@ -70,7 +71,9 @@ export async function computeHarvestApr(chainId: number, address: `0x${string}`,
   const gross = performance * hoursInOneYear / periodInHours
 
   const { vault, delegatedAssets } = await getStrategyInfo(chainId, address, BigInt(latest.blockNumber))
-  const fees = await getFees(chainId, vault, BigInt(latest.blockNumber))
+
+  const fees = await extractFees(chainId, vault, BigInt(latest.blockNumber))
+
   const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(latest.totalDebt))
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))
 
@@ -92,23 +95,5 @@ async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNum
   return {
     vault: multicallResult[0].result as `0x${string}`,
     delegatedAssets: multicallResult[1].result as bigint
-  }
-}
-
-async function getFees(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
-    {
-      address, functionName: 'performanceFees',
-      abi: parseAbi(['function performanceFees() returns (uint256)'])
-    },
-    {
-      address, functionName: 'managementFees',
-      abi: parseAbi(['function managementFees() returns (uint256)'])
-    }
-  ], blockNumber })
-
-  return {
-    performance: math.div((multicallResult[0].result || 0n) as bigint, 10_000n),
-    management: math.div((multicallResult[1].result || 0n) as bigint, 10_000n)
   }
 }

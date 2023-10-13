@@ -20,11 +20,11 @@ export default class TvlFanout implements Processor {
       const throttle = 16
       const periodMinutes = 24 * 60
       const period = periodMinutes * 60_000
-      const defaultStart = daysAgoInMs(30)
+      const DEFAULT_START = daysAgoInMs(30)
 
       for(const tvlTime of await getLatestTvlTimes(chain.id)) {
         const { address, blockTime } = tvlTime
-        const start = roundToNearestMinutes(Math.max(blockTime || 0, defaultStart), periodMinutes)
+        const start = roundToNearestMinutes(Math.max(blockTime || 0, DEFAULT_START), periodMinutes)
         const end = roundToNearestMinutes(new Date().getTime(), periodMinutes)
         for(let time = start; time < end; time += period) {
           await this.queue?.add(mq.job.compute.tvl, {

@@ -132,6 +132,28 @@ CREATE INDEX apr_idx_chainid_address_blocknumber ON harvest (chain_id, address, 
 
 SELECT create_hypertable('apr', 'block_time');
 
+CREATE TABLE apy (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	weekly_net numeric NOT NULL,
+	weekly_price_per_share numeric NOT NULL,
+	weekly_block_number int8 NOT NULL,
+	monthly_net numeric NOT NULL,
+	monthly_price_per_share numeric NOT NULL,
+	monthly_block_number int8 NOT NULL,
+	inception_net numeric NOT NULL,
+	inception_price_per_share numeric NOT NULL,
+	inception_block_number int8 NOT NULL,
+	net numeric NOT NULL,
+	gross_apr numeric NOT NULL,
+	price_per_share numeric NOT NULL,
+	block_number int8 NOT NULL,
+	block_time timestamptz NOT NULL,
+	CONSTRAINT apy_pkey PRIMARY KEY (chain_id, address, block_time)
+);
+
+SELECT create_hypertable('apy', 'block_time');
+
 CREATE TABLE sparkline (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
