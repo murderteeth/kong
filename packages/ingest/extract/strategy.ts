@@ -17,7 +17,7 @@ export class StrategyExtractor implements Processor {
 
   async extract(data: any) {
     const strategy = data as types.Strategy
-    const asOfBlockNumber = (await rpcs.next(strategy.chainId).getBlockNumber()).toString()
+    const asOfBlockNumber = await rpcs.next(strategy.chainId).getBlockNumber()
 
     if(!multicall3.supportsBlock(strategy.chainId, BigInt(asOfBlockNumber))) {
       console.warn('🚨', 'block not supported', strategy.chainId, asOfBlockNumber)

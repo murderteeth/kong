@@ -3,7 +3,7 @@ import { addresses, withYvUsdtDb } from '../test.fixture'
 import { mainnet } from 'viem/chains'
 import { _compute } from './apy'
 
-describe.only('apy', function() {
+describe('apy', function() {
   this.timeout(10_000)
 
   it('yvUSDT 0.4.3 @ block 18344466', withYvUsdtDb(async function(this: Mocha.Context) {

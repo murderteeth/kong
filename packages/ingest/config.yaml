@@ -25,6 +25,11 @@ crons:
   #   job: tvl
   #   schedule: "*/5 * * * *" # every 5 minutes
 
+  # - name: ComputeApy
+  #   queue: fanout
+  #   job: apy
+  #   schedule: "*/5 * * * *" # every 5 minutes
+
   # - name: ComputeHarvestApr
   #   queue: fanout
   #   job: harvest-apr

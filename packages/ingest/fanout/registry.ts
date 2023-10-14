@@ -1,10 +1,9 @@
 import { setTimeout } from 'timers/promises'
 import { contracts } from 'lib/contracts/yearn/registries'
-import { chains, mq } from 'lib'
+import { chains, math, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { getBlockPointer, getLatestBlock, setBlockPointer } from '../db'
-import { max } from 'lib/math'
 
 export default class RegistryFanout implements Processor {
   queues: { [key: string]: Queue } = {}
@@ -23,7 +22,7 @@ export default class RegistryFanout implements Processor {
       for(const key of Object.keys(registries)) {
         const registry = contracts.at(chain.id, key)
         const blockPointer = await getBlockPointer(chain.id, registry.address)
-        const from = max(blockPointer, registry.incept)
+        const from = math.max(blockPointer, registry.incept)
         const to = await getLatestBlock(chain.id)
 
         await this.fanoutExtract(

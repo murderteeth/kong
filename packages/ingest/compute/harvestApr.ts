@@ -26,7 +26,7 @@ export class HarvestAprComputer implements Processor {
       return
     }
 
-    const apr = await computeHarvestApr(chainId, address, BigInt(blockNumber))
+    const apr = await _compute(chainId, address, BigInt(blockNumber))
     if(apr === null) return
 
     const block = await getBlock(chainId, BigInt(apr.blockNumber))
@@ -43,19 +43,8 @@ export class HarvestAprComputer implements Processor {
   }
 }
 
-export async function computeHarvestApr(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const query = `
-    SELECT 
-      total_profit as "totalProfit",
-      total_loss as "totalLoss",
-      total_debt as "totalDebt",
-      block_number as "blockNumber",
-      FLOOR(EXTRACT(EPOCH FROM block_time)) as "blockTime"
-    FROM harvest 
-    WHERE chain_id = $1 AND address = $2 AND block_number <= $3
-    ORDER BY block_number desc
-    LIMIT 2`
-  const [ latest, previous ] = (await db.query(query, [chainId, address, blockNumber])).rows as types.Harvest[]
+export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  const [ latest, previous ] = await getHarvests(chainId, address, blockNumber)
   if(!(latest && previous)) return null
   if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return null
 
@@ -78,6 +67,22 @@ export async function computeHarvestApr(chainId: number, address: `0x${string}`,
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))
 
   return { gross, net, blockNumber: latest.blockNumber }
+}
+
+async function getHarvests(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  const query = `
+    SELECT 
+      total_profit as "totalProfit",
+      total_loss as "totalLoss",
+      total_debt as "totalDebt",
+      block_number as "blockNumber",
+      FLOOR(EXTRACT(EPOCH FROM block_time)) as "blockTime"
+    FROM harvest 
+    WHERE chain_id = $1 AND address = $2 AND block_number <= $3
+    ORDER BY block_number desc
+    LIMIT 2`
+  const result = await db.query(query, [chainId, address, blockNumber])
+  return result.rows as types.Harvest[]
 }
 
 async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNumber: bigint) {

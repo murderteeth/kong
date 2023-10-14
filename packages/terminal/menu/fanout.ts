@@ -17,6 +17,7 @@ async function action() {
         { title: 'index registry events', value: mq.job.fanout.registry },
         { title: 'index vault events', value: mq.job.fanout.vault },
         { title: 'compute tvls', value: mq.job.fanout.tvl },
+        { title: 'compute apys', value: mq.job.fanout.apy },
         { title: 'compute harvest aprs', value: mq.job.fanout.harvestApr },
       ]
     },

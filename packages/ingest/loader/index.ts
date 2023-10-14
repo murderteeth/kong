@@ -38,13 +38,6 @@ export default class Loader implements Processor {
     [mq.job.load.transfer]: async data => 
     await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
 
-    [mq.job.load.apr]: async (data: types.APR) => {
-      await upsert(data, 'apr', 'chain_id, address, block_time')
-      await this.queue?.add(mq.job.load.sparkline.apr, { 
-        chainId: data.chainId, address: data.address 
-      })
-    },
-
     [mq.job.load.tvl]: async (data: types.TVL) => {
       await upsert(data, 'tvl', 'chain_id, address, block_time'),
       await this.queue?.add(mq.job.load.sparkline.tvl, { 
@@ -52,11 +45,28 @@ export default class Loader implements Processor {
       })
     },
 
-    [mq.job.load.sparkline.apr]: async data => 
-    await sparkline.apr(data),
+    [mq.job.load.apy]: async (data: types.APY) => {
+      await upsert(data, 'apy', 'chain_id, address, block_time'),
+      await this.queue?.add(mq.job.load.sparkline.apy, { 
+        chainId: data.chainId, address: data.address 
+      })
+    },
+
+    [mq.job.load.apr]: async (data: types.APR) => {
+      await upsert(data, 'apr', 'chain_id, address, block_time')
+      await this.queue?.add(mq.job.load.sparkline.apr, { 
+        chainId: data.chainId, address: data.address 
+      })
+    },
 
     [mq.job.load.sparkline.tvl]: async data => 
     await sparkline.tvl(data),
+
+    [mq.job.load.sparkline.apy]: async data => 
+    await sparkline.apy(data),
+
+    [mq.job.load.sparkline.apr]: async data => 
+    await sparkline.apr(data),
   }
 
   async up() {

@@ -41,7 +41,7 @@ export class TvlComputer implements Processor {
       address,
       tvlUsd,
       blockNumber,
-      blockTime: block.timestamp.toString()
+      blockTime: block.timestamp
     } as types.TVL)
   }
 }

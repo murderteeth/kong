@@ -5,6 +5,7 @@ import HarvestAprFanout from './harvestApr'
 import RegistryFanout from './registry'
 import VaultFanout from './vault'
 import TvlFanout from './tvl'
+import ApyFanout from './apy'
 
 export default class Fanout implements Processor {
   worker: Worker | undefined
@@ -13,6 +14,7 @@ export default class Fanout implements Processor {
     [mq.job.fanout.registry]: new RegistryFanout(),
     [mq.job.fanout.vault]: new VaultFanout(),
     [mq.job.fanout.tvl]: new TvlFanout(),
+    [mq.job.fanout.apy]: new ApyFanout(),
     [mq.job.fanout.harvestApr]: new HarvestAprFanout()
   } as { [key: string]: Processor & { do: () => Promise<void> } }
 

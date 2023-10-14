@@ -13,6 +13,7 @@ export const job = {
     vault: 'vault',
     strategy: 'strategy',
     tvl: 'tvl',
+    apy: 'apy',
     harvestApr: 'harvest-apr'
   },
 
@@ -40,13 +41,13 @@ export const job = {
     withdrawalQueue: 'withdrawal-queue',
     strategy: 'strategy',
     harvest: 'harvest',
-    apr: 'apr',
-    apy: 'apy',
     tvl: 'tvl',
+    apy: 'apy',
+    apr: 'apr',
     sparkline: {
-      apr: 'sparkline-apr',
+      tvl: 'sparkline-tvl',
       apy: 'sparkline-apy',
-      tvl: 'sparkline-tvl'
+      apr: 'sparkline-apr'
     }
   }
 }

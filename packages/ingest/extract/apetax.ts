@@ -1,7 +1,8 @@
-import { mq, types } from 'lib'
+import { chains, mq, types } from 'lib'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'
+import { getBlock } from 'lib/blocks'
 
 interface ApetaxVault { 
   TITLE: string
@@ -35,13 +36,10 @@ export class ApetaxExtractor implements Processor {
       await fetch(this.url)
     ).json()) as ApetaxVault[]
 
-    const latestBlocks: { [chainId: number]: { block: bigint } } = {}
+    const latestBlocks: { [chainId: number]: bigint } = {}
 
     for(const vault of vaults) {
-      const rpc = rpcs.nextAll()[vault.CHAIN_ID]
-      if(!rpc) continue
-
-      const latestBlock = latestBlocks[vault.CHAIN_ID] || await rpc.getBlockNumber()
+      const latestBlock = latestBlocks[vault.CHAIN_ID] || await rpcs.next(vault.CHAIN_ID).getBlockNumber()
       latestBlocks[vault.CHAIN_ID] = latestBlock
 
       await this.queue?.add(mq.job.extract.vault, {
@@ -50,7 +48,7 @@ export class ApetaxExtractor implements Processor {
         apetaxStatus: vault.VAULT_STATUS,
         address: vault.VAULT_ADDR,
         assetAddress: vault.WANT_ADDR,
-        asOfBlockNumber: latestBlock.toString()
+        asOfBlockNumber: latestBlock
       } as types.Vault, {
         jobId: `${vault.CHAIN_ID}-${latestBlock}-${vault.VAULT_ADDR}`
       })

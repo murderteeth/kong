@@ -9,7 +9,7 @@ import { extractFeesBps, extractWithdrawalQueue } from '../extract/vault'
 import { mainnet } from 'viem/chains'
 import { compare } from 'compare-versions'
 
-export class HarvestAprComputer implements Processor {
+export class ApyComputer implements Processor {
   queue: Queue | undefined
 
   async up() {
@@ -21,8 +21,9 @@ export class HarvestAprComputer implements Processor {
   }
 
   async compute(data: any) {
-    const { chainId, address, blockNumber } = data as { chainId: number, address: `0x${string}`, blockNumber: bigint }
+    const { chainId, address, time } = data as { chainId: number, address: `0x${string}`, time: bigint }
 
+    const blockNumber = await estimateHeight(chainId, time)
     if(!multicall3.supportsBlock(chainId, BigInt(blockNumber))) {
       console.warn('🚨', 'block not supported', chainId, blockNumber)
       return
