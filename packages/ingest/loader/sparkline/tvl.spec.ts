@@ -28,8 +28,8 @@ describe('loader sparkline tvl', function() {
       chainId: mainnet.id,
       address: addresses.yvweth,
       tvlUsd: 100,
-      blockNumber: '1',
-      blockTime: '1'
+      blockNumber: 1n,
+      blockTime: 1n
     } as types.TVL
 
     await db.query(
@@ -48,8 +48,8 @@ describe('loader sparkline tvl', function() {
       chainId: mainnet.id,
       address: addresses.yvweth,
       tvlUsd: 100,
-      blockNumber: '1',
-      blockTime: '1'
+      blockNumber: 1n,
+      blockTime: 1n
     } as types.TVL
 
     await db.query(

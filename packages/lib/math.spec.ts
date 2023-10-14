@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { div, max, min } from './math'
 
-describe.only('math', function() {
+describe('math', function() {
   describe('div', function() {
     it('NaN on zero denominator', async function() {
       expect(div(1n, 0n)).to.be.NaN
