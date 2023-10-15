@@ -1,7 +1,10 @@
 import { arbitrum, base, fantom, mainnet, optimism, polygon } from 'viem/chains'
 
 const chains = [
-  mainnet
+  mainnet, 
+  // optimism, 
+  // polygon, 
+  // base
 ]
 
 // const chains = [

@@ -20,6 +20,11 @@ export interface Vault {
     time: number
     value: number
   }[]
+  apyNet: number
+  apySparkline: {
+    time: number
+    value: number
+  }[]
   withdrawalQueue: {
     name: string
     address: string
@@ -32,6 +37,12 @@ export interface TVL {
   high: number
   low: number
   close: number
+  period: string
+  time: number
+}
+
+export interface APY {
+  average: number
   period: string
   time: number
 }
@@ -83,6 +94,7 @@ export interface DataContext {
   latestBlocks: LatestBlock[]
   vaults: Vault[]
   tvls: TVL[]
+  apys: APY[]
   transfers: Transfer[]
   harvests: Harvest[]
   monitor: MonitorResults
@@ -104,6 +116,11 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
     registryStatus
     tvlUsd
     tvlSparkline {
+      value
+      time
+    }
+    apyNet
+    apySparkline {
       value
       time
     }
@@ -143,6 +160,12 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
     high
     low
     close
+    period
+    time
+  }
+
+  apys(chainId: $chainId, address: $address) {
+    average
     period
     time
   }
@@ -191,6 +214,7 @@ export default function DataProvider({children}: {children: ReactNode}) {
     latestBlocks: [],
     vaults: [],
     tvls: [],
+    apys: [],
     transfers: [],
     harvests: [],
     monitor: {

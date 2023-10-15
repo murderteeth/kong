@@ -11,12 +11,9 @@ SELECT
   CAST($2 AS text) AS address,
   CAST($3 AS text) AS period,
   time_bucket(CAST($3 AS interval), block_time) AS time,
-  FIRST(tvl_usd, block_time) AS open,
-  MAX(tvl_usd) AS high,
-  MIN(tvl_usd) AS low,
-  LAST(tvl_usd, block_time) AS close
+  AVG(net) AS average
 FROM
-  tvl
+  apy
 WHERE
   chain_id = $1 AND address = $2
 GROUP BY
@@ -26,16 +23,16 @@ ORDER BY
 LIMIT $4;
 
     `, [
-      chainId, 
-      address, 
-      PERIOD[(period || 'ONE_DAY')], 
-      Math.min(limit || 30, 30)
-    ]
-  )
+        chainId, 
+        address, 
+        PERIOD[(period || 'ONE_DAY')], 
+        Math.min(limit || 30, 30)
+      ]
+    )
 
     return result.rows
   } catch (error) {
     console.error(error)
-    throw new Error('!tvls')
+    throw new Error('!apys')
   }
 }

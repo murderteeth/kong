@@ -1,7 +1,12 @@
-import { mainnet, optimism } from 'viem/chains'
+import { mainnet, optimism, polygon, fantom, base, arbitrum } from 'viem/chains'
 
 const activations = {
-  [mainnet.id]: 14353601n
+  [mainnet.id]: 14353601n,
+  [optimism.id]: 4286263n,
+  [polygon.id]: 25770160n,
+  [fantom.id]: 33001987n,
+  [base.id]: 5022n,
+  [arbitrum.id]: 7654707n
 }
 
 export function supportsBlock(chainId: number, blockNumber: bigint) {

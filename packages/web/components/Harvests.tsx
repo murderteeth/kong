@@ -49,7 +49,11 @@ export default function Harvests({ className }: { className?: string }) {
   const { harvests } = useData()
   return <Panel className={`flex flex-col ${className}`}>
     <div className="font-bold text-lg">Harvests</div>
-    <div className="grow overflow-auto flex flex-col gap-3">
+    <div className={`grow pr-1 flex flex-col gap-3
+      overflow-y-auto sm:scrollbar-thin 
+      sm:scrollbar-thumb-yellow-700 
+      sm:hover:scrollbar-thumb-yellow-400 
+      sm:scrollbar-track-green-950`}>
       {harvests.map((harvest, index) => 
         <HarvestComponent key={index} harvest={harvest} />
       )}

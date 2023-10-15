@@ -30,6 +30,6 @@ LIMIT 100;
     return result.rows
   } catch (error) {
     console.error(error)
-    throw new Error('Failed to fetch transfers')
+    throw new Error('!transfers')
   }
 }

@@ -19,6 +19,8 @@ type Vault {
   withdrawalQueue: [Strategy]
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
+  apyNet: Float
+  apySparkline: [SparklineItem]
   activationBlockTime: String
   activationBlockNumber: String
   asOfBlockNumber: String

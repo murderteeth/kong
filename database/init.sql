@@ -169,7 +169,8 @@ CREATE TABLE sparkline (
 CREATE VIEW vault_gql AS
 SELECT 
   v.*,
-  t.tvl_usd AS tvl_usd
+  t.tvl_usd AS tvl_usd,
+	a.net AS apy_net
 FROM vault v
 LEFT JOIN LATERAL (
   SELECT 
@@ -178,7 +179,15 @@ LEFT JOIN LATERAL (
   WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
   ORDER BY block_time DESC
   LIMIT 1
-) t ON TRUE;
+) t ON TRUE
+LEFT JOIN LATERAL (
+  SELECT 
+    net
+  FROM apy
+  WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+  ORDER BY block_time DESC
+  LIMIT 1
+) a ON TRUE;
 
 CREATE VIEW strategy_gql AS
 SELECT 

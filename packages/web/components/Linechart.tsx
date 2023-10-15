@@ -13,7 +13,7 @@ import {
   ChartData, 
   ChartOptions
 } from 'chart.js'
-import { fUSD } from '@/util/format'
+import { fPercent, fUSD } from '@/util/format'
 
 ChartJS.register(
   CategoryScale,
@@ -25,7 +25,16 @@ ChartJS.register(
   Legend
 )
 
-export default function Linechart({ title, series }: { title?: string, series: number[] }) {
+export const formatters = {
+  usd: (value: number) => {
+    return fUSD(value, { fixed: 0, hideUsd: true })
+  },
+  percent: (value: number) => {
+    return fPercent(value, 2)
+  }
+}
+
+export default function Linechart({ title, series, formatter }: { title?: string, series: number[], formatter?: (value: number) => string }) {
   const chart = useRef<ChartJS<'line'>>()
   const [data, setData] = useState<ChartData<'line'>>({ datasets: [] })
 
@@ -58,9 +67,7 @@ export default function Linechart({ title, series }: { title?: string, series: n
         },
         ticks: {
           color: colors.yellow[700],
-          callback: (value: number) => {
-            return fUSD(value, { fixed: 0, hideUsd: true })
-          }
+          callback: formatter
         }
       }
     },

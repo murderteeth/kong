@@ -22,7 +22,7 @@ export default class Fanout implements Processor {
     await Promise.all(Object.values(this.fanouts).map(f => f.up()))
     this.worker = mq.worker(mq.q.fanout, async job => {
       console.log('📤', job.name)
-      this.fanouts[job.name].do()
+      await this.fanouts[job.name].do()
     })
   }
 

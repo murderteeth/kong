@@ -49,7 +49,11 @@ export default function Deposits({ className }: { className?: string }) {
 
   return <Panel className={`flex flex-col ${className}`}>
     <div className="font-bold text-lg">Deposits x Withdrawals</div>
-    <div className="grow overflow-auto flex flex-col gap-2">
+    <div className={`grow pr-1 flex flex-col gap-2
+      overflow-y-auto sm:scrollbar-thin 
+      sm:scrollbar-thumb-yellow-700 
+      sm:hover:scrollbar-thumb-yellow-400 
+      sm:scrollbar-track-green-950`}>
       {transfers.map((transfer, index) => 
         <TransferComponent key={index} transfer={transfer} />
       )}

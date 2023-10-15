@@ -18,6 +18,6 @@ export default async (_: any, args: { chainId?: number }) => {
     return res.rows
   } catch (error) {
     console.error(error)
-    throw new Error('Failed to fetch latest block')
+    throw new Error('!latest block')
   }
 }

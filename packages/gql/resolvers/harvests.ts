@@ -34,6 +34,6 @@ LIMIT 100;
     return result.rows
   } catch (error) {
     console.error(error)
-    throw new Error('Failed to fetch harvests')
+    throw new Error('!harvests')
   }
 }

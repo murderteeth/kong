@@ -6,10 +6,10 @@ import { fEvmAddress, fPercent, fUSD } from '@/util/format'
 import Frosty from './Frosty'
 import Minibars from './Minibars'
 import { useMemo } from 'react'
-import Linechart from './Linechart'
+import Linechart, { formatters } from './Linechart'
 
 export default function Vault() {
-  const { vaults, tvls } = useData()
+  const { vaults, tvls, apys } = useData()
   const address = '0xa258C4606Ca8206D8aA700cE2143D7db854D168c'
   const vault = useMemo(() => vaults.find(v => v.address === address), [vaults])
   if (!vault) return null
@@ -18,6 +18,20 @@ export default function Vault() {
     <div className="flex items-center justify-between">
       <div className="font-bold text-xl">{vault.name}</div>
       <div className="text-sm text-yellow-700">{fEvmAddress(vault.address)}</div>
+    </div>
+
+    <div className="my-1 flex items-center justify-between">
+      <div className="flex items-center gap-3 font-bold text-lg">
+        <div>{'APY'}</div>
+        <Minibars series={vault.apySparkline.map(s => s.value)} className="h-5" />
+      </div>
+      <div className="flex items-center gap-3">
+        <Frosty _key={`vault-tvl-${fPercent(vault.apyNet)}`}
+          disabled={!Number.isFinite(vault.tvlUsd)}
+          className={'text-2xl'}>
+          {fPercent(vault.apyNet)}
+        </Frosty>
+      </div>
     </div>
 
     <div className="my-1 flex items-center justify-between">
@@ -48,7 +62,11 @@ export default function Vault() {
     )}
 
     <div className="h-48">
-      <Linechart title={'30d TVL'} series={tvls.map(tvl => tvl.close)} />
+      <Linechart title={'30d APY'} series={apys.map(apy => apy.average)} formatter={formatters.percent} />
+    </div>
+
+    <div className="h-48">
+      <Linechart title={'30d TVL'} series={tvls.map(tvl => tvl.close)} formatter={formatters.usd} />
     </div>
 
   </Panel>
