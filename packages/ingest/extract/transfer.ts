@@ -19,6 +19,7 @@ export class TransferExtractor implements Processor {
 
   async extract(data: any) {
     const transfer = data as types.Transfer
+    const key = '-' + Object.values(transfer).join('-')
     const { decimals } = await getErc20(transfer.chainId, transfer.address)
     const tokens = Number(BigInt(transfer.amount) * 10_000n / BigInt(10 ** decimals)) / 10_000
     const { price } = await fetchErc20PriceUsd(

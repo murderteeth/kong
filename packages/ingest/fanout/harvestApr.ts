@@ -14,7 +14,7 @@ export default class HarvestAprFanout implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async do() {
+  async fanout() {
     const harvestsMissingAprs = (await db.query(`
 WITH RankedHarvests AS (
   SELECT 

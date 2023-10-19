@@ -16,7 +16,7 @@ export default class RegistryFanout implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async do() {
+  async fanout() {
     for(const chain of chains) {
       const registries = contracts.for(chain.id)
       for(const key of Object.keys(registries)) {

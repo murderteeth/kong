@@ -16,13 +16,15 @@ export default class Fanout implements Processor {
     [mq.job.fanout.tvl]: new TvlFanout(),
     [mq.job.fanout.apy]: new ApyFanout(),
     [mq.job.fanout.harvestApr]: new HarvestAprFanout()
-  } as { [key: string]: Processor & { do: () => Promise<void> } }
+  } as { [key: string]: Processor & { fanout: () => Promise<void> } }
 
   async up() {
     await Promise.all(Object.values(this.fanouts).map(f => f.up()))
     this.worker = mq.worker(mq.q.fanout, async job => {
-      console.log('📤', job.name)
-      await this.fanouts[job.name].do()
+      const label = `📤 ${job.name} ${job.id}`
+      console.time(label)
+      await this.fanouts[job.name].fanout()
+      console.timeEnd(label)
     })
   }
 

@@ -8,10 +8,10 @@ export function div(a: bigint, b: bigint, precision: number = 18) {
   return Number(wholePart + '.' + fractionalPart.toString().padStart(precision, '0'))
 }
 
-export function min(a: bigint, b: bigint) {
-  return a < b ? a : b
+export function min(...args: bigint[]): bigint {
+  return args.reduce((a, b) => (a < b ? a : b))
 }
 
-export function max(a: bigint, b: bigint) {
-  return a > b ? a : b
+export function max(...args: bigint[]): bigint {
+  return args.reduce((a, b) => (a > b ? a : b))
 }

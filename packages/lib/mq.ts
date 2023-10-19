@@ -116,14 +116,10 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
 }
 
 export function computeConcurrency(jobs: number) {
-  const minConcurrency = 1
-  const maxConcurrency = 400
-  const upperJobLimit = 2000
-  const scalingFactor = 10
-
-  let concurrency = jobs > upperJobLimit
-  ? maxConcurrency
-  : Math.ceil(jobs / scalingFactor)
-
-  return Math.min(Math.max(concurrency, minConcurrency), maxConcurrency)
+  const min = 1
+  const max = 20
+  const threshold = 200
+  const m = (max - min) / (threshold - 0)
+  const concurrency = Math.floor(m * jobs + min)
+  return Math.min(Math.max(concurrency, min), max)
 }

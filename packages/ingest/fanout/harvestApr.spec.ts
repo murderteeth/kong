@@ -11,7 +11,7 @@ describe('harvest apr fanout', function() {
     try {
 
       expect(await q.count()).to.equal(0)
-      await fanout.do()
+      await fanout.fanout()
       expect(await q.count()).to.equal(1)
 
     } finally {

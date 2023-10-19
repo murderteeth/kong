@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq'
 import db from '../db'
 import { Processor } from 'lib/processor'
-import { chains, mq } from 'lib'
+import { chains, dates, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
 
 export default class ApyFanout implements Processor {
@@ -15,16 +15,15 @@ export default class ApyFanout implements Processor {
     await this.queue?.close()
   }
 
-  async do() {
+  async fanout() {
     for(const chain of chains) {
       const throttle = 16
       const periodMinutes = 24 * 60
       const period = periodMinutes * 60_000
-      const DEFAULT_START = daysAgoInMs(30)
 
       for(const apyTime of await getLatestApyTimes(chain.id)) {
-        const { address, blockTime } = apyTime
-        const start = roundToNearestMinutes(Math.max(blockTime || 0, DEFAULT_START), periodMinutes)
+        const { address, blockTimeMs } = apyTime
+        const start = roundToNearestMinutes(Math.max(blockTimeMs || 0, dates.DEFAULT_START_MS()), periodMinutes)
         const end = roundToNearestMinutes(new Date().getTime(), periodMinutes)
         for(let time = start; time < end; time += period) {
           await this.queue?.add(mq.job.compute.apy, {
@@ -35,11 +34,6 @@ export default class ApyFanout implements Processor {
       }
     }
   }
-}
-
-function daysAgoInMs(days: number): number {
-  const now = new Date().getTime()
-  return now - days * 24 * 60 * 60 * 1000
 }
 
 function roundToNearestMinutes(epochMs: number, interval: number): number {
@@ -63,6 +57,6 @@ export async function getLatestApyTimes(chainId: number) {
   `, [chainId])
   return result.rows as { 
     address: `0x${string}`, 
-    blockTime: number | null
+    blockTimeMs: number | null
   }[]
 }

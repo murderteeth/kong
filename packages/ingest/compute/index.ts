@@ -18,8 +18,10 @@ export default class Computer implements Processor {
   async up() {
     await Promise.all(Object.values(this.computers).map(c => c.up()))
     this.worker = mq.worker(mq.q.compute, async job => {
-      console.log('🧮', job.name)
+      const label = `🧮 ${job.name} ${job.id}`
+      console.time(label)
       await this.computers[job.name].compute(job.data)
+      console.timeEnd(label)
     })
   }
 

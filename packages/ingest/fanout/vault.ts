@@ -1,10 +1,11 @@
 import { setTimeout } from 'timers/promises'
-import { chains, mq } from 'lib'
+import { chains, dates, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { getLatestBlock, getVaultBlockPointers, setBlockPointer } from '../db'
 import { parseAbi } from 'viem'
 import { max } from 'lib/math'
+import { estimateHeight } from 'lib/blocks'
 
 export default class VaultFanout implements Processor {
   queues: { [key: string]: Queue } = {}
@@ -17,11 +18,12 @@ export default class VaultFanout implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async do() {
+  async fanout() {
     for(const chain of chains) {
+      const default_start_block = await estimateHeight(chain.id, dates.DEFAULT_START_SEC())
       const pointers = await getVaultBlockPointers(chain.id)
       for(const pointer of pointers) {
-        const from = max(pointer.blockNumber, pointer.activationBlockNumber)
+        const from = max(pointer.blockNumber, pointer.activationBlockNumber, default_start_block)
         const to = await getLatestBlock(chain.id)
 
         await this.fanoutExtract(

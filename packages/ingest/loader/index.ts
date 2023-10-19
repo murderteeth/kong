@@ -72,13 +72,10 @@ export default class Loader implements Processor {
   async up() {
     this.queue = mq.queue(mq.q.load)
     this.worker = mq.worker(mq.q.load, async job => {
-      const handler = this.handlers[job.name]
-      if(handler) {
-        console.log('📀', 'load', job.name)
-        await handler(job.data)
-      } else {
-        console.warn('🚨', 'unknown job', job.name)
-      }
+      const label = `📀 ${job.name} ${job.id}`
+      console.time(label)
+      await this.handlers[job.name](job.data)
+      console.timeEnd(label)
     })
   }
 
