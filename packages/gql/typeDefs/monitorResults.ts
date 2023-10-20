@@ -5,6 +5,7 @@ type MonitorResults {
   queues: [QueueStatus]
   redis: RedisInfo!
   db: DbInfo!
+  ingest: IngestInfo!
 }
 
 type QueueStatus {
@@ -35,5 +36,19 @@ type DbInfo {
   databaseSize: BigInt!
   indexHitRate: Float!
   cacheHitRate: Float!
+}
+
+type IngestCpu {
+  usage: Float!
+}
+
+type IngestMemory {
+  total: BigInt!
+  used: BigInt!
+}
+
+type IngestInfo {
+  cpu: IngestCpu!
+  memory: IngestMemory!
 }
 `

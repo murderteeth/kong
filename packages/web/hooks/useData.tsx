@@ -88,6 +88,15 @@ export interface MonitorResults {
       peak: number
     }
   }
+  ingest: {
+    cpu: {
+      usage: number
+    }
+    memory: {
+      total: number
+      used: number
+    }
+  }
 }
 
 export interface DataContext {
@@ -151,6 +160,15 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
         total
         used
         peak
+      }
+    }
+    ingest {
+      cpu {
+        usage
+      }
+      memory {
+        total
+        used
       }
     }
   }
@@ -232,6 +250,15 @@ export default function DataProvider({children}: {children: ReactNode}) {
           total: 0,
           used: 0,
           peak: 0
+        }
+      },
+      ingest: {
+        cpu: {
+          usage: 0
+        },
+        memory: {
+          total: 0,
+          used: 0
         }
       }
     } as MonitorResults

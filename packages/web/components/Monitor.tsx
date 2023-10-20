@@ -36,6 +36,24 @@ export default function Monitor() {
       </div>
     </div>)}
 
+    <div className="font-bold text-lg mt-4">Ingest</div>
+    <div className="w-full flex flex-col items-center justify-between text-xs gap-1">
+      <div className="w-full flex items-center justify-between">
+        <div className="whitespace-nowrap">cpu</div>
+        <AsciiMeter
+          current={monitor.ingest.cpu.usage * 100}
+          max={100}
+          label={`${(monitor.ingest.cpu.usage * 100).toFixed(2)} %`} />
+      </div>
+      <div className="w-full flex items-center justify-between">
+        <div className="whitespace-nowrap">memory</div>
+        <AsciiMeter 
+          current={monitor.ingest.memory.used}
+          max={monitor.ingest.memory.total}
+          label={`${prettyBytes(monitor.ingest.memory.used)} / ${prettyBytes(monitor.ingest.memory.total)}`} />
+      </div>
+    </div>
+
     <div className="font-bold text-lg mt-4">Redis</div>
     <div className="w-full flex flex-col items-center justify-between text-xs gap-1">
       <div className="w-full flex items-center justify-between">

@@ -1,4 +1,4 @@
-import { Queue } from 'bullmq'
+import { Queue, Worker } from 'bullmq'
 import { mq } from 'lib'
 import { Processor } from 'lib/processor'
 import { parse as parseRedisRaw } from 'redis-info'
@@ -23,12 +23,23 @@ export interface MonitorResults {
       fragmentation: number
     }
   }
+  ingest: {
+    cpu: {
+      usage: number
+    }
+    memory: {
+      total: number
+      used: number
+    }
+  }
 }
 
 export class Monitor implements Processor {
+  private worker: Worker | undefined
   private queues: Queue[] = []
   private redisClient: any | undefined
   private timer: NodeJS.Timeout | undefined
+  private _latestIngestMonitor: MonitorResults['ingest'] | undefined
   private _latest: MonitorResults | undefined
 
   async up() {
@@ -44,6 +55,12 @@ export class Monitor implements Processor {
     this.timer = setInterval(async () => {
       this._latest = await this.getLatest()
     }, 1000)
+
+    this.worker = mq.worker(mq.q.monitor, async job => {
+      if(job.name === mq.job.monitor.ingest) {
+        this._latestIngestMonitor = job.data as MonitorResults['ingest']
+      }
+    })
   }
 
   async down() {
@@ -63,7 +80,8 @@ export class Monitor implements Processor {
   private async getLatest() {
     const result = {
       queues: [] as MonitorResults['queues'],
-      redis: {} as MonitorResults['redis']
+      redis: {} as MonitorResults['redis'],
+      ingest: this._latestIngestMonitor
     } as MonitorResults
 
     for(const queue of this.queues) {

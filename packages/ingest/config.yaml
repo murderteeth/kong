@@ -5,6 +5,11 @@ crons:
     job: block
     schedule: "*/5 * * * * *" # every 5 seconds
 
+  - name: IngestProbe
+    queue: probe
+    job: ingest
+    schedule: "*/5 * * * * *" # every 5 seconds
+
   # - name: IndexRegistries
   #   queue: fanout
   #   job: registry
@@ -40,5 +45,6 @@ processors:
   - name: Extract
   - name: Compute
   - name: Loader
+  - name: Probe
 
 processRecycleMs: 600_000 # 10 minutes

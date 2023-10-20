@@ -4,7 +4,9 @@ export const q = {
   fanout: 'fanout',
   extract: 'extract',
   compute: 'compute',
-  load: 'load'
+  load: 'load',
+  probe: 'probe',
+  monitor: 'monitor'
 }
 
 export const job = {
@@ -49,6 +51,14 @@ export const job = {
       apy: 'sparkline-apy',
       apr: 'sparkline-apr'
     }
+  },
+
+  probe: {
+    ingest: 'ingest'
+  },
+
+  monitor: {
+    ingest: 'ingest'
   }
 }
 
