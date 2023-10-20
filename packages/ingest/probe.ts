@@ -41,6 +41,7 @@ export default class Probe implements Processor {
   }
 
   async down() {
+    await this.worker?.close()
     await this.queue?.close()
   }
 }
