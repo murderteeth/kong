@@ -18,6 +18,7 @@ services:
     name: ingest
     region: ohio
     env: node
+    plan: standard
     buildCommand: yarn
     startCommand: yarn workspace ingest production
     envVars:
