@@ -21,7 +21,7 @@ export default async () => {
     const dbStatus: { [key: string]: any } = {}
     for (const row of dbStatusRows) dbStatus[row.property] = row.value
 
-    const monitor = monitors.get(Math.floor(Math.random() * 2))
+    const monitor = monitors.get(0)
     return {...await monitor.latest, db: dbStatus}
   } catch (error) {
     console.error(error)

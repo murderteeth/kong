@@ -26,7 +26,6 @@ export class ProcessorPool<T extends Processor> implements Processor {
 
   async up() {
     await Promise.all(this.pool.map(p => p.up()))
-    if(this.pool.length < 2) return
     this.startRecycling()
   }
 
