@@ -5,7 +5,7 @@ export default async (_: any, args: { queueName: string }) => {
   try {
     if(process.env.NODE_ENV !== 'development') return []
 
-    const monitor = monitors.get(Math.floor(Math.random() * 2))
+    const monitor = monitors.get(0)
     const jobs = await monitor.failed(queueName)
     return jobs.map(job => ({
       id: job.id,
