@@ -1,5 +1,5 @@
 import db from '../db'
-import monitor from '../monitor'
+import { monitors } from '../index'
 
 export default async () => {
   try {
@@ -21,6 +21,7 @@ export default async () => {
     const dbStatus: { [key: string]: any } = {}
     for (const row of dbStatusRows) dbStatus[row.property] = row.value
 
+    const monitor = monitors.get(Math.floor(Math.random() * 2))
     return {...await monitor.latest, db: dbStatus}
   } catch (error) {
     console.error(error)
