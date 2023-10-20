@@ -1,3 +1,5 @@
+DROP VIEW vault_gql;
+DROP VIEW strategy_gql;
 DROP TABLE latest_block;
 DROP TABLE block_pointer;
 DROP TABLE vault;
@@ -10,8 +12,6 @@ DROP TABLE harvest;
 DROP TABLE apr;
 DROP TABLE apy;
 DROP TABLE sparkline;
-DROP VIEW vault_gql;
-DROP VIEW strategy_gql;
 
 CREATE TABLE latest_block (
 	chain_id int4 NOT NULL,
