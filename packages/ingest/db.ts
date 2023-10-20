@@ -1,4 +1,4 @@
-import { types } from 'lib'
+import { strings, types } from 'lib'
 import { Pool, types as pgTypes } from 'pg'
 
 // tell pg to parse numeric as float
@@ -18,8 +18,6 @@ const db = new Pool({
 })
 
 export default db
-
-export const camelToSnake = (str: string) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
 
 export async function getLatestBlock(chainId: number) {
   const result = await db.query(`
@@ -99,7 +97,7 @@ export async function getSparkline(chainId: number, address: string, type: strin
 
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {
   const fields = Object.keys(data).map(key => 
-    camelToSnake(key)
+    strings.camelToSnake(key)
   ) as string[]
 
   const columns = fields.join(', ')

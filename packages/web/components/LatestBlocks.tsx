@@ -7,10 +7,10 @@ import Frosty from './Frosty'
 import { useData } from '@/hooks/useData'
 
 export default function LatestBlocks() {
-  const { latestBlocks } = useData()
+  const data = useData()
   const latestBlock = useCallback((chainId: number) => {
-    return latestBlocks.find(block => block.chainId === chainId)?.blockNumber || '--------'
-  }, [latestBlocks])
+    return data.latestBlocks.find(block => block.chainId === chainId)?.blockNumber || '--------'
+  }, [data])
   return <Panel className={'w-full flex flex-col items-start'}>
     <div className="font-bold text-lg">Latest Blocks</div>
     {chains.map((chain, index) => <div key={chain.id} className="w-full flex items-center justify-between text-sm">

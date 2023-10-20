@@ -14,7 +14,7 @@ async function action() {
       name: 'tool',
       message: '',
       choices: [
-        { title: 'trash failed jobs', value: 'trash-failed-jobs' }
+        { title: 'flush failed jobs', value: 'flush-failed-jobs' }
       ]
     },
     {
@@ -26,7 +26,7 @@ async function action() {
 
   if (confirm) {
     switch(tool) {
-      case 'trash-failed-jobs': {
+      case 'flush-failed-jobs': {
         for(const key of Object.keys(mq.q)) {
           const queue = mq.queue(key)
           const result = await queue.clean(0, Number.MAX_SAFE_INTEGER, 'failed')
