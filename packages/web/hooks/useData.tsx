@@ -20,6 +20,11 @@ export interface Vault {
     time: number
     value: number
   }[]
+  apyNet: number
+  apySparkline: {
+    time: number
+    value: number
+  }[]
   withdrawalQueue: {
     name: string
     address: string
@@ -36,13 +41,19 @@ export interface TVL {
   time: number
 }
 
+export interface APY {
+  average: number
+  period: string
+  time: number
+}
+
 export interface Transfer {
   chainId: number
   address: string
   sender: string
   receiver: string
   amountUsd: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: string
 }
 
@@ -51,7 +62,7 @@ export interface Harvest {
   address: string
   lossUsd: number
   profitUsd: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: string
 }
 
@@ -77,12 +88,22 @@ export interface MonitorResults {
       peak: number
     }
   }
+  ingest: {
+    cpu: {
+      usage: number
+    }
+    memory: {
+      total: number
+      used: number
+    }
+  }
 }
 
 export interface DataContext {
   latestBlocks: LatestBlock[]
   vaults: Vault[]
   tvls: TVL[]
+  apys: APY[]
   transfers: Transfer[]
   harvests: Harvest[]
   monitor: MonitorResults
@@ -104,6 +125,11 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
     registryStatus
     tvlUsd
     tvlSparkline {
+      value
+      time
+    }
+    apyNet
+    apySparkline {
       value
       time
     }
@@ -136,6 +162,15 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
         peak
       }
     }
+    ingest {
+      cpu {
+        usage
+      }
+      memory {
+        total
+        used
+      }
+    }
   }
 
   tvls(chainId: $chainId, address: $address) {
@@ -147,13 +182,19 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
     time
   }
 
+  apys(chainId: $chainId, address: $address) {
+    average
+    period
+    time
+  }
+
   transfers {
     chainId
     address
     sender
     receiver
     amountUsd
-    blockTimestamp
+    blockTime
     transactionHash
   }
 
@@ -162,7 +203,7 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
     address
     lossUsd
     profitUsd
-    blockTimestamp
+    blockTime
     transactionHash
   }
 }`
@@ -191,6 +232,7 @@ export default function DataProvider({children}: {children: ReactNode}) {
     latestBlocks: [],
     vaults: [],
     tvls: [],
+    apys: [],
     transfers: [],
     harvests: [],
     monitor: {
@@ -208,6 +250,15 @@ export default function DataProvider({children}: {children: ReactNode}) {
           total: 0,
           used: 0,
           peak: 0
+        }
+      },
+      ingest: {
+        cpu: {
+          usage: 0
+        },
+        memory: {
+          total: 0,
+          used: 0
         }
       }
     } as MonitorResults

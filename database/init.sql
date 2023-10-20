@@ -1,7 +1,7 @@
 CREATE TABLE latest_block (
 	chain_id int4 NOT NULL,
 	block_number int8 NOT NULL,
-	block_timestamp timestamptz NOT NULL,
+	block_time timestamptz NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT latest_block_pkey PRIMARY KEY (chain_id)
 );
@@ -30,11 +30,8 @@ CREATE TABLE vault (
 	asset_name text NULL,
 	asset_symbol text NULL,
 	total_assets numeric NULL,
-	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
-	tvl_usd numeric NULL,
-	gross_apy numeric NULL,
-	net_apy numeric NULL,
+	activation_block_time timestamptz NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT vault_pkey PRIMARY KEY (chain_id, address)
@@ -47,10 +44,8 @@ CREATE TABLE strategy (
 	name text NULL,
 	vault_address text NULL,
 	migrate_address text NULL,
-	activation_timestamp timestamptz NULL,
 	activation_block_number int8 NULL,
-	gross_apr numeric NULL,
-	net_apr numeric NULL,
+	activation_block_time timestamptz NULL,
 	as_of_block_number int8 NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT strategy_pkey PRIMARY KEY (chain_id, address)
@@ -95,7 +90,7 @@ CREATE TABLE transfer (
 	amount_usd numeric NULL,
 	block_number int8 NOT NULL,
 	block_index int4 NOT NULL,
-	block_timestamp timestamptz NULL,
+	block_time timestamptz NULL,
 	transaction_hash text NOT NULL,
 	CONSTRAINT transfer_pkey PRIMARY KEY (chain_id, block_number, block_index)
 );
@@ -116,7 +111,7 @@ CREATE TABLE harvest (
 	total_debt numeric NULL,
 	block_number int8 NOT NULL,
 	block_index int4 NOT NULL,
-	block_timestamp timestamptz NULL,
+	block_time timestamptz NULL,
 	transaction_hash text NOT NULL,
 	CONSTRAINT harvest_pkey PRIMARY KEY (chain_id, block_number, block_index)
 );
@@ -130,12 +125,34 @@ CREATE TABLE apr (
 	gross numeric NOT NULL,
 	net numeric NOT NULL,
 	block_number int8 NOT NULL,
-	block_timestamp timestamptz NOT NULL,
-	CONSTRAINT apr_pkey PRIMARY KEY (chain_id, address, block_timestamp)
+	block_time timestamptz NOT NULL,
+	CONSTRAINT apr_pkey PRIMARY KEY (chain_id, address, block_time)
 );
 CREATE INDEX apr_idx_chainid_address_blocknumber ON harvest (chain_id, address, block_number);
 
-SELECT create_hypertable('apr', 'block_timestamp');
+SELECT create_hypertable('apr', 'block_time');
+
+CREATE TABLE apy (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	weekly_net numeric NOT NULL,
+	weekly_price_per_share numeric NOT NULL,
+	weekly_block_number int8 NOT NULL,
+	monthly_net numeric NOT NULL,
+	monthly_price_per_share numeric NOT NULL,
+	monthly_block_number int8 NOT NULL,
+	inception_net numeric NOT NULL,
+	inception_price_per_share numeric NOT NULL,
+	inception_block_number int8 NOT NULL,
+	net numeric NOT NULL,
+	gross_apr numeric NOT NULL,
+	price_per_share numeric NOT NULL,
+	block_number int8 NOT NULL,
+	block_time timestamptz NOT NULL,
+	CONSTRAINT apy_pkey PRIMARY KEY (chain_id, address, block_time)
+);
+
+SELECT create_hypertable('apy', 'block_time');
 
 CREATE TABLE sparkline (
 	chain_id int4 NOT NULL,
@@ -145,3 +162,45 @@ CREATE TABLE sparkline (
 	time timestamptz NOT NULL,
 	CONSTRAINT sparkline_pkey PRIMARY KEY (chain_id, address, type, time)
 );
+
+--------------------------------------
+-------------
+--- VIEWS
+CREATE VIEW vault_gql AS
+SELECT 
+  v.*,
+  t.tvl_usd AS tvl_usd,
+	a.net AS apy_net
+FROM vault v
+LEFT JOIN LATERAL (
+  SELECT 
+    tvl_usd
+  FROM tvl
+  WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
+  ORDER BY block_time DESC
+  LIMIT 1
+) t ON TRUE
+LEFT JOIN LATERAL (
+  SELECT 
+    net
+  FROM apy
+  WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+  ORDER BY block_time DESC
+  LIMIT 1
+) a ON TRUE;
+
+CREATE VIEW strategy_gql AS
+SELECT 
+  s.*,
+  a.gross AS gross_apr,
+  a.net AS net_apr
+FROM strategy s
+LEFT JOIN LATERAL (
+  SELECT 
+    gross,
+    net
+  FROM apr
+  WHERE s.chain_id = apr.chain_id AND s.address = apr.address
+  ORDER BY block_time DESC
+  LIMIT 1
+) a ON TRUE;

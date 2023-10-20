@@ -5,16 +5,14 @@ export interface YamlConfig {
   crons: {
     name: string
     queue: string
-    job?: string
+    job: string
     schedule: string
   }[]
 
   processRecycleMs: number
 
-  processorPools: {
-    type: string
-    size: number
-    concurrency?: number
+  processors: {
+    name: string
   }[]
 }
 

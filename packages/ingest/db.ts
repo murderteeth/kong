@@ -39,15 +39,32 @@ export async function getBlockPointer(chainId: number, address: `0x${string}`) {
   return BigInt(result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function saveBlockPointer(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+export async function setBlockPointer(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   await db.query(`
     INSERT INTO public.block_pointer (chain_id, address, block_number)
     VALUES ($1, $2, $3)
     ON CONFLICT (chain_id, address)
     DO UPDATE SET
-      block_number = EXCLUDED.block_number,
-      updated_at = NOW();
+      block_number = EXCLUDED.block_number;
   `, [chainId, address, blockNumber])
+}
+
+export async function getVaultBlockPointers(chainId: number) {
+  const result = await db.query(`
+    SELECT 
+      v.address, 
+      COALESCE(v.activation_block_number, 0) AS "activationBlockNumber",
+      COALESCE(p.block_number, 0) AS "blockNumber"
+    FROM vault v
+    LEFT JOIN block_pointer p
+    ON v.chain_id = p.chain_id AND v.address = p.address
+    WHERE v.chain_id = $1;
+  `, [chainId])
+  return result.rows.map(r => ({
+    address: r.address,
+    activationBlockNumber: BigInt(r.activationBlockNumber),
+    blockNumber: BigInt(r.blockNumber)
+  }))
 }
 
 export async function getErc20(chainId: number, address: string) {
@@ -58,7 +75,7 @@ export async function getErc20(chainId: number, address: string) {
       symbol,
       decimals
     FROM erc20
-    WHERE chain_id = $1 AND address = $2
+    WHERE chain_id = $1 AND address = $2;
   `, [chainId, address])
   return result.rows[0] as {
     address: `0x${string}`, 
@@ -75,12 +92,12 @@ export async function getSparkline(chainId: number, address: string, type: strin
       FLOOR(EXTRACT(EPOCH FROM time)) AS time
     FROM sparkline
     WHERE chain_id = $1 AND address = $2 AND type = $3
-    ORDER BY time ASC
+    ORDER BY time ASC;
   `, [chainId, address, type])
   return result.rows as types.SparklinePoint[]
 }
 
-export function toUpsertSql(table: string, pk: string, data: any) {
+export function toUpsertSql(table: string, pk: string, data: any, where?: string) {
   const fields = Object.keys(data).map(key => 
     camelToSnake(key)
   ) as string[]
@@ -102,31 +119,7 @@ export function toUpsertSql(table: string, pk: string, data: any) {
     VALUES (${values})
     ON CONFLICT (${pk})
     DO UPDATE SET 
-      ${updates};
-  `
-}
-
-export function toUpsertIfAsOfSql(table: string, pk: string, data: any) {
-  const fields = Object.keys(data).map(key => 
-    camelToSnake(key)
-  ) as string[]
-
-  const columns = fields.join(', ')
-
-  const values = fields.map((field, index) => 
-    field.endsWith('_timestamp') 
-    ? `to_timestamp($${index + 1}::double precision)`
-    : `$${index + 1}`
-  ).join(', ')
-  const updates = fields.map(field => `${field} = EXCLUDED.${field}`).join(', ')
-
-  return `
-    INSERT INTO ${table} (${columns}, updated_at)
-    VALUES (${values}, NOW())
-    ON CONFLICT (${pk})
-    DO UPDATE SET 
-      ${updates},
-      updated_at = NOW()
-    WHERE ${table}.as_of_block_number < EXCLUDED.as_of_block_number;
+      ${updates}
+    ${where || ''};
   `
 }

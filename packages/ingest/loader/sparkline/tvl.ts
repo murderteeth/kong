@@ -20,11 +20,13 @@ WITH new_records AS (
     time DESC
   LIMIT 3
 ), 
-to_delete AS (
+
+deleted AS (
   DELETE FROM sparkline
-  WHERE (chain_id, address, type) IN (SELECT chain_id, address, type FROM new_records)
+  WHERE chain_id = $1 AND address = $2 AND type = 'vault-tvl-7d'
   RETURNING *
 )
+
 INSERT INTO sparkline (chain_id, address, type, value, time)
 SELECT chain_id, address, type, value, time FROM new_records
 ON CONFLICT (chain_id, address, type, time) 

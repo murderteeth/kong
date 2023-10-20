@@ -3,7 +3,7 @@ version: '3.1'
 services:
   redis:
     image: redis:latest
-    command: ["redis-server", "--maxclients", "250", "--maxmemory", "256mb"]
+    command: ["redis-server", "--maxclients", "250", "--maxmemory", "1gb"]
     ports:
       - "6379:6379"
 

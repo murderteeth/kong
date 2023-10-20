@@ -10,7 +10,7 @@ type Transfer {
   amountUsd: Float!
   blockNumber: Int!
   blockIndex: Int!
-  blockTimestamp: String!
+  blockTime: String!
   transactionHash: String!
 }
 `

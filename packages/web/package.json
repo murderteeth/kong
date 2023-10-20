@@ -23,7 +23,8 @@
     "react-dom": "18.2.0",
     "react-responsive": "^9.0.2",
     "react-timeago": "^7.1.0",
-    "viem": "1.6.3"
+    "tailwind-scrollbar": "^3.0.5",
+    "viem": "1.16.5"
   },
   "devDependencies": {
     "@types/figlet": "^1.5.6",

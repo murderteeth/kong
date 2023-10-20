@@ -8,8 +8,8 @@ WITH new_records AS (
     CAST($1 AS int4) AS chain_id,
     CAST($2 AS text) AS address,
     'strategy-apr-7d' as type,
-    time_bucket('7 day', block_timestamp) AS time,
-    LAST(net, block_timestamp) AS value
+    time_bucket('7 day', block_time) AS time,
+    LAST(net, block_time) AS value
   FROM
     apr
   WHERE
@@ -20,11 +20,13 @@ WITH new_records AS (
     time DESC
   LIMIT 3
 ), 
-to_delete AS (
+
+deleted AS (
   DELETE FROM sparkline
-  WHERE (chain_id, address, type) IN (SELECT chain_id, address, type FROM new_records)
+  WHERE chain_id = $1 AND address = $2 AND type = 'strategy-apr-7d'
   RETURNING *
 )
+
 INSERT INTO sparkline (chain_id, address, type, value, time)
 SELECT chain_id, address, type, value, time FROM new_records
 ON CONFLICT (chain_id, address, type, time) 

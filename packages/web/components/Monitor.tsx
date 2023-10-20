@@ -21,9 +21,9 @@ export default function Monitor() {
   return <Panel className={'w-full flex flex-col items-start'}>
     <div className="font-bold text-lg">Message Queue</div>
     {monitor.queues.map((queue, index) => <div key={queue.name} className={`
-      w-full flex items-center justify-between gap-2 text-xs`}>
-      <div className="whitespace-nowrap">{queue.name}</div>
-      <div className="flex items-center gap-2 whitespace-nowrap">
+      w-full flex items-center justify-between gap-2`}>
+      <div className="text-xs whitespace-nowrap">{queue.name}</div>
+      <div className="flex items-center gap-2 text-sm whitespace-nowrap">
         <Frosty _key={`${queue.name}-w-${formatNumber(queue.waiting)}`} disabled={queue.waiting < 1}>
           <span dangerouslySetInnerHTML={{ __html: `w ${formatNumber(queue.waiting)}` }} />
         </Frosty>
@@ -31,10 +31,28 @@ export default function Monitor() {
           <span dangerouslySetInnerHTML={{ __html: `a ${formatNumber(queue.active)}` }} />
         </Frosty>
         <Frosty _key={`${queue.name}-f-${formatNumber(queue.failed)}`} disabled={queue.failed < 1}>
-          <span dangerouslySetInnerHTML={{ __html: `f ${formatNumber(queue.failed)}` }} />
+          <span dangerouslySetInnerHTML={{ __html: `e ${formatNumber(queue.failed)}` }} />
         </Frosty>
       </div>
     </div>)}
+
+    <div className="font-bold text-lg mt-4">Ingest</div>
+    <div className="w-full flex flex-col items-center justify-between text-xs gap-1">
+      <div className="w-full flex items-center justify-between">
+        <div className="whitespace-nowrap">cpu</div>
+        <AsciiMeter
+          current={monitor.ingest.cpu.usage * 100}
+          max={100}
+          label={`${(monitor.ingest.cpu.usage * 100).toFixed(2)} %`} />
+      </div>
+      <div className="w-full flex items-center justify-between">
+        <div className="whitespace-nowrap">memory</div>
+        <AsciiMeter 
+          current={monitor.ingest.memory.used}
+          max={monitor.ingest.memory.total}
+          label={`${prettyBytes(monitor.ingest.memory.used)} / ${prettyBytes(monitor.ingest.memory.total)}`} />
+      </div>
+    </div>
 
     <div className="font-bold text-lg mt-4">Redis</div>
     <div className="w-full flex flex-col items-center justify-between text-xs gap-1">

@@ -6,7 +6,7 @@ export default async (_: any, args: { chainId?: number }) => {
     SELECT 
       chain_id as "chainId", 
       block_number as "blockNumber", 
-      FLOOR(EXTRACT(EPOCH FROM block_timestamp)) * 1000 as "blockTimestamp"
+      FLOOR(EXTRACT(EPOCH FROM block_time)) * 1000 as "blockTime"
     FROM public.latest_block 
     WHERE chain_id = $1 OR $1 IS NULL
     ORDER BY chain_id
@@ -18,6 +18,6 @@ export default async (_: any, args: { chainId?: number }) => {
     return res.rows
   } catch (error) {
     console.error(error)
-    throw new Error('Failed to fetch latest block')
+    throw new Error('!latest block')
   }
 }

@@ -1,92 +1,81 @@
 import { Queue, QueueOptions, Worker } from 'bullmq'
 
-const bull = { connection: {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: (process.env.REDIS_PORT || 6379) as number,
-}}
-
 export const q = {
   fanout: 'fanout',
+  extract: 'extract',
   compute: 'compute',
-  load: 'load', 
-
-  transfer: {
-    extract: 'transfer-extract'
-  },
-
-  block: {
-    poll: 'block-poll',
-    load: 'block-load'
-  },
-
-  yearn: {
-    index: 'yearn-index',
-    indexJobs: { registry: 'registry', vault: 'vault' }, 
-
-    registry: {
-      pointer: 'yearn-registry-pointer',
-      pointerJobs: { catchup: {
-        block: 'block-catchup'
-      } },
-      extract: 'yearn-registry-extract',
-      extractJobs: { logs: 'logs', apetax: 'apetax' },
-    }, 
-
-    vault: {
-      pointer: 'yearn-vault-pointer',
-      pointerJobs: { catchup: {
-        block: 'catchup-block',
-        tvl: 'catchup-tvl',
-      } },
-      extract: 'yearn-vault-extract',
-      extractJobs: {
-        logs: 'logs',
-        state: 'state',
-        harvest: 'harvest',
-        tvl: 'tvl'
-      },
-      load: 'yearn-vault-load',
-      loadJobs: { vault: 'vault', withdrawalQueue: 'withdrawal-queue' }
-    }, 
-
-    strategy: {
-      pointer: 'yearn-strategy-pointer',
-      pointerJobs: { catchup: {
-        block: 'catchup-block'
-      } },
-      extract: 'yearn-strategy-extract',
-      extractJobs: { logs: 'logs', state: 'state' },
-      load: 'yearn-strategy-load',
-      loadJobs: { strategy: 'strategy' }
-    }
-  }
+  load: 'load',
+  probe: 'probe',
+  monitor: 'monitor'
 }
 
 export const job = {
-  __noname: '',
-
   fanout: {
+    registry: 'registry',
+    vault: 'vault',
+    strategy: 'strategy',
+    tvl: 'tvl',
+    apy: 'apy',
     harvestApr: 'harvest-apr'
   },
 
+  extract: {
+    block: 'block',
+    evmlogs: 'evmlogs',
+    apetax: 'apetax',
+    vault: 'vault',
+    strategy: 'strategy',
+    harvest: 'harvest',
+    transfer: 'transfer',
+  },
+
   compute: {
+    tvl: 'tvl',
+    apy: 'apy',
     harvestApr: 'harvest-apr'
   },
 
   load: {
+    block: 'block',
     erc20: 'erc20',
     transfer: 'transfer',
     vault: 'vault',
+    withdrawalQueue: 'withdrawal-queue',
     strategy: 'strategy',
     harvest: 'harvest',
-    apr: 'apr',
     tvl: 'tvl',
+    apy: 'apy',
+    apr: 'apr',
     sparkline: {
-      apr: 'sparkline-apr',
-      tvl: 'sparkline-tvl'
+      tvl: 'sparkline-tvl',
+      apy: 'sparkline-apy',
+      apr: 'sparkline-apr'
     }
+  },
+
+  probe: {
+    ingest: 'ingest'
+  },
+
+  monitor: {
+    ingest: 'ingest'
   }
 }
+
+// -= job priority in bullmq =-
+// https://github.com/taskforcesh/bullmq/blob/a01bb0b0345509cde6c74843323de6b67729f310/docs/gitbook/guide/jobs/prioritized.md
+// no priority set = highest (default)
+// 1 = next highest
+// 2 ** 21 = lowest
+// adding prioritized jobs to a queue goes like O(log(n))
+// where n is the number of prioritized jobs in the queue
+// (ie, total jobs - non-prioritized jobs)
+export const LOWEST_PRIORITY = 2 ** 21
+
+const bull = { connection: {
+  host: process.env.REDIS_HOST || 'localhost',
+  port: (process.env.REDIS_PORT || 6379) as number,
+}}
 
 export function queue(name: string, options?: QueueOptions) {
   return new Queue(name, {...bull, ...options})
@@ -112,14 +101,17 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
   const timer = setInterval(async () => {
     const jobs = await queue.count()
     const targetConcurrency = computeConcurrency(jobs)
+
     if(targetConcurrency > concurrency) {
       console.log('🚀', 'concurrency up', queueName, targetConcurrency)
       concurrency = targetConcurrency
       worker.concurrency = targetConcurrency
+
     } else if(targetConcurrency < concurrency) {
       console.log('🐌', 'concurrency down', queueName, targetConcurrency)
       concurrency = targetConcurrency
       worker.concurrency = targetConcurrency
+
     }
   }, 5000)
 
@@ -134,14 +126,10 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
 }
 
 export function computeConcurrency(jobs: number) {
-  const minConcurrency = 1
-  const maxConcurrency = 400
-  const upperJobLimit = 2000
-  const scalingFactor = 10
-
-  let concurrency = jobs > upperJobLimit
-  ? maxConcurrency
-  : Math.ceil(jobs / scalingFactor)
-
-  return Math.min(Math.max(concurrency, minConcurrency), maxConcurrency)
+  const min = 1
+  const max = 20
+  const threshold = 200
+  const m = (max - min) / (threshold - 0)
+  const concurrency = Math.floor(m * jobs + min)
+  return Math.min(Math.max(concurrency, min), max)
 }

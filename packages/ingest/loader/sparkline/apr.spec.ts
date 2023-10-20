@@ -5,7 +5,7 @@ import db, { getSparkline, toUpsertSql } from '../../db'
 import { mainnet } from 'viem/chains'
 import { types } from 'lib'
 
-describe.only('loader sparkline tvl', function() {
+describe('loader sparkline tvl', function() {
   before(async function() { 
     this.data = { chainId: mainnet.id, address: addresses.strategystEthAccumulator_v2 }
   })
@@ -30,11 +30,11 @@ describe.only('loader sparkline tvl', function() {
       gross: 0,
       net: 0.1,
       blockNumber: '1',
-      blockTimestamp: '1'
+      blockTime: '1'
     } as types.APR
 
     await db.query(
-      toUpsertSql('apr', 'chain_id, address, block_timestamp', apr),
+      toUpsertSql('apr', 'chain_id, address, block_time', apr),
       Object.values(apr)
     )
 
@@ -51,27 +51,27 @@ describe.only('loader sparkline tvl', function() {
       gross: 0,
       net: 0.1,
       blockNumber: '1',
-      blockTimestamp: '1'
+      blockTime: '1'
     } as types.APR
 
     await db.query(
-      toUpsertSql('apr', 'chain_id, address, block_timestamp', apr),
+      toUpsertSql('apr', 'chain_id, address, block_time', apr),
       Object.values(apr)
     )
 
     await db.query(
-      toUpsertSql('apr', 'chain_id, address, block_timestamp', apr),
-      Object.values({...apr, blockNumber: '2', blockTimestamp: 1 * (60 * 60 * 24 * 7) + ''})
+      toUpsertSql('apr', 'chain_id, address, block_time', apr),
+      Object.values({...apr, blockNumber: '2', blockTime: 1 * (60 * 60 * 24 * 7) + ''})
     )
 
     await db.query(
-      toUpsertSql('apr', 'chain_id, address, block_timestamp', apr),
-      Object.values({...apr, blockNumber: '3', blockTimestamp: 2 * (60 * 60 * 24 * 7) + ''})
+      toUpsertSql('apr', 'chain_id, address, block_time', apr),
+      Object.values({...apr, blockNumber: '3', blockTime: 2 * (60 * 60 * 24 * 7) + ''})
     )
 
     await db.query(
-      toUpsertSql('apr', 'chain_id, address, block_timestamp', apr),
-      Object.values({...apr, net: 0.2, blockNumber: '4', blockTimestamp: 3 * (60 * 60 * 24 * 7) + ''})
+      toUpsertSql('apr', 'chain_id, address, block_time', apr),
+      Object.values({...apr, net: 0.2, blockNumber: '4', blockTime: 3 * (60 * 60 * 24 * 7) + ''})
     )
 
     await loader(this.data)

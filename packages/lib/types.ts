@@ -1,7 +1,7 @@
 export interface LatestBlock {
   chainId: number
   blockNumber: string
-  blockTimestamp: string
+  blockTime: string
 }
 
 export interface APR {
@@ -10,15 +10,34 @@ export interface APR {
   gross: number
   net: number
   blockNumber: string
-  blockTimestamp: string
+  blockTime: string
+}
+
+export interface APY {
+  chainId: number
+  address: `0x${string}`
+  weeklyNet: number,
+  weeklyPricePerShare: bigint,
+  weeklyBlockNumber: bigint,
+  monthlyNet: number,
+  monthlyPricePerShare: bigint,
+  monthlyBlockNumber: bigint,
+  inceptionNet: number,
+  inceptionPricePerShare: bigint,
+  inceptionBlockNumber: bigint
+  net: number
+  grossApr: number
+  pricePerShare: bigint
+  blockNumber: bigint
+  blockTime: bigint
 }
 
 export interface TVL {
   chainId: number
   address: string
   tvlUsd: number
-  blockNumber: string
-  blockTime: string
+  blockNumber: bigint
+  blockTime: bigint
 }
 
 export interface Vault {
@@ -37,9 +56,9 @@ export interface Vault {
   assetName?: string,
   assetSymbol?: string,
   totalAssets?: string,
-  activationTimestamp?: string,
+  activationBlockTime?: string,
   activationBlockNumber?: string,
-  asOfBlockNumber: string
+  asOfBlockNumber: bigint
 }
 
 export interface Strategy {
@@ -50,9 +69,9 @@ export interface Strategy {
   vaultAddress?: string,
   withdrawalQueueIndex?: number,
   migrateAddress?: string,
-  activationTimestamp?: string,
+  activationBlockTime?: string,
   activationBlockNumber?: string,
-  asOfBlockNumber: string
+  asOfBlockNumber: bigint
 }
 
 export interface WithdrawalQueueItem {
@@ -60,7 +79,7 @@ export interface WithdrawalQueueItem {
   vaultAddress: `0x${string}`
   queueIndex: number
   strategyAddress?: `0x${string}`
-  asOfBlockNumber: string
+  asOfBlockNumber: bigint
 }
 
 export interface ERC20 {
@@ -80,7 +99,7 @@ export interface Transfer {
   amountUsd?: number
   blockNumber: string
   blockIndex: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: `0x${string}`
 }
 
@@ -98,7 +117,7 @@ export interface Harvest {
   totalDebt?: string
   blockNumber: string
   blockIndex: number
-  blockTimestamp: string
+  blockTime: string
   transactionHash: `0x${string}`
 }
 
