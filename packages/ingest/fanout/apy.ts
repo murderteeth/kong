@@ -48,12 +48,12 @@ export async function getLatestApyTimes(chainId: number) {
   const result = await db.query(`
     SELECT 
       v.address,
-      FLOOR(EXTRACT(EPOCH FROM MAX(apy.block_time))) * 1000 as "blockTime"
+      FLOOR(EXTRACT(EPOCH FROM MAX(apy.block_time))) * 1000 as "blockTimeMs"
     FROM vault v
     LEFT OUTER JOIN apy
     ON v.chain_id = apy.chain_id AND v.address = apy.address
     WHERE v.chain_id = $1
-    GROUP BY v.address
+    GROUP BY v.address;
   `, [chainId])
   return result.rows as { 
     address: `0x${string}`, 

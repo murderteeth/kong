@@ -11,7 +11,6 @@
     "posttest": "docker compose down"
   },
   "dependencies": {
-    "@types/js-yaml": "^4.0.5",
     "@types/node": "^20.5.0",
     "@types/pg": "^8.10.2",
     "bullmq": "^4.7.3",
@@ -27,6 +26,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.6",
+    "@types/js-yaml": "^4.0.8",
     "@types/mocha": "^10.0.1",
     "chain": "^0.4.0",
     "mocha": "^10.2.0",

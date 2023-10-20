@@ -34,4 +34,8 @@ export class ProcessorPool<T extends Processor> implements Processor {
     clearInterval(this.interval)
     await Promise.all(this.pool.map(p => p.down()))
   }
+
+  get(index: number) {
+    return this.pool[index]
+  }
 }

@@ -3,11 +3,12 @@ import path from 'path'
 import dotenv from 'dotenv'
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express'
-import monitor from './monitor'
+import { Monitor } from './monitor'
 import typeDefs from './typeDefs'
 import db from './db'
 import resolvers from './resolvers'
 import { cache } from 'lib'
+import { ProcessorPool } from 'lib/processor'
 
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
@@ -21,10 +22,12 @@ const server = new ApolloServer({
   cache: 'bounded'
 })
 
+export const monitors = new ProcessorPool(Monitor, 2, 600_000)
+
 Promise.all([
   cache.up(),
   server.start(),
-  monitor.up()
+  monitors.up()
 ]).then(() => {
 
   const app = express()
@@ -41,7 +44,7 @@ Promise.all([
 function down() {
   Promise.all([
     cache.down(),
-    monitor.down(),
+    monitors.down(),
     db.end()
   ]).then(() => {
     console.log('🐒 gql down')

@@ -48,12 +48,12 @@ export async function getLatestTvlTimes(chainId: number) {
   const result = await db.query(`
     SELECT 
       v.address,
-      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.block_time))) * 1000 as "blockTime"
+      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.block_time))) * 1000 as "blockTimeMs"
     FROM vault v
     LEFT OUTER JOIN tvl
     ON v.chain_id = tvl.chain_id AND v.address = tvl.address
     WHERE v.chain_id = $1
-    GROUP BY v.address
+    GROUP BY v.address;
   `, [chainId])
   return result.rows as { 
     address: `0x${string}`, 

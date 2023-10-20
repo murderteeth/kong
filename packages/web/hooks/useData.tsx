@@ -223,46 +223,48 @@ async function fetchData() {
   return (await response.json()).data as DataContext
 }
 
-export const dataContext = createContext<DataContext>({} as DataContext)
+const DEFAULT = {
+  latestBlocks: [],
+  vaults: [],
+  tvls: [],
+  apys: [],
+  transfers: [],
+  harvests: [],
+  monitor: {
+    queues: [],
+    db: {
+      databaseSize: 0,
+      indexHitRate: 0,
+      cacheHitRate: 0,
+      clients: 0
+    },
+    redis: {
+      uptime: 0,
+      clients: 0,
+      memory: {
+        total: 0,
+        used: 0,
+        peak: 0
+      }
+    },
+    ingest: {
+      cpu: {
+        usage: 0
+      },
+      memory: {
+        total: 0,
+        used: 0
+      }
+    }
+  } as MonitorResults
+} as DataContext
+
+export const dataContext = createContext<DataContext>(DEFAULT)
 
 export const useData = () => useContext(dataContext)
 
 export default function DataProvider({children}: {children: ReactNode}) {
-  const [data, setData] = useState<DataContext>({
-    latestBlocks: [],
-    vaults: [],
-    tvls: [],
-    apys: [],
-    transfers: [],
-    harvests: [],
-    monitor: {
-      queues: [],
-      db: {
-        databaseSize: 0,
-        indexHitRate: 0,
-        cacheHitRate: 0,
-        clients: 0
-      },
-      redis: {
-        uptime: 0,
-        clients: 0,
-        memory: {
-          total: 0,
-          used: 0,
-          peak: 0
-        }
-      },
-      ingest: {
-        cpu: {
-          usage: 0
-        },
-        memory: {
-          total: 0,
-          used: 0
-        }
-      }
-    } as MonitorResults
-  } as DataContext)
+  const [data, setData] = useState<DataContext>(DEFAULT)
 
   useEffect(() => {
     let handle: NodeJS.Timeout

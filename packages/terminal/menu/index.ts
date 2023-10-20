@@ -1,9 +1,10 @@
 import prompts from 'prompts'
 import extractPrompt from './extract'
-import quitPrompt from './quit'
+import cronsPrompt from './crons'
 import toolsPrompt from './tools'
 import fanoutPrompt from './fanout'
 import errorPrompt from './errors'
+import quitPrompt from './quit'
 
 export interface MenuAction {
   action: () => Promise<void>,
@@ -13,6 +14,7 @@ export interface MenuAction {
 const actions = [
   fanoutPrompt,
   extractPrompt,
+  cronsPrompt,
   errorPrompt,
   toolsPrompt,
   quitPrompt

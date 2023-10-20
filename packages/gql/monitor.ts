@@ -34,13 +34,45 @@ export interface MonitorResults {
   }
 }
 
+const DEFAULT = {
+  queues: [],
+  db: {
+    databaseSize: 0,
+    indexHitRate: 0,
+    cacheHitRate: 0,
+    clients: 0
+  },
+  redis: {
+    version: '',
+    mode: '',
+    os: '',
+    uptime: 0,
+    clients: 0,
+    memory: {
+      total: 0,
+      used: 0,
+      peak: 0,
+      fragmentation: 0
+    }
+  },
+  ingest: {
+    cpu: {
+      usage: 0
+    },
+    memory: {
+      total: 0,
+      used: 0
+    }
+  }
+} as MonitorResults
+
 export class Monitor implements Processor {
   private worker: Worker | undefined
   private queues: Queue[] = []
   private redisClient: any | undefined
   private timer: NodeJS.Timeout | undefined
-  private _latestIngestMonitor: MonitorResults['ingest'] | undefined
-  private _latest: MonitorResults | undefined
+  private _latestIngestMonitor: MonitorResults['ingest'] = DEFAULT.ingest
+  private _latest: MonitorResults = DEFAULT
 
   async up() {
     this.queues = [
@@ -54,11 +86,11 @@ export class Monitor implements Processor {
 
     this.timer = setInterval(async () => {
       this._latest = await this.getLatest()
-    }, 1000)
+    }, 2000)
 
     this.worker = mq.worker(mq.q.monitor, async job => {
       if(job.name === mq.job.monitor.ingest) {
-        this._latestIngestMonitor = job.data as MonitorResults['ingest']
+        this._latestIngestMonitor = job.data as MonitorResults['ingest'] || DEFAULT.ingest
       }
     })
   }
@@ -113,7 +145,3 @@ export class Monitor implements Processor {
     return result
   }
 }
-
-const monitor = new Monitor()
-
-export default monitor
