@@ -84,6 +84,7 @@ export class Monitor implements Processor {
 
     this.redisClient = await this.queues[0].client
 
+    this._latest = await this.getLatest()
     this.timer = setInterval(async () => {
       this._latest = await this.getLatest()
     }, 2000)
@@ -97,8 +98,9 @@ export class Monitor implements Processor {
 
   async down() {
     clearInterval(this.timer)
-    this.redisClient = undefined
+    await this.worker?.close()
     await Promise.all(this.queues.map(q => q.close()))
+    this.redisClient = undefined
   }
 
   get latest() {

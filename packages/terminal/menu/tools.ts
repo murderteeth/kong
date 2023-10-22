@@ -47,6 +47,7 @@ async function action() {
         })
         await client.connect()
         await client.flushAll()
+        // await client.clientKill({ type: 'normal' } as any)
         await client.quit()
         break
       }

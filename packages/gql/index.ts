@@ -22,7 +22,7 @@ const server = new ApolloServer({
   cache: 'bounded'
 })
 
-export const monitors = new ProcessorPool(Monitor, 2, 600_000)
+export const monitors = new ProcessorPool(Monitor, 1, 5_000)
 
 Promise.all([
   cache.up(),
