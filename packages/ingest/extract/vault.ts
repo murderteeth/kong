@@ -215,8 +215,6 @@ export async function extractFeesBps(chainId: number, address: `0x${string}`, bl
 }
 
 export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const withdrawalQueue = []
-
   // TODO: y dis no work? runtime error 'property abi cannot be destructured'
   // const contracts = Array(20).map((_, i) => ({
   //   address, functionName: 'withdrawalQueue', args: [BigInt(i)],
@@ -248,12 +246,26 @@ export async function extractWithdrawalQueue(chainId: number, address: `0x${stri
     { args: [19n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
   ], blockNumber})
 
-  for(const result of results) {
-    const strategy = result.status === 'failure' || result.result === zeroAddress
-    ? null
-    : result.result as `0x${string}`
-    withdrawalQueue.push(strategy)
-  }
+  return results.filter(result => result.status === 'success')
+  .map(result => result.result as `0x${string}`)
+}
 
-  return withdrawalQueue
+export async function extractDelegatedAssets(chainId: number, addresses: `0x${string}` [], blockNumber: bigint) {
+  const results = [] as { address: `0x${string}`, delegatedAssets: bigint } []
+
+  const contracts = addresses.map(address => ({
+    args: [], address, functionName: 'delegatedAssets', abi: parseAbi(['function delegatedAssets() returns (uint256)'])
+  }))
+
+  const multicallresults = await rpcs.next(chainId).multicall({ contracts, blockNumber})
+
+  multicallresults.forEach((result, index) => {
+    const delegatedAssets = result.status === 'failure'
+    ? 0n
+    : BigInt(result.result as bigint)
+
+    results.push({ address: addresses[index], delegatedAssets })
+  })
+
+  return results
 }
