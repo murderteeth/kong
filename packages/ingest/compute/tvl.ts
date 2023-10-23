@@ -6,6 +6,8 @@ import { estimateHeight, getBlock } from 'lib/blocks'
 import db from '../db'
 import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
+import { extractDelegatedAssets, extractWithdrawalQueue } from '../extract/vault'
+import { scaleDown } from 'lib/math'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined
@@ -32,9 +34,12 @@ export class TvlComputer implements Processor {
       blockNumber
     }) as bigint
 
+    const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
+    const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
+    const totalDelegatedAssets = delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
     const { price: assetPriceUsd } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber)
-    const tvlAssets = Number(totalAssets * 10_000n / BigInt(10 ** decimals)) / 10_000
-    const tvlUsd = tvlAssets * assetPriceUsd
+
+    const tvlUsd = scaleDown(totalAssets, decimals) * assetPriceUsd - scaleDown(totalDelegatedAssets, decimals) * assetPriceUsd
 
     await this.queue?.add(mq.job.load.tvl, {
       chainId,
