@@ -2,7 +2,7 @@ import * as yaml from 'js-yaml'
 import * as fs from 'fs'
 import path from 'path'
 
-export interface YamlConfig {
+interface YamlConfig {
   crons: {
     name: string
     queue: string
