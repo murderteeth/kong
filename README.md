@@ -51,12 +51,10 @@ make dev
 
 `web` - kong runtime dash
 
-
+## yamls
 ## ingest
-### config
 ### processors
 #### paths
-
 
 ## postgres x timescale
 locally you can run postgres and timescale from a docker image, eg using `make postgres`. connect to your local with
