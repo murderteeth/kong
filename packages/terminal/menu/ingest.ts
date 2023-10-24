@@ -4,7 +4,7 @@ import { MenuAction } from '.'
 
 export default {
   action,
-  menu: { title: 'Fanout', value: 'fanout' }
+  menu: { title: 'Ingest', value: 'ingest' }
 } as MenuAction
 
 async function action() {
@@ -12,7 +12,7 @@ async function action() {
     {
       type: 'select',
       name: 'job',
-      message: 'pick a fanout job',
+      message: 'pick an ingest job',
       choices: [
         { title: 'index registry events', value: mq.job.fanout.registry },
         { title: 'index vault events', value: mq.job.fanout.vault },

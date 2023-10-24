@@ -22,29 +22,9 @@ export class TvlComputer implements Processor {
 
   async compute(data: any) {
     const { chainId, address, time } = data
-
     const blockNumber = await estimateHeight(chainId, time)
     const block = await getBlock(chainId, blockNumber)
-    const { assetAddress, decimals } = await getAsset(chainId, address)
-
-    const totalAssets = await rpcs.next(chainId).readContract({
-      address,
-      functionName: 'totalAssets' as never,
-      abi: parseAbi(['function totalAssets() view returns (uint256)']),
-      blockNumber
-    }) as bigint
-
-    if(totalAssets === 0n) return
-
-    const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
-    const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
-    const totalDelegatedAssets = delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
-    const { price: assetPriceUsd } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber)
-
-    const tvlUsd = 
-    (scaleDown(totalAssets, decimals) - scaleDown(totalDelegatedAssets, decimals)) 
-    * assetPriceUsd
-
+    const tvlUsd = await _compute(chainId, address, block.timestamp)
     await this.queue?.add(mq.job.load.tvl, {
       chainId,
       address,
@@ -53,6 +33,28 @@ export class TvlComputer implements Processor {
       blockTime: block.timestamp
     } as types.TVL)
   }
+}
+
+export async function _compute(chainId: number, address: `0x${string}`, time: bigint) {
+  const blockNumber = await estimateHeight(chainId, time)
+  const { assetAddress, decimals } = await getAsset(chainId, address)
+
+  const totalAssets = await rpcs.next(chainId).readContract({
+    address,
+    functionName: 'totalAssets' as never,
+    abi: parseAbi(['function totalAssets() view returns (uint256)']),
+    blockNumber
+  }) as bigint
+
+  if(totalAssets === 0n) return 0
+
+  const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
+  const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
+  const totalDelegatedAssets = delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
+  const { price: assetPriceUsd } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber)
+
+  return (scaleDown(totalAssets, decimals) - scaleDown(totalDelegatedAssets, decimals)) 
+  * assetPriceUsd 
 }
 
 export async function getAsset(chainId: number, address: string) {
