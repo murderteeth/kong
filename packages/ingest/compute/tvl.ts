@@ -34,12 +34,16 @@ export class TvlComputer implements Processor {
       blockNumber
     }) as bigint
 
+    if(totalAssets === 0n) return
+
     const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
     const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
     const totalDelegatedAssets = delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
     const { price: assetPriceUsd } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber)
 
-    const tvlUsd = scaleDown(totalAssets, decimals) * assetPriceUsd - scaleDown(totalDelegatedAssets, decimals) * assetPriceUsd
+    const tvlUsd = 
+    (scaleDown(totalAssets, decimals) - scaleDown(totalDelegatedAssets, decimals)) 
+    * assetPriceUsd
 
     await this.queue?.add(mq.job.load.tvl, {
       chainId,

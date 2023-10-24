@@ -8,6 +8,7 @@ export interface YamlConfig {
     queue: string
     job: string
     schedule: string
+    start?: boolean
   }[]
 }
 

@@ -4,11 +4,13 @@ crons:
     queue: extract
     job: block
     schedule: "*/5 * * * * *" # every 5 seconds
+    start: true
 
   - name: IngestProbe
     queue: probe
     job: ingest
     schedule: "*/5 * * * * *" # every 5 seconds
+    start: true
 
   - name: IndexRegistries
     queue: fanout
