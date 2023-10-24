@@ -18,6 +18,8 @@ async function action() {
       name: 'tool',
       message: '',
       choices: [
+        { title: 'extract mainnet yweth vault', value: 'extract-yweth' },
+        { title: 'extract apetax vaults', value: 'extract-apetax-vaults' },
         { title: 'flush failed jobs', value: 'flush-failed-jobs' },
         { title: 'flush redis', value: 'flush-redis' },
         { title: 'reset database', value: 'reset-database' }
@@ -32,6 +34,28 @@ async function action() {
 
   if (confirm) {
     switch(tool) {
+      case 'extract-yweth': {
+        const queue = mq.queue(mq.q.extract)
+        await queue.add(mq.job.extract.vault, {
+          chainId: 1,
+          type: 'vault',
+          registryStatus: 'endorsed',
+          registryAddress: '0xe15461b18ee31b7379019dc523231c57d1cbc18c' as `0x${string}`,
+          address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c',
+          apiVersion: '0.4.2',
+          assetAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+        })
+        await queue.close()
+        break
+      }
+
+      case 'extract-apetax-vaults': {
+        const queue = mq.queue(mq.q.extract)
+        await queue.add(mq.job.extract.apetax, {})
+        await queue.close()
+        break
+      }
+
       case 'flush-failed-jobs': {
         for(const key of Object.keys(mq.q)) {
           const queue = mq.queue(key)

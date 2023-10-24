@@ -18,7 +18,7 @@ async function action() {
     await q.close()
     choices.push({ 
       ...cron, 
-      title: `[${scheduled ? '🟢 enabled' : '🔴 disabled'}] ${cron.name}`,
+      title: `${scheduled ? '🟢 enabled' : '🔴 disabled'} - ${cron.name} (${cron.schedule})`,
       value: cron.name,
       scheduled
     })

@@ -33,6 +33,8 @@ async function action() {
     }
   ])
 
+  if(!queue) return
+
   const q = mq.queue(queue)
   const failed = await q.getJobs('failed')
   for(const job of failed) {
@@ -43,7 +45,5 @@ async function action() {
     console.log()
     console.log()
   }
-  await q.close()
-
-  
+  await q.close()  
 }

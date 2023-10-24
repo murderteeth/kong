@@ -1,8 +1,7 @@
 import prompts from 'prompts'
-import extractPrompt from './extract'
 import cronsPrompt from './crons'
 import toolsPrompt from './tools'
-import fanoutPrompt from './fanout'
+import ingestPrompt from './ingest'
 import errorPrompt from './errors'
 import quitPrompt from './quit'
 
@@ -12,8 +11,7 @@ export interface MenuAction {
 }
 
 const actions = [
-  fanoutPrompt,
-  extractPrompt,
+  ingestPrompt,
   cronsPrompt,
   errorPrompt,
   toolsPrompt,
