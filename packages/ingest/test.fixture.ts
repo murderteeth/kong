@@ -1,12 +1,16 @@
 require('lib/json.monketpatch')
 import path from 'path'
 import dotenv from 'dotenv'
+import chai from 'chai'
+import chaiAlmost from 'chai-almost'
 import { rpcs } from 'lib/rpcs'
 import db, { toUpsertSql } from './db'
 import { cache, types } from 'lib'
 
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
+
+chai.use(chaiAlmost())
 
 export const mochaGlobalSetup = async function() {
   await rpcs.up()
