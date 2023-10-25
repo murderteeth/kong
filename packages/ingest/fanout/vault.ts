@@ -20,7 +20,7 @@ export default class VaultFanout implements Processor {
 
   async fanout() {
     for(const chain of chains) {
-      const default_start_block = await estimateHeight(chain.id, dates.DEFAULT_START_SEC())
+      const default_start_block = await estimateHeight(chain.id, dates.DEFAULT_START())
       const pointers = await getVaultBlockPointers(chain.id)
       for(const pointer of pointers) {
         const from = max(pointer.blockNumber, pointer.activationBlockNumber, default_start_block)

@@ -1,4 +1,4 @@
-require('lib/json.monketpatch')
+require('lib/json.monkeypatch')
 import { expect } from 'chai'
 
 describe('json monketpatch', function() {
