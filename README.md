@@ -1,18 +1,18 @@
 # Kong
-Real-time and historical ZooTroop GraphQL API
+Real-time and historical ZooTroop data platform
 
+![image](https://github.com/murderteeth/kong/assets/89237203/97d8d49e-87b7-4d0a-8ab8-7ed0884bb99c)
+
+
+## quick start
 ```bash
 yarn
 cp .env.example .env
 # configure .env
 make dev
 ```
-
-![image](https://github.com/murderteeth/kong/assets/89237203/7e492a26-0b58-4d32-aee2-8de04426e493)
-
-- http://localhost:3000 for kong dash
-- http://localhost:3001/graphql for kong graphql api
-
+- http://localhost:3000 for dash
+- http://localhost:3001/graphql for graphql explorer
 
 ## requirements
 - node, yarn, make, tmux, docker, docker compose
