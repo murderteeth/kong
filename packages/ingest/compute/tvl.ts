@@ -8,7 +8,7 @@ import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
 import { extractDelegatedAssets, extractWithdrawalQueue } from '../extract/vault'
 import { scaleDown } from 'lib/math'
-import { endOfDayAsBlockTime } from 'lib/dates'
+import { endOfDay } from 'lib/dates'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined
@@ -34,7 +34,7 @@ export class TvlComputer implements Processor {
     }
 
     const tvlUsd = await _compute(chainId, address, timestamp)
-    const artificialBlockTime = endOfDayAsBlockTime(time)
+    const artificialBlockTime = endOfDay(time)
 
     await this.queue?.add(mq.job.load.tvl, {
       chainId,

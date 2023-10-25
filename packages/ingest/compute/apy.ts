@@ -8,7 +8,7 @@ import { estimateHeight, getBlock } from 'lib/blocks'
 import { extractFeesBps, extractWithdrawalQueue } from '../extract/vault'
 import { mainnet } from 'viem/chains'
 import { compare } from 'compare-versions'
-import { endOfDayAsBlockTime } from 'lib/dates'
+import { endOfDay } from 'lib/dates'
 
 export class ApyComputer implements Processor {
   queue: Queue | undefined
@@ -39,7 +39,7 @@ export class ApyComputer implements Processor {
     const apy = await _compute(chainId, address, number)
     if(apy === null) return
 
-    const artificialBlockTime = endOfDayAsBlockTime(time)
+    const artificialBlockTime = endOfDay(time)
     apy.blockTime = artificialBlockTime
 
     await this.queue?.add(mq.job.load.apy, apy, {

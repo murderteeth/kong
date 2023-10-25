@@ -3,7 +3,7 @@ import db from '../db'
 import { Processor } from 'lib/processor'
 import { chains, dates, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
-import { endOfDay } from 'lib/dates'
+import { endOfDayMs } from 'lib/dates'
 
 export default class ApyFanout implements Processor {
   queue: Queue | undefined
@@ -19,12 +19,12 @@ export default class ApyFanout implements Processor {
   async fanout() {
     for(const chain of chains) {
       const throttle = 16
-      const oneDayInMs = 24 * 60 * 60 * 1000
+      const oneDayMs = 24 * 60 * 60 * 1000
 
       for(const { address, blockTimeMs } of await getLatestApyTimes(chain.id)) {
-        const start = endOfDay(Math.max(blockTimeMs || 0, dates.DEFAULT_START_MS()))
-        const end = endOfDay(new Date().getTime())
-        for(let time = start; time < end; time += oneDayInMs) {
+        const start = endOfDayMs(Math.max(blockTimeMs || 0, dates.DEFAULT_START_MS()))
+        const end = endOfDayMs(new Date().getTime())
+        for(let time = start; time <= end; time += oneDayMs) {
           await this.queue?.add(mq.job.compute.apy, {
             chainId: chain.id, address, time: time / 1000
           })
