@@ -8,6 +8,7 @@ import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
 import { extractDelegatedAssets, extractWithdrawalQueue } from '../extract/vault'
 import { scaleDown } from 'lib/math'
+import { endOfDayAsBlockTime } from 'lib/dates'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined
@@ -20,17 +21,27 @@ export class TvlComputer implements Processor {
     await this.queue?.close()
   }
 
-  async compute(data: any) {
-    const { chainId, address, time } = data
-    const blockNumber = await estimateHeight(chainId, time)
-    const block = await getBlock(chainId, blockNumber)
-    const tvlUsd = await _compute(chainId, address, block.timestamp)
+  async compute({ chainId, address, time }
+    : { chainId: number, address: `0x${string}`, time: bigint })
+  {
+    let number: bigint = 0n
+    let timestamp: bigint = 0n
+    if(time > BigInt((new Date()).getTime() * 1000)) {
+      ({ number, timestamp } = await rpcs.next(chainId).getBlock())
+    } else {
+      const estimate = await estimateHeight(chainId, time);
+      ({ number, timestamp } = await getBlock(chainId, estimate))
+    }
+
+    const tvlUsd = await _compute(chainId, address, timestamp)
+    const artificialBlockTime = endOfDayAsBlockTime(time)
+
     await this.queue?.add(mq.job.load.tvl, {
       chainId,
       address,
       tvlUsd,
-      blockNumber,
-      blockTime: block.timestamp
+      blockNumber: number,
+      blockTime: artificialBlockTime
     } as types.TVL)
   }
 }

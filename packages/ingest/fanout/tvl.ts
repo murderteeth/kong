@@ -3,6 +3,7 @@ import db from '../db'
 import { Processor } from 'lib/processor'
 import { chains, dates, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
+import { endOfDay } from 'lib/dates'
 
 export default class TvlFanout implements Processor {
   queue: Queue | undefined
@@ -18,14 +19,12 @@ export default class TvlFanout implements Processor {
   async fanout() {
     for(const chain of chains) {
       const throttle = 16
-      const periodMinutes = 24 * 60
-      const period = periodMinutes * 60_000
+      const oneDayInMs = 24 * 60 * 60 * 1000
 
-      for(const tvlTime of await getLatestTvlTimes(chain.id)) {
-        const { address, blockTimeMs } = tvlTime
-        const start = roundToNearestMinutes(Math.max(blockTimeMs || 0, dates.DEFAULT_START_MS()), periodMinutes)
-        const end = roundToNearestMinutes(new Date().getTime(), periodMinutes)
-        for(let time = start; time < end; time += period) {
+      for(const { address, blockTimeMs } of await getLatestTvlTimes(chain.id)) {
+        const start = endOfDay(Math.max(blockTimeMs || 0, dates.DEFAULT_START_MS()))
+        const end = endOfDay(new Date().getTime())
+        for(let time = start; time < end; time += oneDayInMs) {
           await this.queue?.add(mq.job.compute.tvl, {
             chainId: chain.id, address, time: time / 1000
           })
@@ -34,14 +33,6 @@ export default class TvlFanout implements Processor {
       }
     }
   }
-}
-
-function roundToNearestMinutes(epochMs: number, interval: number): number {
-  const date = new Date(epochMs)
-  const minutes = date.getMinutes()
-  const roundBy = Math.round(minutes / interval) * interval
-  date.setMinutes(roundBy, 0, 0)
-  return date.getTime()
 }
 
 export async function getLatestTvlTimes(chainId: number) {

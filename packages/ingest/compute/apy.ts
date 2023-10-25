@@ -8,6 +8,7 @@ import { estimateHeight, getBlock } from 'lib/blocks'
 import { extractFeesBps, extractWithdrawalQueue } from '../extract/vault'
 import { mainnet } from 'viem/chains'
 import { compare } from 'compare-versions'
+import { endOfDayAsBlockTime } from 'lib/dates'
 
 export class ApyComputer implements Processor {
   queue: Queue | undefined
@@ -20,20 +21,29 @@ export class ApyComputer implements Processor {
     await this.queue?.close()
   }
 
-  async compute(data: any) {
-    const { chainId, address, time } = data as { chainId: number, address: `0x${string}`, time: bigint }
+  async compute({ chainId, address, time }
+    : { chainId: number, address: `0x${string}`, time: bigint }) 
+  {
+    let number: bigint = 0n
+    if(time > BigInt((new Date()).getTime() * 1000)) {
+      number = await rpcs.next(chainId).getBlockNumber()
+    } else {
+      number = await estimateHeight(chainId, time)
+    }
 
-    const blockNumber = await estimateHeight(chainId, time)
-    if(!multicall3.supportsBlock(chainId, BigInt(blockNumber))) {
-      console.warn('🚨', 'block not supported', chainId, blockNumber)
+    if(!multicall3.supportsBlock(chainId, BigInt(number))) {
+      console.warn('🚨', 'block not supported', chainId, number)
       return
     }
 
-    const apy = await _compute(chainId, address, blockNumber)
-
+    const apy = await _compute(chainId, address, number)
     if(apy === null) return
+
+    const artificialBlockTime = endOfDayAsBlockTime(time)
+    apy.blockTime = artificialBlockTime
+
     await this.queue?.add(mq.job.load.apy, apy, {
-      jobId: `${chainId}-${blockNumber}-${address}-apy`
+      jobId: `${chainId}-${number}-${address}-apy`
     })
   }
 }
