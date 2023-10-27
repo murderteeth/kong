@@ -5,6 +5,8 @@ import prompts from 'prompts'
 import { MenuAction } from '.'
 import { createClient } from 'redis'
 import { Pool } from 'pg'
+import { rpcs } from 'lib/rpcs'
+import { parseAbi } from 'viem'
 
 export default {
   action,
@@ -18,7 +20,7 @@ async function action() {
       name: 'tool',
       message: '',
       choices: [
-        { title: 'extract mainnet yweth vault', value: 'extract-yweth' },
+        { title: 'extract a single vault', value: 'extract-vault' },
         { title: 'extract apetax vaults', value: 'extract-apetax-vaults' },
         { title: 'flush failed jobs', value: 'flush-failed-jobs' },
         { title: 'flush redis', value: 'flush-redis' },
@@ -26,24 +28,46 @@ async function action() {
       ]
     },
     {
-      type: 'confirm',
+      type: prev => prev === 'extract-vault' ? null : 'confirm',
       name: 'confirm',
       message: (_, all) => `🤔 extract ${all.tool}?`,
     }
   ])
 
-  if (confirm) {
+  if (confirm || tool === 'extract-vault') {
     switch(tool) {
-      case 'extract-yweth': {
+      case 'extract-vault': {
+        const { address } = await prompts([
+          {
+            type: 'text',
+            name: 'address',
+            message: 'vault',
+            initial: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c',
+            validate: (value) => value.startsWith('0x') ? true : 'must start with 0x'
+          }
+        ])
+
+        await rpcs.up()
+        const multicall = await rpcs.next(1).multicall({ contracts: [
+          {
+            address, functionName: 'apiVersion',
+            abi: parseAbi(['function apiVersion() returns (string)'])
+          },
+          {
+            address, functionName: 'token',
+            abi: parseAbi(['function token() returns (address)'])
+          }
+        ] })
+        await rpcs.down()
+
         const queue = mq.queue(mq.q.extract)
         await queue.add(mq.job.extract.vault, {
           chainId: 1,
           type: 'vault',
           registryStatus: 'endorsed',
-          registryAddress: '0xe15461b18ee31b7379019dc523231c57d1cbc18c' as `0x${string}`,
-          address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c',
-          apiVersion: '0.4.2',
-          assetAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+          address,
+          apiVersion: multicall[0].result,
+          assetAddress: multicall[1].result
         })
         await queue.close()
         break

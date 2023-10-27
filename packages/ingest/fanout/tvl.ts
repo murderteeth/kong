@@ -1,9 +1,9 @@
 import { Queue } from 'bullmq'
 import db from '../db'
 import { Processor } from 'lib/processor'
-import { chains, dates, mq } from 'lib'
+import { chains, dates, math, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
-import { endOfDayMs } from 'lib/dates'
+import { endOfDay } from 'lib/dates'
 
 export default class TvlFanout implements Processor {
   queue: Queue | undefined
@@ -19,14 +19,14 @@ export default class TvlFanout implements Processor {
   async fanout() {
     for(const chain of chains) {
       const throttle = 16
-      const oneDayMs = 24 * 60 * 60 * 1000
+      const oneDay = BigInt(24 * 60 * 60)
 
-      for(const { address, blockTimeMs } of await getLatestTvlTimes(chain.id)) {
-        const start = endOfDayMs(Math.max(blockTimeMs || 0, dates.DEFAULT_START_MS()))
-        const end = endOfDayMs(new Date().getTime())
-        for(let time = start; time <= end; time += oneDayMs) {
+      for(const { address, activation, blockTime } of await getLatestTvlTimes(chain.id)) {
+        const start = endOfDay(math.max(blockTime || 0n, activation, dates.DEFAULT_START()))
+        const end = endOfDay(BigInt(Math.floor(new Date().getTime() / 1000)))
+        for(let time = start; time <= end; time += oneDay) {
           await this.queue?.add(mq.job.compute.tvl, {
-            chainId: chain.id, address, time: time / 1000
+            chainId: chain.id, address, time
           })
         }
         await setTimeout(throttle)
@@ -35,19 +35,21 @@ export default class TvlFanout implements Processor {
   }
 }
 
-export async function getLatestTvlTimes(chainId: number) {
+async function getLatestTvlTimes(chainId: number) {
   const result = await db.query(`
     SELECT 
       v.address,
-      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.block_time))) * 1000 as "blockTimeMs"
+      FLOOR(EXTRACT(EPOCH FROM MAX(v.activation_block_time))) as "activation",
+      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.block_time))) as "blockTime"
     FROM vault v
     LEFT OUTER JOIN tvl
     ON v.chain_id = tvl.chain_id AND v.address = tvl.address
     WHERE v.chain_id = $1
-    GROUP BY v.address;
+    GROUP BY v.address, v.activation_block_time;
   `, [chainId])
   return result.rows as { 
     address: `0x${string}`, 
-    blockTimeMs: number | null
+    activation: bigint,
+    blockTime: bigint | null
   }[]
 }

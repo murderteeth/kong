@@ -40,6 +40,7 @@ async function action() {
   for(const job of failed) {
     console.log('------------------------')
     console.log(job.id)
+    console.log(job.data)
     console.log(job.failedReason)
     console.log(job.stacktrace)
     console.log()
