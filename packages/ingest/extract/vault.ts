@@ -126,7 +126,7 @@ export class VaultExtractor implements Processor {
       name: multicallResult[0].result,
       symbol: multicallResult[1].result,
       decimals: multicallResult[2].result,
-      totalAssets: multicallResult[3].result?.toString(),
+      totalAssets: multicallResult[3].result,
       apiVersion: multicallResult[4].result || multicallResult[5].result || '0.0.0',
       assetAddress: multicallResult[6].result || multicallResult[7].result
     } as types.Vault
@@ -163,7 +163,7 @@ export class VaultExtractor implements Processor {
     )).rows[0] || {}
 
     if(activation_block_time) return {
-      activationBlockTime: activation_block_time.toString(),
+      activationBlockTime: activation_block_time,
       activationBlockNumber: activation_block_number as bigint
     }
 
@@ -174,15 +174,15 @@ export class VaultExtractor implements Processor {
       }) as bigint
 
       return {
-        activationBlockTime: activationBlockTime.toString(),
-        activationBlockNumber: (await blocks.estimateHeight(chainId, activationBlockTime)).toString()
+        activationBlockTime: activationBlockTime,
+        activationBlockNumber: (await blocks.estimateHeight(chainId, activationBlockTime))
       }
     } catch(error) {
       console.warn('🚨', chainId, address, '!activation field')
       const createBlock = await estimateCreationBlock(chainId, address)
       return {
-        activationBlockTime: createBlock.timestamp.toString(),
-        activationBlockNumber: createBlock.number.toString()
+        activationBlockTime: createBlock.timestamp,
+        activationBlockNumber: createBlock.number
       }
     }
   }

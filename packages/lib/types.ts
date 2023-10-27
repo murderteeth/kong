@@ -55,9 +55,9 @@ export interface Vault {
   assetAddress?: `0x${string}`
   assetName?: string,
   assetSymbol?: string,
-  totalAssets?: string,
-  activationBlockTime?: string,
-  activationBlockNumber?: string,
+  totalAssets?: bigint,
+  activationBlockTime?: bigint,
+  activationBlockNumber?: bigint,
   asOfBlockNumber: bigint
 }
 
