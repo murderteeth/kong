@@ -18,8 +18,13 @@ describe('prices', function() {
   it('returns yprice for yvCurve-clevCVX-f-f', async function() {
     if(!JSON.parse(process.env.YPRICE_ENABLED || 'false')) return this.skip()
     const { source, price } = await fetchErc20PriceUsd(mainnet.id, '0xc869206adAfD3D874dB22e8BbA662E05F6257613', this.block)
-    console.log('source, price', source, price)
     expect(source).to.equal('yprice')
     expect(price).to.be.greaterThan(0)
+  })
+
+  it.only('yprice', async function() {
+    console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446650n))
+    console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446690n))
+    console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446700n))
   })
 })

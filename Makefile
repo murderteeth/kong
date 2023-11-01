@@ -4,19 +4,21 @@ dev:
 	@docker compose up -d postgres
 	@tmux new-session -d -s devenv
 
-	@tmux splitw -v -p 50
+	@tmux splitw -v -p 20
 	@tmux selectp -t 0
 	@tmux splitw -h -p 50
-	@tmux selectp -t 0 
-	@tmux splitw -h -p 50
+	@tmux selectp -t 0
+	@tmux splitw -v -p 100
+	@tmux splitw -v -p 50
 
 	# Run commands in the three top panes
 	@tmux send-keys -t devenv:0.0 'yarn workspace gql dev' C-m
 	@tmux send-keys -t devenv:0.1 'yarn workspace web dev' C-m
-	@tmux send-keys -t devenv:0.2 'yarn workspace ingest dev' C-m
+	@tmux send-keys -t devenv:0.2 'cd services/yprice && source .venv/bin/activate && litestar run -p 3002' C-m
+	@tmux send-keys -t devenv:0.3 'yarn workspace ingest dev' C-m
 
 	# Bottom pane (terminal)
-	@tmux send-keys -t devenv:0.3 'yarn workspace terminal dev' C-m
+	@tmux send-keys -t devenv:0.4 'yarn workspace terminal dev' C-m
 	@tmux selectp -t 3
 
 	@tmux attach-session -t devenv

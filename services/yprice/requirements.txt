@@ -1,0 +1,2 @@
+litestar[standard]
+ypricemagic

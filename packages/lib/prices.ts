@@ -18,13 +18,15 @@ export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, 
 }
 
 async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
-  let price = await fetchLensPriceUsd(chainId, token, blockNumber)
-  if(price !== 0) return { price, source: 'lens' }
+  let price = 0
 
   if(JSON.parse(process.env.YPRICE_ENABLED || 'false')) {
     price = await fetchYPriceUsd(chainId, token, blockNumber)
     if(price !== 0) return { price, source: 'yprice' }
   }
+
+  price = await fetchLensPriceUsd(chainId, token, blockNumber)
+  if(price !== 0) return { price, source: 'lens' }
 
   console.warn('🚨', 'no price', chainId, token, blockNumber)  
   return { price: 0, source: 'none' }
@@ -33,24 +35,47 @@ async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, block
 async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   if(!process.env.YPRICE_API) return 0
 
-  try {
-    const url = `${process.env.YPRICE_API}/get_price/${chainId}/${token}?block=${blockNumber}`
-    const result = await fetch(url, {
-      headers: {
-        'X-Signature': process.env.YPRICE_API_X_SIGNATURE || '',
-        'X-Signer': process.env.YPRICE_API_X_SIGNER || ''
+  const maxretries = 50
+  let retries = 0
+  let timeouthandle: NodeJS.Timeout | undefined = undefined
+
+  while(retries < maxretries) {
+    try {
+      const url = `${process.env.YPRICE_API}/get_price/${chainId}/${token}?block=${blockNumber}`
+
+      const timeoutController = new AbortController()
+      timeouthandle = setTimeout(() => timeoutController.abort(), 10_000)
+
+      const result = await fetch(url, {
+        signal: timeoutController.signal,
+        headers: {
+          'X-Signature': process.env.YPRICE_API_X_SIGNATURE || '',
+          'X-Signer': process.env.YPRICE_API_X_SIGNER || ''
+        }
+      })
+
+      return Number(await result.json())
+
+    } catch(error) {
+      if(retries < maxretries) {
+        retries++
+        console.warn('🚨', 'retries', retries, '/', maxretries)
+        await new Promise(resolve => setTimeout(resolve, 500))
+        continue
+      } else {
+        console.warn('🚨', 'yprice failed', chainId, token, blockNumber)
+        console.warn()
+        console.warn(error)
+        console.warn()
+        return 0
       }
-    })
 
-    return Number(await result.json())
-
-  } catch(error) {
-    console.warn('🚨', 'yprice failed', chainId, token, blockNumber)
-    console.warn()
-    console.warn(error)
-    console.warn()
-    return 0
+    } finally {
+      clearTimeout(timeouthandle)
+    }
   }
+
+  return 0
 }
 
 async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
