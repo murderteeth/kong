@@ -86,6 +86,7 @@ export default async (_: any, args: { chainId: number, address: string }) => {
       v.asset_address as "assetAddress", 
       v.asset_name as "assetName", 
       v.asset_symbol as "assetSymbol", 
+      v.price_usd as "priceUsd",
       v.tvl_usd as "tvlUsd",
       v.apy_net as "apyNet",
       v.activation_block_time as "activationBlockTime",

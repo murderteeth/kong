@@ -168,39 +168,69 @@ CREATE TABLE sparkline (
 --- VIEWS
 CREATE VIEW vault_gql AS
 SELECT 
-  v.*,
-  t.tvl_usd AS tvl_usd,
+	v.*,
+	t.tvl_usd AS tvl_usd,
 	a.net AS apy_net
 FROM vault v
 LEFT JOIN LATERAL (
-  SELECT 
-    tvl_usd
-  FROM tvl
-  WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
-  ORDER BY block_time DESC
-  LIMIT 1
+	SELECT 
+		tvl_usd
+	FROM tvl
+	WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
+	ORDER BY block_time DESC
+	LIMIT 1
 ) t ON TRUE
 LEFT JOIN LATERAL (
-  SELECT 
-    net
-  FROM apy
-  WHERE v.chain_id = apy.chain_id AND v.address = apy.address
-  ORDER BY block_time DESC
-  LIMIT 1
+	SELECT 
+		net
+	FROM apy
+	WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+	ORDER BY block_time DESC
+	LIMIT 1
 ) a ON TRUE;
 
 CREATE VIEW strategy_gql AS
 SELECT 
-  s.*,
-  a.gross AS gross_apr,
-  a.net AS net_apr
+	s.*,
+	a.gross AS gross_apr,
+	a.net AS net_apr
 FROM strategy s
 LEFT JOIN LATERAL (
-  SELECT 
-    gross,
-    net
-  FROM apr
-  WHERE s.chain_id = apr.chain_id AND s.address = apr.address
-  ORDER BY block_time DESC
-  LIMIT 1
+	SELECT 
+		gross,
+		net
+	FROM apr
+	WHERE s.chain_id = apr.chain_id AND s.address = apr.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) a ON TRUE;
+
+--------------------------------------
+-------------
+--- MIGRATIONS
+ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
+
+CREATE OR REPLACE VIEW vault_gql AS
+SELECT 
+	v.*,
+	t.tvl_usd AS tvl_usd,
+	a.net AS apy_net,
+	t.price_usd AS price_usd
+FROM vault v
+LEFT JOIN LATERAL (
+	SELECT 
+		tvl_usd,
+		price_usd
+	FROM tvl
+	WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) t ON TRUE
+LEFT JOIN LATERAL (
+	SELECT 
+		net
+	FROM apy
+	WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+	ORDER BY block_time DESC
+	LIMIT 1
 ) a ON TRUE;
