@@ -75,7 +75,6 @@ export class VaultExtractor implements Processor {
     })) as types.WithdrawalQueueItem[] })
 
     for(const strategy of withdrawalQueue) {
-      if(!strategy || strategy === zeroAddress) continue
       await this.queues[mq.q.extract].add(
         mq.job.extract.strategy, {
           chainId: vault.chainId,
@@ -215,14 +214,6 @@ export async function extractFeesBps(chainId: number, address: `0x${string}`, bl
 }
 
 export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  // TODO: y dis no work? runtime error 'property abi cannot be destructured'
-  // const contracts = Array(20).map((_, i) => ({
-  //   address, functionName: 'withdrawalQueue', args: [BigInt(i)],
-  //   abi: parseAbi(['function withdrawalQueue(uint256) returns (address)'])    
-  // }))
-  // const results = await rpc.multicall({ contracts })
-  //
-
   const results = await rpcs.next(chainId).multicall({ contracts: [
     { args: [0n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
     { args: [1n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
@@ -246,7 +237,7 @@ export async function extractWithdrawalQueue(chainId: number, address: `0x${stri
     { args: [19n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
   ], blockNumber})
 
-  return results.filter(result => result.status === 'success')
+  return results.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
   .map(result => result.result as `0x${string}`)
 }
 

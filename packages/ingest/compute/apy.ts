@@ -168,7 +168,7 @@ async function getFirstTwoHarvestBlocks(chainId: number, vault: `0x${string}`) {
 async function getFees(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
 
-  const strategiesMulticall = await rpcs.next(chainId).multicall({ contracts: strategies.filter(s => s).map(s => ({
+  const strategiesMulticall = await rpcs.next(chainId).multicall({ contracts: strategies.map(s => ({
     args: [s as string], address, functionName: 'strategies', abi: parseAbi(['function strategies(address) returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)'])
   })), blockNumber})
 
