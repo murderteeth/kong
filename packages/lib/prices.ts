@@ -32,7 +32,7 @@ async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, block
   return { price: 0, source: 'none' }
 }
 
-async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
+export async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   if(!process.env.YPRICE_API) return 0
 
   const maxretries = 50
@@ -41,7 +41,7 @@ async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber
 
   while(retries < maxretries) {
     try {
-      const url = `${process.env.YPRICE_API}/get_price/${chainId}/${token}?block=${blockNumber}`
+      const url = `${process.env.YPRICE_API}/get_price/${chainId}/${token}/${blockNumber}`
 
       const timeoutController = new AbortController()
       timeouthandle = setTimeout(() => timeoutController.abort(), 10_000)
@@ -78,7 +78,7 @@ async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber
   return 0
 }
 
-async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
+export async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   if(!(chainId in lens)) return 0
   try {
     const priceUSDC = await rpcs.next(chainId).readContract({

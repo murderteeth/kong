@@ -1,7 +1,7 @@
 import os
 os.environ['BROWNIE_NETWORK_ID'] = 'mainnet'
-os.environ['WEB3_INFURA_PROJECT_ID'] = ''
-os.environ['ETHERSCAN_TOKEN'] = ''
+os.environ['WEB3_INFURA_PROJECT_ID'] = '37531df735964ebb9c4d051ec92949fc'
+os.environ['ETHERSCAN_TOKEN'] = 'QX9786TIPSQ8VVJHEBE64DDEE99T76VFYQ'
 
 from litestar import Litestar, Request, get
 from litestar.exceptions import HTTPException

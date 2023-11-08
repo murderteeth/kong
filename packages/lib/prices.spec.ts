@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import { mainnet } from 'viem/chains'
-import { fetchErc20PriceUsd } from './prices'
+import { fetchErc20PriceUsd, fetchLensPriceUsd, fetchYPriceUsd } from './prices'
+import { estimateHeight } from './blocks'
 
 describe('prices', function() {
   this.timeout(2 * 60_000) // TODO: yprice is in beta, expect delays
@@ -23,8 +24,21 @@ describe('prices', function() {
   })
 
   it.only('yprice', async function() {
-    console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446650n))
-    console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446690n))
-    console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446700n))
+    console.log(await fetchYPriceUsd(mainnet.id, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18306838n))
+    console.log(await fetchYPriceUsd(mainnet.id, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18316838n))
+
+    // console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446650n))
+    // console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446690n))
+    // console.log(await fetchErc20PriceUsd(mainnet.id, '0xDA68f66fC0f10Ee61048E70106Df4BDB26bAF595', 18446700n))
+
+    const today = new Date()
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const block = await estimateHeight(mainnet.id, BigInt(Math.floor(date.getTime() / 1000)))
+      const lensprice = await fetchLensPriceUsd(mainnet.id, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', block)
+      const yprice = await fetchYPriceUsd(mainnet.id, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', block)
+      console.log('price', date, block, lensprice, yprice)
+    }
   })
 })

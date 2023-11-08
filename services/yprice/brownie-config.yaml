@@ -1,0 +1,12 @@
+dotenv: ../../.env
+networks:
+  live:
+  - name: Ethereum
+    networks:
+    - chainid: 1
+      explorer: https://api.etherscan.io/api
+      host: https://nd-299-675-238.p2pify.com/81d07341bc3d4bf2339afa05d7833105
+      id: mainnet
+      multicall2: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696'
+      name: Mainnet (Infura)
+      provider: infura
