@@ -68,13 +68,25 @@ export interface Vault {
 export interface Strategy {
   chainId: number
   address: `0x${string}`
+  vaultAddress: `0x${string}`,
   apiVersion?: string
   name?: string,
-  vaultAddress?: string,
+  assetAddress?: `0x${string}`
+  estimatedTotalAssets?: bigint,
+  delegatedAssets?: bigint,
+  performanceFee?: number,
+  debtRatio?: number,
+  minDebtPerHarvest?: bigint,
+  maxDebtPerHarvest?: bigint,
+  lastReportBlockTime?: bigint,
+  totalDebt?: bigint,
+  totalDebtUsd?: number,
+  totalGain?: bigint,
+  totalLoss?: bigint,
   withdrawalQueueIndex?: number,
-  migrateAddress?: string,
-  activationBlockTime?: string,
-  activationBlockNumber?: string,
+  migrateAddress?: `0x${string}`,
+  activationBlockTime?: bigint,
+  activationBlockNumber?: bigint,
   asOfBlockNumber: bigint
 }
 

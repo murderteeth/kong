@@ -213,6 +213,20 @@ ALTER TABLE vault ADD COLUMN performance_fee numeric NULL;
 ALTER TABLE vault ADD COLUMN available_deposit_limit numeric NULL;
 ALTER TABLE vault ADD COLUMN governance text NULL;
 
+ALTER TABLE strategy ADD COLUMN estimated_total_assets numeric NULL;
+ALTER TABLE strategy ADD COLUMN delegated_assets numeric NULL;
+ALTER TABLE strategy ADD COLUMN asset_address text NULL;
+ALTER TABLE strategy ADD COLUMN performance_fee numeric NULL;
+ALTER TABLE strategy ADD COLUMN debt_ratio numeric NULL;
+ALTER TABLE strategy ADD COLUMN min_debt_per_harvest numeric NULL;
+ALTER TABLE strategy ADD COLUMN max_debt_per_harvest numeric NULL;
+ALTER TABLE strategy ADD COLUMN last_report_block_time timestamptz NULL;
+ALTER TABLE strategy ADD COLUMN total_debt numeric NULL;
+ALTER TABLE strategy ADD COLUMN total_debt_usd numeric NULL;
+ALTER TABLE strategy ADD COLUMN total_gain numeric NULL;
+ALTER TABLE strategy ADD COLUMN total_loss numeric NULL;
+ALTER TABLE strategy ADD COLUMN withdrawal_queue_index numeric NULL;
+
 ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
 
 DROP VIEW vault_gql;

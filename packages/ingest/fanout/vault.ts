@@ -30,7 +30,6 @@ export default class VaultFanout implements Processor {
         chain.id,
         pointer.address,
         parseAbi([
-          `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
           `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 debtPaid, uint256 totalGain, uint256 totalLoss, uint256 totalDebt, uint256 debtAdded, uint256 debtRatio)`,
           `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
         ]),

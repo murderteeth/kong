@@ -80,6 +80,7 @@ export class VaultExtractor implements Processor {
           chainId: vault.chainId,
           address: strategy,
           vaultAddress: vault.address,
+          withdrawalQueueIndex: withdrawalQueue.indexOf(strategy),
           asOfBlockNumber
       } as types.Strategy)
     }
@@ -259,24 +260,4 @@ export async function extractWithdrawalQueue(chainId: number, address: `0x${stri
 
   return results.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
   .map(result => result.result as `0x${string}`)
-}
-
-export async function extractDelegatedAssets(chainId: number, addresses: `0x${string}` [], blockNumber: bigint) {
-  const results = [] as { address: `0x${string}`, delegatedAssets: bigint } []
-
-  const contracts = addresses.map(address => ({
-    args: [], address, functionName: 'delegatedAssets', abi: parseAbi(['function delegatedAssets() returns (uint256)'])
-  }))
-
-  const multicallresults = await rpcs.next(chainId).multicall({ contracts, blockNumber})
-
-  multicallresults.forEach((result, index) => {
-    const delegatedAssets = result.status === 'failure'
-    ? 0n
-    : BigInt(result.result as bigint)
-
-    results.push({ address: addresses[index], delegatedAssets })
-  })
-
-  return results
 }

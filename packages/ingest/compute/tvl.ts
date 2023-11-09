@@ -6,9 +6,10 @@ import { estimateHeight, getBlock } from 'lib/blocks'
 import db from '../db'
 import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
-import { extractDelegatedAssets, extractWithdrawalQueue } from '../extract/vault'
+import { extractWithdrawalQueue } from '../extract/vault'
 import { scaleDown } from 'lib/math'
 import { endOfDay } from 'lib/dates'
+import { extractDelegatedAssets } from '../extract/strategy'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined
