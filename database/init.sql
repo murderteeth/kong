@@ -207,20 +207,26 @@ LEFT JOIN LATERAL (
 
 --------------------------------------
 -------------
---- MIGRATIONS
+--- MIGRATION 1
+ALTER TABLE vault ADD COLUMN management_fee numeric NULL;
+ALTER TABLE vault ADD COLUMN performance_fee numeric NULL;
+ALTER TABLE vault ADD COLUMN available_deposit_limit numeric NULL;
+ALTER TABLE vault ADD COLUMN governance text NULL;
+
 ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
 
-CREATE OR REPLACE VIEW vault_gql AS
+DROP VIEW vault_gql;
+CREATE VIEW vault_gql AS
 SELECT 
 	v.*,
+	t.price_usd AS price_usd,
 	t.tvl_usd AS tvl_usd,
-	a.net AS apy_net,
-	t.price_usd AS price_usd
+	a.net AS apy_net
 FROM vault v
 LEFT JOIN LATERAL (
 	SELECT 
-		tvl_usd,
-		price_usd
+		price_usd,
+		tvl_usd
 	FROM tvl
 	WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
 	ORDER BY block_time DESC

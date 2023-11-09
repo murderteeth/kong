@@ -13,6 +13,7 @@ type Vault {
   name: String
   decimals: Int
   totalAssets: String
+  availableDepositLimit: String
   assetAddress: String
   assetSymbol: String
   assetName: String
@@ -22,6 +23,9 @@ type Vault {
   tvlSparkline: [SparklineItem]
   apyNet: Float
   apySparkline: [SparklineItem]
+  managementFee: Float
+  performanceFee: Float
+  governance: String
   activationBlockTime: String
   activationBlockNumber: String
   asOfBlockNumber: String

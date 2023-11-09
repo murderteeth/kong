@@ -118,6 +118,22 @@ export class VaultExtractor implements Processor {
       {
         address, functionName: 'asset',
         abi: parseAbi(['function asset() returns (address)'])
+      },
+      {
+        address, functionName: 'governance',
+        abi: parseAbi(['function governance() returns (address)'])
+      },
+      {
+        address, functionName: 'availableDepositLimit',
+        abi: parseAbi(['function availableDepositLimit() returns (uint256)'])
+      },
+      {
+        address, functionName: 'performanceFee',
+        abi: parseAbi(['function performanceFee() returns (uint256)'])
+      },
+      {
+        address, functionName: 'managementFee',
+        abi: parseAbi(['function managementFee() returns (uint256)'])
       }
     ]})
 
@@ -127,7 +143,11 @@ export class VaultExtractor implements Processor {
       decimals: multicallResult[2].result,
       totalAssets: multicallResult[3].result,
       apiVersion: multicallResult[4].result || multicallResult[5].result || '0.0.0',
-      assetAddress: multicallResult[6].result || multicallResult[7].result
+      assetAddress: multicallResult[6].result || multicallResult[7].result,
+      governance: multicallResult[8].result,
+      availableDepositLimit: multicallResult[9].result,
+      performanceFee: multicallResult[10].result,
+      managementFee: multicallResult[11].result
     } as types.Vault
   }
   
