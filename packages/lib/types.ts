@@ -56,10 +56,13 @@ export interface Vault {
   assetName?: string,
   assetSymbol?: string,
   totalAssets?: bigint,
+  totalDebt?: bigint,
+  debtRatio?: number,
   availableDepositLimit?: bigint,
   governance?: `0x${string}`,
   performanceFee?: number,
   managementFee?: number,
+  lockedProfitDegradation?: bigint,
   activationBlockTime?: bigint,
   activationBlockNumber?: bigint,
   asOfBlockNumber: bigint

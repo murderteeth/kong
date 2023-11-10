@@ -212,6 +212,9 @@ ALTER TABLE vault ADD COLUMN management_fee numeric NULL;
 ALTER TABLE vault ADD COLUMN performance_fee numeric NULL;
 ALTER TABLE vault ADD COLUMN available_deposit_limit numeric NULL;
 ALTER TABLE vault ADD COLUMN governance text NULL;
+ALTER TABLE vault ADD COLUMN locked_profit_degradation numeric NULL;
+ALTER TABLE vault ADD COLUMN total_debt numeric NULL;
+ALTER TABLE vault ADD COLUMN debt_ratio numeric NULL;
 
 ALTER TABLE strategy ADD COLUMN estimated_total_assets numeric NULL;
 ALTER TABLE strategy ADD COLUMN delegated_assets numeric NULL;

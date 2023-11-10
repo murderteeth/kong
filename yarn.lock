@@ -1141,6 +1141,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/compare-versions@^3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@types/compare-versions/-/compare-versions-3.3.0.tgz#a4634771f61cfc9326923d518ab8a04089e99314"
+  integrity sha512-5nlNADyetxvaPz7aJ6CHiT9T3u+tyemJFXxBNoxTrKv+zhOvS6d36/7naGZ1iZXvlATpCyGh2EcREHDdM4A+gg==
+  dependencies:
+    compare-versions "*"
+
 "@types/connect@*":
   version "3.4.35"
   resolved "https://registry.yarnpkg.com/@types/connect/-/connect-3.4.35.tgz#5fcf6ae445e4021d1fc2219a4873cc73a3bb2ad1"
@@ -2529,7 +2536,7 @@ commander@^4.0.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-4.1.1.tgz#9fd602bd936294e9e9ef46a3f4d6964044b18068"
   integrity sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==
 
-compare-versions@^6.1.0:
+compare-versions@*, compare-versions@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-6.1.0.tgz#3f2131e3ae93577df111dba133e6db876ffe127a"
   integrity sha512-LNZQXhqUvqUTotpZ00qLSaify3b4VFD588aRr8MKFw4CMUr98ytzCW5wDH5qx/DEY5kCDXcbcRuCqL0szEf2tg==

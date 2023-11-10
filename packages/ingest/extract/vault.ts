@@ -30,7 +30,7 @@ export class VaultExtractor implements Processor {
       return
     }
 
-    const fields = await this.extractFields(vault.chainId, vault.address)
+    const fields = await this.extractFields(vault)
     const asset = await this.extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
     const activation = await this.extractActivation(vault.chainId, vault.address)
     const withdrawalQueue = await extractWithdrawalQueue(vault.chainId, vault.address, asOfBlockNumber)
@@ -86,55 +86,67 @@ export class VaultExtractor implements Processor {
     }
   }
 
-  private async extractFields(chainId: number, address: `0x${string}`) {
-    const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
+  private async extractFields(vault: types.Vault) {
+    const multicallResult = await rpcs.next(vault.chainId).multicall({ contracts: [
       {
-        address, functionName: 'name',
+        address: vault.address, functionName: 'name',
         abi: parseAbi(['function name() returns (string)'])
       },
       {
-        address, functionName: 'symbol',
+        address: vault.address, functionName: 'symbol',
         abi: parseAbi(['function symbol() returns (string)'])
       },
       {
-        address, functionName: 'decimals',
+        address: vault.address, functionName: 'decimals',
         abi: parseAbi(['function decimals() returns (uint32)'])
       },
       {
-        address, functionName: 'totalAssets',
+        address: vault.address, functionName: 'totalAssets',
         abi: parseAbi(['function totalAssets() returns (uint256)'])
       },
       {
-        address, functionName: 'apiVersion',
+        address: vault.address, functionName: 'apiVersion',
         abi: parseAbi(['function apiVersion() returns (string)'])
       },
       {
-        address, functionName: 'api_version',
+        address: vault.address, functionName: 'api_version',
         abi: parseAbi(['function api_version() returns (string)'])
       },
       {
-        address, functionName: 'token',
+        address: vault.address, functionName: 'token',
         abi: parseAbi(['function token() returns (address)'])
       }, 
       {
-        address, functionName: 'asset',
+        address: vault.address, functionName: 'asset',
         abi: parseAbi(['function asset() returns (address)'])
       },
       {
-        address, functionName: 'governance',
+        address: vault.address, functionName: 'governance',
         abi: parseAbi(['function governance() returns (address)'])
       },
       {
-        address, functionName: 'availableDepositLimit',
+        address: vault.address, functionName: 'availableDepositLimit',
         abi: parseAbi(['function availableDepositLimit() returns (uint256)'])
       },
       {
-        address, functionName: 'performanceFee',
+        address: vault.address, functionName: 'performanceFee',
         abi: parseAbi(['function performanceFee() returns (uint256)'])
       },
       {
-        address, functionName: 'managementFee',
+        address: vault.address, functionName: 'managementFee',
         abi: parseAbi(['function managementFee() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'lockedProfitDegradation',
+        abi: parseAbi(['function lockedProfitDegradation() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'totalDebt',
+        abi: parseAbi(['function totalDebt() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'debtRatio',
+        abi: parseAbi(['function debtRatio() returns (uint256)'])
       }
     ]})
 
@@ -148,10 +160,13 @@ export class VaultExtractor implements Processor {
       governance: multicallResult[8].result,
       availableDepositLimit: multicallResult[9].result,
       performanceFee: multicallResult[10].result,
-      managementFee: multicallResult[11].result
+      managementFee: multicallResult[11].result,
+      lockedProfitDegradation: multicallResult[12].result,
+      totalDebt: multicallResult[13].result,
+      debtRatio: multicallResult[14].result
     } as types.Vault
   }
-  
+
   private async extractAsset(chainId: number, address: `0x${string}`) {
     const result = await rpcs.next(chainId).multicall({ contracts: [
       {
