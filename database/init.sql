@@ -226,6 +226,10 @@ ALTER TABLE strategy ADD COLUMN total_debt_usd numeric NULL;
 ALTER TABLE strategy ADD COLUMN total_gain numeric NULL;
 ALTER TABLE strategy ADD COLUMN total_loss numeric NULL;
 ALTER TABLE strategy ADD COLUMN withdrawal_queue_index numeric NULL;
+ALTER TABLE strategy ADD COLUMN keeper text NULL;
+ALTER TABLE strategy ADD COLUMN strategist text NULL;
+ALTER TABLE strategy ADD COLUMN health_check text NULL;
+ALTER TABLE strategy ADD COLUMN do_health_check boolean NULL;
 
 ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
 

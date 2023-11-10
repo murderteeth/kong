@@ -90,6 +90,22 @@ export class StrategyExtractor implements Processor {
       {
         address: strategy, functionName: 'delegatedAssets',
         abi: parseAbi(['function delegatedAssets() returns (uint256)'])
+      },
+      {
+        address: strategy, functionName: 'strategist',
+        abi: parseAbi(['function strategist() returns (address)'])
+      },
+      {
+        address: strategy, functionName: 'keeper',
+        abi: parseAbi(['function keeper() returns (address)'])
+      },
+      {
+        address: strategy, functionName: 'healthCheck',
+        abi: parseAbi(['function healthCheck() returns (address)'])
+      },
+      {
+        address: strategy, functionName: 'doHealthCheck',
+        abi: parseAbi(['function doHealthCheck() returns (bool)'])
       }
     ]})
 
@@ -107,7 +123,11 @@ export class StrategyExtractor implements Processor {
       totalGain: multicallResult[3].result?.[7],
       totalLoss: multicallResult[3].result?.[8],
       estimatedTotalAssets: multicallResult[4].result,
-      delegatedAssets: multicallResult[5].result
+      delegatedAssets: multicallResult[5].result,
+      strategist: multicallResult[6].result,
+      keeper: multicallResult[7].result,
+      healthCheck: multicallResult[8].result,
+      doHealthCheck: multicallResult[9].result
     } as types.Strategy
   }
 }

@@ -85,6 +85,10 @@ export interface Strategy {
   totalLoss?: bigint,
   withdrawalQueueIndex?: number,
   migrateAddress?: `0x${string}`,
+  strategist?: `0x${string}`,
+  keeper?: `0x${string}`,
+  healthCheck?: `0x${string}`,
+  doHealthCheck?: boolean,
   activationBlockTime?: bigint,
   activationBlockNumber?: bigint,
   asOfBlockNumber: bigint
