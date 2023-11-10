@@ -32,6 +32,18 @@ export default class Loader implements Processor {
       'WHERE strategy.as_of_block_number < EXCLUDED.as_of_block_number'
     ),
 
+    [mq.job.load.strategyLenderStatus]: async data => {
+      if(data.length === 0) return
+      if((new Set(data.map((d: types.StrategyLenderStatus) => d.chainId))).size > 1) throw new Error('chain ids > 1')
+      if((new Set(data.map((d: types.StrategyLenderStatus) => d.strategyAddress))).size > 1) throw new Error('strategy addresses > 1')
+      await replaceWithBatch(
+        data, 
+        'strategy_lender_status', 
+        'chain_id, strategy_address, address', 
+        `chain_id = ${data[0].chainId} AND strategy_address = '${data[0].strategyAddress}'`
+      )
+    },
+
     [mq.job.load.harvest]: async data => 
     await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
 
@@ -99,6 +111,26 @@ async function upsertBatch(batch: any[], table: string, pk: string, where?: stri
     for(const object of batch) {
       await client.query(
         toUpsertSql(table, pk, object, where),
+        Object.values(object)
+      )
+    }
+    await client.query('COMMIT')
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+async function replaceWithBatch(batch: any[], table: string, pk: string, where: string) {
+  const client = await db.connect()
+  try {
+    await client.query('BEGIN')
+    await client.query(`DELETE FROM ${table} WHERE ${where};`)
+    for(const object of batch) {
+      await client.query(
+        toUpsertSql(table, pk, object),
         Object.values(object)
       )
     }

@@ -236,6 +236,18 @@ ALTER TABLE strategy ADD COLUMN do_health_check boolean NULL;
 
 ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
 
+CREATE TABLE strategy_lender_status (
+	chain_id int4 NOT NULL,
+	strategy_address text NOT NULL,
+	name text NULL,
+	assets numeric NULL,
+	rate numeric NULL,
+	address text NOT NULL,
+	as_of_block_number int8 NOT NULL,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT strategy_lender_status_pkey PRIMARY KEY (chain_id, strategy_address, address)
+);
+
 DROP VIEW vault_gql;
 CREATE VIEW vault_gql AS
 SELECT 

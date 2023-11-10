@@ -97,6 +97,16 @@ export interface Strategy {
   asOfBlockNumber: bigint
 }
 
+export interface StrategyLenderStatus {
+  chainId: number
+  strategyAddress: `0x${string}`
+  name: string
+  assets: bigint
+  rate: number
+  address: `0x${string}`
+  asOfBlockNumber: bigint
+}
+
 export interface WithdrawalQueueItem {
   chainId: number
   vaultAddress: `0x${string}`

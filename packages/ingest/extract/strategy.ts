@@ -1,5 +1,5 @@
 import { mq, multicall3, types } from 'lib'
-import { parseAbi, zeroAddress } from 'viem'
+import { ContractFunctionExecutionError, parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'
@@ -22,7 +22,7 @@ export class StrategyExtractor implements Processor {
     const strategy = data as types.Strategy
     const asOfBlockNumber = await rpcs.next(strategy.chainId).getBlockNumber()
 
-    if(!multicall3.supportsBlock(strategy.chainId, BigInt(asOfBlockNumber))) {
+    if(!multicall3.supportsBlock(strategy.chainId, asOfBlockNumber)) {
       console.warn('🚨', 'block not supported', strategy.chainId, asOfBlockNumber)
       return
     }
@@ -48,6 +48,13 @@ export class StrategyExtractor implements Processor {
     await this.queue?.add(
       mq.job.load.strategy, update
     )
+
+    const lenderStatuses = await extractLenderStatuses(strategy.chainId, strategy.address, asOfBlockNumber)
+    if(lenderStatuses.length > 0) {
+      await this.queue?.add(
+        mq.job.load.strategyLenderStatus, lenderStatuses
+      )
+    }
   }
 
   private async computeTotalDebtUsd(strategy: types.Strategy, totalDebt: bigint, assetAddress: `0x${string}`, asOfBlockNumber: bigint) {
@@ -129,6 +136,30 @@ export class StrategyExtractor implements Processor {
       healthCheck: multicallResult[8].result,
       doHealthCheck: multicallResult[9].result
     } as types.Strategy
+  }
+}
+
+export async function extractLenderStatuses(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  try {
+    return (await rpcs.next(chainId).readContract({
+      address, functionName: 'lendStatuses', 
+      abi: parseAbi([
+        'struct lendStatus { string name; uint256 assets; uint256 rate; address add; }',
+        'function lendStatuses() view returns (lendStatus[])'
+      ]),
+      blockNumber
+    })).map(status => ({
+      chainId,
+      strategyAddress: address,
+      name: status.name,
+      assets: status.assets,
+      rate: status.rate,
+      address: status.add,
+      asOfBlockNumber: blockNumber
+    }))
+  } catch(error) {
+    if(error instanceof ContractFunctionExecutionError) return []
+    throw error
   }
 }
 

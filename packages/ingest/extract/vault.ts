@@ -1,6 +1,6 @@
 import { math, mq, multicall3, types } from 'lib'
 import { blocks } from 'lib'
-import { parseAbi, stringToBytes, zeroAddress } from 'viem'
+import { parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'

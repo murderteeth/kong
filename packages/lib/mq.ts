@@ -42,6 +42,7 @@ export const job = {
     vault: 'vault',
     withdrawalQueue: 'withdrawal-queue',
     strategy: 'strategy',
+    strategyLenderStatus: 'strategy-lender-status',
     harvest: 'harvest',
     tvl: 'tvl',
     apy: 'apy',
