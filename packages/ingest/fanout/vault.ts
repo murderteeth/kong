@@ -26,6 +26,11 @@ export default class VaultFanout implements Processor {
         const from = max(pointer.blockNumber, pointer.activationBlockNumber, default_start_block)
         const to = await getLatestBlock(chain.id)
 
+        await this.queues[mq.q.extract].add(mq.job.extract.vault, {
+          chainId: chain.id,
+          address: pointer.address
+        })
+
         await this.fanoutExtract(
         chain.id,
         pointer.address,

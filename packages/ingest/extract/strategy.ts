@@ -3,9 +3,11 @@ import { ContractFunctionExecutionError, parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'
+import { clean } from 'lib/version'
 import { estimateHeight } from 'lib/blocks'
 import { fetchErc20PriceUsd } from 'lib/prices'
 import { scaleDown } from 'lib/math'
+import { compare } from 'compare-versions'
 
 export class StrategyExtractor implements Processor {
   queue: Queue | undefined
@@ -120,19 +122,10 @@ export class StrategyExtractor implements Processor {
       }
     ]})
 
-    return {
+    const result = {
       name: multicallResult[0].result,
       apiVersion: multicallResult[1].result || '0.0.0',
       assetAddress: multicallResult[2].result || zeroAddress,
-      performanceFee: multicallResult[3].result?.[0],
-      activationBlockTime: multicallResult[3].result?.[1],
-      debtRatio: multicallResult[3].result?.[2],
-      minDebtPerHarvest: multicallResult[3].result?.[3],
-      maxDebtPerHarvest: multicallResult[3].result?.[4],
-      lastReportBlockTime: multicallResult[3].result?.[5],
-      totalDebt: multicallResult[3].result?.[6],
-      totalGain: multicallResult[3].result?.[7],
-      totalLoss: multicallResult[3].result?.[8],
       estimatedTotalAssets: multicallResult[4].result,
       delegatedAssets: multicallResult[5].result,
       strategist: multicallResult[6].result,
@@ -141,6 +134,30 @@ export class StrategyExtractor implements Processor {
       doHealthCheck: multicallResult[9].result,
       tradeFactory: multicallResult[10].result
     } as types.Strategy
+
+    if(compare(clean(result.apiVersion), '0.3.2', '<')) {
+      result.performanceFee = Number(multicallResult[3].result?.[0])
+      result.activationBlockTime = multicallResult[3].result?.[1]
+      result.debtRatio = Number(multicallResult[3].result?.[2])
+      result.lastReportBlockTime = multicallResult[3].result?.[4]
+      result.totalDebt = multicallResult[3].result?.[5]
+      result.totalGain = multicallResult[3].result?.[6]
+      result.totalLoss = multicallResult[3].result?.[7]
+
+    } else {
+      result.performanceFee = Number(multicallResult[3].result?.[0])
+      result.activationBlockTime = multicallResult[3].result?.[1]
+      result.debtRatio = Number(multicallResult[3].result?.[2])
+      result.minDebtPerHarvest = multicallResult[3].result?.[3]
+      result.maxDebtPerHarvest = multicallResult[3].result?.[4]
+      result.lastReportBlockTime = multicallResult[3].result?.[5]
+      result.totalDebt = multicallResult[3].result?.[6]
+      result.totalGain = multicallResult[3].result?.[7]
+      result.totalLoss = multicallResult[3].result?.[8]
+
+    }
+
+    return result
   }
 }
 
