@@ -92,6 +92,7 @@ export interface Strategy {
   keeper?: `0x${string}`,
   healthCheck?: `0x${string}`,
   doHealthCheck?: boolean,
+  tradeFactory?: `0x${string}`,
   activationBlockTime?: bigint,
   activationBlockNumber?: bigint,
   asOfBlockNumber: bigint

@@ -233,6 +233,7 @@ ALTER TABLE strategy ADD COLUMN keeper text NULL;
 ALTER TABLE strategy ADD COLUMN strategist text NULL;
 ALTER TABLE strategy ADD COLUMN health_check text NULL;
 ALTER TABLE strategy ADD COLUMN do_health_check boolean NULL;
+ALTER TABLE strategy ADD COLUMN trade_factory text NULL;
 
 ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
 

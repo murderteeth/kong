@@ -113,6 +113,10 @@ export class StrategyExtractor implements Processor {
       {
         address: strategy, functionName: 'doHealthCheck',
         abi: parseAbi(['function doHealthCheck() returns (bool)'])
+      },
+      {
+        address: strategy, functionName: 'tradeFactory',
+        abi: parseAbi(['function tradeFactory() returns (address)'])
       }
     ]})
 
@@ -134,7 +138,8 @@ export class StrategyExtractor implements Processor {
       strategist: multicallResult[6].result,
       keeper: multicallResult[7].result,
       healthCheck: multicallResult[8].result,
-      doHealthCheck: multicallResult[9].result
+      doHealthCheck: multicallResult[9].result,
+      tradeFactory: multicallResult[10].result
     } as types.Strategy
   }
 }
