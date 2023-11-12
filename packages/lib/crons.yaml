@@ -41,3 +41,8 @@ crons:
     queue: fanout
     job: harvest-apr
     schedule: "10-59/15 * * * *"
+
+  - name: UpdateMeta
+    queue: extract
+    job: meta
+    schedule: "0 * * * *"

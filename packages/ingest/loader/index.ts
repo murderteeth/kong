@@ -33,14 +33,14 @@ export default class Loader implements Processor {
     ),
 
     [mq.job.load.strategyLenderStatus]: async data => {
-      if(data.length === 0) return
-      if((new Set(data.map((d: types.StrategyLenderStatus) => d.chainId))).size > 1) throw new Error('chain ids > 1')
-      if((new Set(data.map((d: types.StrategyLenderStatus) => d.strategyAddress))).size > 1) throw new Error('strategy addresses > 1')
+      if(data.batch.length === 0) return
+      if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.chainId))).size > 1) throw new Error('chain ids > 1')
+      if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.strategyAddress))).size > 1) throw new Error('strategy addresses > 1')
       await replaceWithBatch(
-        data, 
+        data.batch,
         'strategy_lender_status', 
         'chain_id, strategy_address, address', 
-        `chain_id = ${data[0].chainId} AND strategy_address = '${data[0].strategyAddress}'`
+        `chain_id = ${data.batch[0].chainId} AND strategy_address = '${data.batch[0].strategyAddress}'`
       )
     },
 

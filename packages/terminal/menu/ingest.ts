@@ -8,29 +8,48 @@ export default {
 } as MenuAction
 
 async function action() {
-  const { job, confirm } = await prompts([
+  const { q, confirm } = await prompts([
     {
       type: 'select',
-      name: 'job',
+      name: 'q',
       message: 'pick an ingest job',
       choices: [
-        { title: 'index registry events', value: mq.job.fanout.registry },
-        { title: 'index vault events', value: mq.job.fanout.vault },
-        { title: 'compute tvls', value: mq.job.fanout.tvl },
-        { title: 'compute apys', value: mq.job.fanout.apy },
-        { title: 'compute harvest aprs', value: mq.job.fanout.harvestApr },
+        { title: 'index registry events', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.registry
+        }},
+        { title: 'index vault events', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.vault
+        }},
+        { title: 'compute tvls', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.tvl
+        }},
+        { title: 'compute apys', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.apy
+        }},
+        { title: 'compute harvest aprs', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.harvestApr
+        }},
+        { title: 'update meta', value: {
+          name: mq.q.extract,
+          job: mq.job.extract.meta
+        }},
       ]
     },
     {
       type: 'confirm',
       name: 'confirm',
-      message: (_, all) => `🤔 fanout ${all.job} jobs?`,
+      message: (_, all) => `🤔 ${all.q.name} ${all.q.job}?`,
     }
   ])
 
   if (confirm) {
-    const queue = mq.queue(mq.q.fanout)
-    await queue.add(job, {})
+    const queue = mq.queue(q.name)
+    await queue.add(q.job, {})
     await queue.close()
   }
 }

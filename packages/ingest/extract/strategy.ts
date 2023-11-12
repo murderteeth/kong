@@ -54,7 +54,7 @@ export class StrategyExtractor implements Processor {
     const lenderStatuses = await extractLenderStatuses(strategy.chainId, strategy.address, asOfBlockNumber)
     if(lenderStatuses.length > 0) {
       await this.queue?.add(
-        mq.job.load.strategyLenderStatus, lenderStatuses
+        mq.job.load.strategyLenderStatus, { batch: lenderStatuses }
       )
     }
   }

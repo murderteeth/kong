@@ -27,6 +27,7 @@ export const job = {
     strategy: 'strategy',
     harvest: 'harvest',
     transfer: 'transfer',
+    meta: 'meta'
   },
 
   compute: {

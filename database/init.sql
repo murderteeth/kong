@@ -215,6 +215,13 @@ ALTER TABLE vault ADD COLUMN governance text NULL;
 ALTER TABLE vault ADD COLUMN locked_profit_degradation numeric NULL;
 ALTER TABLE vault ADD COLUMN total_debt numeric NULL;
 ALTER TABLE vault ADD COLUMN debt_ratio numeric NULL;
+ALTER TABLE vault ALTER COLUMN as_of_block_number DROP NOT NULL;
+
+ALTER TABLE erc20
+ALTER COLUMN name DROP NOT NULL,
+ALTER COLUMN symbol DROP NOT NULL,
+ALTER COLUMN decimals DROP NOT NULL;
+ALTER TABLE erc20 ADD COLUMN meta_description text NULL;
 
 ALTER TABLE strategy ADD COLUMN estimated_total_assets numeric NULL;
 ALTER TABLE strategy ADD COLUMN delegated_assets numeric NULL;
@@ -234,6 +241,8 @@ ALTER TABLE strategy ADD COLUMN strategist text NULL;
 ALTER TABLE strategy ADD COLUMN health_check text NULL;
 ALTER TABLE strategy ADD COLUMN do_health_check boolean NULL;
 ALTER TABLE strategy ADD COLUMN trade_factory text NULL;
+ALTER TABLE strategy ADD COLUMN meta_description text NULL;
+ALTER TABLE strategy ALTER COLUMN as_of_block_number DROP NOT NULL;
 
 ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
 
