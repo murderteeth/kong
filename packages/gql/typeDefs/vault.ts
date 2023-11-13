@@ -12,9 +12,9 @@ type Vault {
   symbol: String
   name: String
   decimals: Int
-  totalAssets: String
-  availableDepositLimit: String
-  lockedProfitDegradation: String
+  totalAssets: BigInt
+  availableDepositLimit: BigInt
+  lockedProfitDegradation: BigInt
   totalDebt: String
   debtRatio: Int
   assetAddress: String

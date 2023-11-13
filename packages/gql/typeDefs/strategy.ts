@@ -9,18 +9,18 @@ type Strategy {
   name: String
   grossApr: Float
   netApr: Float
-  estimatedTotalAssets: String
-  delegatedAssets: String
+  estimatedTotalAssets: BigInt
+  delegatedAssets: BigInt
   assetAddress: String
   performanceFee: Int
   debtRatio: Int
-  minDebtPerHarvest: String
-  maxDebtPerHarvest: String
+  minDebtPerHarvest: BigInt
+  maxDebtPerHarvest: BigInt
   lastReportBlockTime: String
-  totalDebt: String
-  totalDebtUsd: String
-  totalGain: String
-  totalLoss: String
+  totalDebt: BigInt
+  totalDebtUsd: Float
+  totalGain: BigInt
+  totalLoss: BigInt
   withdrawalQueueIndex: Int
   keeper: String
   strategist: String
