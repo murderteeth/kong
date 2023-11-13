@@ -276,10 +276,14 @@ DROP VIEW vault_gql;
 CREATE VIEW vault_gql AS
 SELECT 
 	v.*,
+	erc20.meta_description as asset_description,
 	t.price_usd AS price_usd,
 	t.tvl_usd AS tvl_usd,
 	a.net AS apy_net
 FROM vault v
+JOIN erc20 
+	ON v.chain_id = erc20.chain_id 
+	AND v.asset_address = erc20.address
 LEFT JOIN LATERAL (
 	SELECT 
 		price_usd,
@@ -294,6 +298,23 @@ LEFT JOIN LATERAL (
 		net
 	FROM apy
 	WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) a ON TRUE;
+
+DROP VIEW strategy_gql;
+CREATE VIEW strategy_gql AS
+SELECT 
+	s.*,
+	a.gross AS gross_apr,
+	a.net AS net_apr
+FROM strategy s
+LEFT JOIN LATERAL (
+	SELECT 
+		gross,
+		net
+	FROM apr
+	WHERE s.chain_id = apr.chain_id AND s.address = apr.address
 	ORDER BY block_time DESC
 	LIMIT 1
 ) a ON TRUE;

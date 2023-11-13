@@ -14,9 +14,13 @@ type Vault {
   decimals: Int
   totalAssets: String
   availableDepositLimit: String
+  lockedProfitDegradation: String
+  totalDebt: String
+  debtRatio: Int
   assetAddress: String
   assetSymbol: String
   assetName: String
+  assetDescription: String
   withdrawalQueue: [Strategy]
   priceUsd: Float
   tvlUsd: Float

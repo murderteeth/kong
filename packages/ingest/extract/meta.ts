@@ -33,7 +33,7 @@ export class MetaExtractor implements Processor {
       for(const strategy of strategies as { address: `0x${string}` } []) {
         await this.queue?.add(mq.job.load.strategy, {
           chainId: chain.id,
-          address: strategy,
+          address: strategy.address,
           meta_description: metas[strategy.address]
         })
       }
