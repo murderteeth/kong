@@ -13,27 +13,6 @@ const db = new Pool({
 
 export default db
 
-// estimatedTotalAssets: String
-// delegatedAssets: String
-// assetAddress: String
-// performanceFee: Int
-// debtRatio: Int
-// minDebtPerHarvest: String
-// maxDebtPerHarvest: String
-// lastReportBlockTime: String
-// totalDebt: String
-// totalDebtUsd: String
-// totalGain: String
-// totalLoss: String
-// withdrawalQueueIndex: Int
-// keeper: String
-// strategist: String
-// healthCheck: String
-// doHealthCheck: Boolean
-// tradeFactory: String
-// description: String
-// riskGroup: String
-
 export async function getVaults(where: string, aggGroupBy: string, values: any[]) {
   const result = await db.query(`
   WITH withdrawal_queue_agg AS (
