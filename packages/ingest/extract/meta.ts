@@ -74,7 +74,7 @@ export async function extractStrategyMetas(chainId: number) {
 
     const json = await response.json()
     try {
-      const description = json.localization.en.description
+      const description = json.description
       json.addresses.forEach((address: string) => {
         result[address as `0x${string}`] = description
       })

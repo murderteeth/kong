@@ -34,6 +34,10 @@ async function action() {
           name: mq.q.fanout,
           job: mq.job.fanout.harvestApr
         }},
+        { title: 'update risk', value: {
+          name: mq.q.extract,
+          job: mq.job.extract.risk
+        }},
         { title: 'update meta', value: {
           name: mq.q.extract,
           job: mq.job.extract.meta

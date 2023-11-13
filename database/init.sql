@@ -208,6 +208,31 @@ LEFT JOIN LATERAL (
 --------------------------------------
 -------------
 --- MIGRATION 1
+CREATE TABLE strategy_lender_status (
+	chain_id int4 NOT NULL,
+	strategy_address text NOT NULL,
+	name text NULL,
+	assets numeric NULL,
+	rate numeric NULL,
+	address text NOT NULL,
+	as_of_block_number int8 NOT NULL,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT strategy_lender_status_pkey PRIMARY KEY (chain_id, strategy_address, address)
+);
+
+CREATE TABLE risk_group (
+	chain_id int4 NOT NULL,
+	name text NOT NULL,
+	audit_score int4 NULL,
+	code_review_score int4 NULL,
+	complexity_score int4 NULL,
+	protocol_safety_score int4 NULL,
+	team_knowledge_score int4 NULL,
+	testing_score int4 NULL,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT risk_pkey PRIMARY KEY (chain_id, name)
+);
+
 ALTER TABLE vault ADD COLUMN management_fee numeric NULL;
 ALTER TABLE vault ADD COLUMN performance_fee numeric NULL;
 ALTER TABLE vault ADD COLUMN available_deposit_limit numeric NULL;
@@ -242,21 +267,10 @@ ALTER TABLE strategy ADD COLUMN health_check text NULL;
 ALTER TABLE strategy ADD COLUMN do_health_check boolean NULL;
 ALTER TABLE strategy ADD COLUMN trade_factory text NULL;
 ALTER TABLE strategy ADD COLUMN meta_description text NULL;
+ALTER TABLE strategy ADD COLUMN risk_group text NULL;
 ALTER TABLE strategy ALTER COLUMN as_of_block_number DROP NOT NULL;
 
 ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
-
-CREATE TABLE strategy_lender_status (
-	chain_id int4 NOT NULL,
-	strategy_address text NOT NULL,
-	name text NULL,
-	assets numeric NULL,
-	rate numeric NULL,
-	address text NOT NULL,
-	as_of_block_number int8 NOT NULL,
-	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT strategy_lender_status_pkey PRIMARY KEY (chain_id, strategy_address, address)
-);
 
 DROP VIEW vault_gql;
 CREATE VIEW vault_gql AS

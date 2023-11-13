@@ -137,6 +137,17 @@ export interface Transfer {
   transactionHash: `0x${string}`
 }
 
+export interface RiskGroup {
+  name: string
+  auditScore: number,
+  codeReviewScore: number,
+  complexityScore: number,
+  protocolSafetyScore: number,
+  teamKnowledgeScore: number,
+  testingScore: number,
+  strategies: `0x${string}` []
+}
+
 export interface Harvest {
   chainId: number
   address: `0x${string}`

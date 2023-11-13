@@ -27,6 +27,7 @@ export const job = {
     strategy: 'strategy',
     harvest: 'harvest',
     transfer: 'transfer',
+    risk: 'risk',
     meta: 'meta'
   },
 
@@ -45,6 +46,7 @@ export const job = {
     strategy: 'strategy',
     strategyLenderStatus: 'strategy-lender-status',
     harvest: 'harvest',
+    riskGroup: 'risk',
     tvl: 'tvl',
     apy: 'apy',
     apr: 'apr',

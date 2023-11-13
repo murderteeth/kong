@@ -19,18 +19,18 @@ export default class Loader implements Processor {
 
     [mq.job.load.vault]: async data => 
     await upsert(data, 'vault', 'chain_id, address', 
-      'WHERE vault.as_of_block_number < EXCLUDED.as_of_block_number'
+      'WHERE EXCLUDED.as_of_block_number IS NULL OR vault.as_of_block_number < EXCLUDED.as_of_block_number'
     ),
 
     [mq.job.load.withdrawalQueue]: async data => 
     await upsertBatch(data.batch, 'withdrawal_queue', 'chain_id, vault_address, queue_index', 
-      'WHERE withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
+      'WHERE EXCLUDED.as_of_block_number IS NULL OR withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
     ),
 
-    [mq.job.load.strategy]: async data => 
+    [mq.job.load.strategy]: async data => {
     await upsert(data, 'strategy', 'chain_id, address',
-      'WHERE strategy.as_of_block_number < EXCLUDED.as_of_block_number'
-    ),
+      'WHERE EXCLUDED.as_of_block_number IS NULL OR strategy.as_of_block_number < EXCLUDED.as_of_block_number'
+    )},
 
     [mq.job.load.strategyLenderStatus]: async data => {
       if(data.batch.length === 0) return
@@ -46,6 +46,9 @@ export default class Loader implements Processor {
 
     [mq.job.load.harvest]: async data => 
     await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
+
+    [mq.job.load.riskGroup]: async data => 
+    await upsertBatch(data.batch, 'risk_group', 'chain_id, name'),
 
     [mq.job.load.transfer]: async data => 
     await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
