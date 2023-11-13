@@ -43,13 +43,16 @@ export class MetaExtractor implements Processor {
 
 export async function extractTokenMeta(chainId: number, token: `0x${string}`) {
   if(!process.env.GITHUB_PERSONAL_ACCESS_TOKEN) throw new Error('!process.env.GITHUB_PERSONAL_ACCESS_TOKEN')
-
-  const json = await (await fetch(
-    `https://raw.githubusercontent.com/yearn/ydaemon/main/data/meta/tokens/${chainId}/${token}.json`,
-    { headers: { Authorization: `Bearer ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}` } }
-  )).json()
-
-  return json.description
+  try {
+    const json = await (await fetch(
+      `https://raw.githubusercontent.com/yearn/ydaemon/main/data/meta/tokens/${chainId}/${token}.json`,
+      { headers: { Authorization: `Bearer ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}` } }
+    )).json()
+    return json.description
+  } catch(error) {
+    console.warn('🚨', 'bad path', `data/meta/tokens/${chainId}/${token}.json`)
+    console.warn(error)
+  }
 }
 
 export async function extractStrategyMetas(chainId: number) {
