@@ -18,7 +18,7 @@ export default class TvlFanout implements Processor {
 
   async fanout() {
     for(const chain of chains) {
-      const throttle = 16
+      const throttle = 8
       const oneDay = BigInt(24 * 60 * 60)
 
       for(const { address, activation, blockTime } of await getLatestTvlTimes(chain.id)) {

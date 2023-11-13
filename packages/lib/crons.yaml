@@ -41,3 +41,13 @@ crons:
     queue: fanout
     job: harvest-apr
     schedule: "10-59/15 * * * *"
+
+  - name: UpdateRisk
+    queue: extract
+    job: risk
+    schedule: "0 * * * *"
+
+  - name: UpdateMeta
+    queue: extract
+    job: meta
+    schedule: "30 * * * *"

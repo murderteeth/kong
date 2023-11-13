@@ -2,3 +2,6 @@
 .local/
 node_modules/
 build/
+.venv
+cache
+__pycache__

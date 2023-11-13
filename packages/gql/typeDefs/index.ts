@@ -7,7 +7,6 @@ import sparklineItem from './sparklineItem'
 import tvl from './tvl'
 import transfer from './transfer'
 import harvest from './harvest'
-import fail from './fail'
 import apy from './apy'
 import period from './period'
 
@@ -23,8 +22,7 @@ const query = gql`
     apys(chainId: Int!, address: String!, period: Period, limit: Int): [Apy],
     harvests(chainId: Int, address: String): [Harvest],
     transfers(chainId: Int, address: String): [Transfer],
-    monitor: MonitorResults,
-    fail(queueName: String!): [Fail]
+    monitor: MonitorResults
   }
 `
 
@@ -39,6 +37,5 @@ export default [
   vault, 
   monitorResults,
   harvest,
-  transfer,
-  fail
+  transfer
 ]

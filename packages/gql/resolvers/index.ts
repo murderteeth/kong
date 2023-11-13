@@ -7,7 +7,6 @@ import apys from './apys'
 import harvests from './harvests'
 import transfers from './transfers'
 import monitor from './monitor'
-import fail from './fail'
 
 export default {
   Query: {
@@ -19,7 +18,6 @@ export default {
     apys,
     harvests,
     transfers,
-    monitor,
-    fail
+    monitor
   }
 }

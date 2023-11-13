@@ -13,14 +13,23 @@ type Vault {
   name: String
   decimals: Int
   totalAssets: String
+  availableDepositLimit: String
+  lockedProfitDegradation: String
+  totalDebt: String
+  debtRatio: Int
   assetAddress: String
   assetSymbol: String
   assetName: String
+  assetDescription: String
   withdrawalQueue: [Strategy]
+  priceUsd: Float
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
   apyNet: Float
   apySparkline: [SparklineItem]
+  managementFee: Float
+  performanceFee: Float
+  governance: String
   activationBlockTime: String
   activationBlockNumber: String
   asOfBlockNumber: String

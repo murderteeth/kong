@@ -56,6 +56,13 @@ export interface Vault {
   assetName?: string,
   assetSymbol?: string,
   totalAssets?: bigint,
+  totalDebt?: bigint,
+  debtRatio?: number,
+  availableDepositLimit?: bigint,
+  governance?: `0x${string}`,
+  performanceFee?: number,
+  managementFee?: number,
+  lockedProfitDegradation?: bigint,
   activationBlockTime?: bigint,
   activationBlockNumber?: bigint,
   asOfBlockNumber: bigint
@@ -64,13 +71,40 @@ export interface Vault {
 export interface Strategy {
   chainId: number
   address: `0x${string}`
+  vaultAddress: `0x${string}`,
   apiVersion?: string
   name?: string,
-  vaultAddress?: string,
+  assetAddress?: `0x${string}`
+  estimatedTotalAssets?: bigint,
+  delegatedAssets?: bigint,
+  performanceFee?: number,
+  debtRatio?: number,
+  minDebtPerHarvest?: bigint,
+  maxDebtPerHarvest?: bigint,
+  lastReportBlockTime?: bigint,
+  totalDebt?: bigint,
+  totalDebtUsd?: number,
+  totalGain?: bigint,
+  totalLoss?: bigint,
   withdrawalQueueIndex?: number,
-  migrateAddress?: string,
-  activationBlockTime?: string,
-  activationBlockNumber?: string,
+  migrateAddress?: `0x${string}`,
+  strategist?: `0x${string}`,
+  keeper?: `0x${string}`,
+  healthCheck?: `0x${string}`,
+  doHealthCheck?: boolean,
+  tradeFactory?: `0x${string}`,
+  activationBlockTime?: bigint,
+  activationBlockNumber?: bigint,
+  asOfBlockNumber: bigint
+}
+
+export interface StrategyLenderStatus {
+  chainId: number
+  strategyAddress: `0x${string}`
+  name: string
+  assets: bigint
+  rate: number
+  address: `0x${string}`
   asOfBlockNumber: bigint
 }
 
@@ -101,6 +135,17 @@ export interface Transfer {
   blockIndex: number
   blockTime: string
   transactionHash: `0x${string}`
+}
+
+export interface RiskGroup {
+  name: string
+  auditScore: number,
+  codeReviewScore: number,
+  complexityScore: number,
+  protocolSafetyScore: number,
+  teamKnowledgeScore: number,
+  testingScore: number,
+  strategies: `0x${string}` []
 }
 
 export interface Harvest {

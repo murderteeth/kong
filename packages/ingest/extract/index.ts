@@ -8,6 +8,8 @@ import { HarvestExtractor } from './harvest'
 import { StrategyExtractor } from './strategy'
 import { TransferExtractor } from './transfer'
 import { BlockExtractor } from './block'
+import { RiskExtractor } from './risk'
+import { MetaExtractor } from './meta'
 
 export default class Extract implements Processor {
   worker: Worker | undefined
@@ -19,7 +21,9 @@ export default class Extract implements Processor {
     [mq.job.extract.strategy]: new StrategyExtractor(),
     [mq.job.extract.harvest]: new HarvestExtractor(),
     [mq.job.extract.apetax]: new ApetaxExtractor(),
-    [mq.job.extract.transfer]: new TransferExtractor()
+    [mq.job.extract.transfer]: new TransferExtractor(),
+    [mq.job.extract.risk]: new RiskExtractor(),
+    [mq.job.extract.meta]: new MetaExtractor()
   }
 
   async up() {

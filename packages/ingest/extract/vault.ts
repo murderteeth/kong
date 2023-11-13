@@ -1,6 +1,6 @@
 import { math, mq, multicall3, types } from 'lib'
 import { blocks } from 'lib'
-import { parseAbi, stringToBytes, zeroAddress } from 'viem'
+import { parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { rpcs } from 'lib/rpcs'
@@ -30,7 +30,7 @@ export class VaultExtractor implements Processor {
       return
     }
 
-    const fields = await this.extractFields(vault.chainId, vault.address)
+    const fields = await this.extractFields(vault)
     const asset = await this.extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
     const activation = await this.extractActivation(vault.chainId, vault.address)
     const withdrawalQueue = await extractWithdrawalQueue(vault.chainId, vault.address, asOfBlockNumber)
@@ -75,50 +75,78 @@ export class VaultExtractor implements Processor {
     })) as types.WithdrawalQueueItem[] })
 
     for(const strategy of withdrawalQueue) {
-      if(!strategy || strategy === zeroAddress) continue
       await this.queues[mq.q.extract].add(
         mq.job.extract.strategy, {
           chainId: vault.chainId,
           address: strategy,
           vaultAddress: vault.address,
+          withdrawalQueueIndex: withdrawalQueue.indexOf(strategy),
           asOfBlockNumber
       } as types.Strategy)
     }
   }
 
-  private async extractFields(chainId: number, address: `0x${string}`) {
-    const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
+  private async extractFields(vault: types.Vault) {
+    const multicallResult = await rpcs.next(vault.chainId).multicall({ contracts: [
       {
-        address, functionName: 'name',
+        address: vault.address, functionName: 'name',
         abi: parseAbi(['function name() returns (string)'])
       },
       {
-        address, functionName: 'symbol',
+        address: vault.address, functionName: 'symbol',
         abi: parseAbi(['function symbol() returns (string)'])
       },
       {
-        address, functionName: 'decimals',
+        address: vault.address, functionName: 'decimals',
         abi: parseAbi(['function decimals() returns (uint32)'])
       },
       {
-        address, functionName: 'totalAssets',
+        address: vault.address, functionName: 'totalAssets',
         abi: parseAbi(['function totalAssets() returns (uint256)'])
       },
       {
-        address, functionName: 'apiVersion',
+        address: vault.address, functionName: 'apiVersion',
         abi: parseAbi(['function apiVersion() returns (string)'])
       },
       {
-        address, functionName: 'api_version',
+        address: vault.address, functionName: 'api_version',
         abi: parseAbi(['function api_version() returns (string)'])
       },
       {
-        address, functionName: 'token',
+        address: vault.address, functionName: 'token',
         abi: parseAbi(['function token() returns (address)'])
       }, 
       {
-        address, functionName: 'asset',
+        address: vault.address, functionName: 'asset',
         abi: parseAbi(['function asset() returns (address)'])
+      },
+      {
+        address: vault.address, functionName: 'governance',
+        abi: parseAbi(['function governance() returns (address)'])
+      },
+      {
+        address: vault.address, functionName: 'availableDepositLimit',
+        abi: parseAbi(['function availableDepositLimit() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'performanceFee',
+        abi: parseAbi(['function performanceFee() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'managementFee',
+        abi: parseAbi(['function managementFee() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'lockedProfitDegradation',
+        abi: parseAbi(['function lockedProfitDegradation() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'totalDebt',
+        abi: parseAbi(['function totalDebt() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'debtRatio',
+        abi: parseAbi(['function debtRatio() returns (uint256)'])
       }
     ]})
 
@@ -128,10 +156,17 @@ export class VaultExtractor implements Processor {
       decimals: multicallResult[2].result,
       totalAssets: multicallResult[3].result,
       apiVersion: multicallResult[4].result || multicallResult[5].result || '0.0.0',
-      assetAddress: multicallResult[6].result || multicallResult[7].result
+      assetAddress: multicallResult[6].result || multicallResult[7].result,
+      governance: multicallResult[8].result,
+      availableDepositLimit: multicallResult[9].result,
+      performanceFee: multicallResult[10].result,
+      managementFee: multicallResult[11].result,
+      lockedProfitDegradation: multicallResult[12].result,
+      totalDebt: multicallResult[13].result,
+      debtRatio: multicallResult[14].result
     } as types.Vault
   }
-  
+
   private async extractAsset(chainId: number, address: `0x${string}`) {
     const result = await rpcs.next(chainId).multicall({ contracts: [
       {
@@ -215,14 +250,6 @@ export async function extractFeesBps(chainId: number, address: `0x${string}`, bl
 }
 
 export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  // TODO: y dis no work? runtime error 'property abi cannot be destructured'
-  // const contracts = Array(20).map((_, i) => ({
-  //   address, functionName: 'withdrawalQueue', args: [BigInt(i)],
-  //   abi: parseAbi(['function withdrawalQueue(uint256) returns (address)'])    
-  // }))
-  // const results = await rpc.multicall({ contracts })
-  //
-
   const results = await rpcs.next(chainId).multicall({ contracts: [
     { args: [0n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
     { args: [1n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
@@ -246,26 +273,6 @@ export async function extractWithdrawalQueue(chainId: number, address: `0x${stri
     { args: [19n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
   ], blockNumber})
 
-  return results.filter(result => result.status === 'success')
+  return results.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
   .map(result => result.result as `0x${string}`)
-}
-
-export async function extractDelegatedAssets(chainId: number, addresses: `0x${string}` [], blockNumber: bigint) {
-  const results = [] as { address: `0x${string}`, delegatedAssets: bigint } []
-
-  const contracts = addresses.map(address => ({
-    args: [], address, functionName: 'delegatedAssets', abi: parseAbi(['function delegatedAssets() returns (uint256)'])
-  }))
-
-  const multicallresults = await rpcs.next(chainId).multicall({ contracts, blockNumber})
-
-  multicallresults.forEach((result, index) => {
-    const delegatedAssets = result.status === 'failure'
-    ? 0n
-    : BigInt(result.result as bigint)
-
-    results.push({ address: addresses[index], delegatedAssets })
-  })
-
-  return results
 }

@@ -15,10 +15,6 @@ export class VaultHandler implements Handler {
   }
 
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
-    const strategies = logs.filter(log => log.eventName === 'StrategyAdded')
-    console.log('📋', chainId, address, 'strategies', strategies.length)
-    await this.handleStrategies(chainId, address, strategies)
-
     const harvests = logs.filter(log => log.eventName === 'StrategyReported')
     console.log('📋', chainId, address, 'harvests', harvests.length)
     await this.handleHarvests(chainId, address, harvests)
@@ -26,18 +22,6 @@ export class VaultHandler implements Handler {
     const transfers = logs.filter(log => log.eventName === 'Transfer')
     console.log('📋', chainId, address, 'transfers', transfers.length)
     await this.handleTransfers(chainId, address, transfers)
-  }
-
-  private async handleStrategies(chainId: number, address: string, logs: any[]) {
-    for(const log of logs) {
-      await this.queues[mq.q.extract].add(mq.job.extract.strategy, {
-        chainId, 
-        address: log.args.strategy.toString(),
-        vaultAddress: address
-      } as types.Strategy, {
-        jobId: `${chainId}-${log.blockNumber}-${address}`
-      })
-    }
   }
 
   private async handleHarvests(chainId: number, address: string, logs: any[]) {

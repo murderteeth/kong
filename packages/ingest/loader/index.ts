@@ -19,21 +19,36 @@ export default class Loader implements Processor {
 
     [mq.job.load.vault]: async data => 
     await upsert(data, 'vault', 'chain_id, address', 
-      'WHERE vault.as_of_block_number < EXCLUDED.as_of_block_number'
+      'WHERE EXCLUDED.as_of_block_number IS NULL OR vault.as_of_block_number < EXCLUDED.as_of_block_number'
     ),
 
     [mq.job.load.withdrawalQueue]: async data => 
     await upsertBatch(data.batch, 'withdrawal_queue', 'chain_id, vault_address, queue_index', 
-      'WHERE withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
+      'WHERE EXCLUDED.as_of_block_number IS NULL OR withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
     ),
 
-    [mq.job.load.strategy]: async data => 
+    [mq.job.load.strategy]: async data => {
     await upsert(data, 'strategy', 'chain_id, address',
-      'WHERE strategy.as_of_block_number < EXCLUDED.as_of_block_number'
-    ),
+      'WHERE EXCLUDED.as_of_block_number IS NULL OR strategy.as_of_block_number < EXCLUDED.as_of_block_number'
+    )},
+
+    [mq.job.load.strategyLenderStatus]: async data => {
+      if(data.batch.length === 0) return
+      if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.chainId))).size > 1) throw new Error('chain ids > 1')
+      if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.strategyAddress))).size > 1) throw new Error('strategy addresses > 1')
+      await replaceWithBatch(
+        data.batch,
+        'strategy_lender_status', 
+        'chain_id, strategy_address, address', 
+        `chain_id = ${data.batch[0].chainId} AND strategy_address = '${data.batch[0].strategyAddress}'`
+      )
+    },
 
     [mq.job.load.harvest]: async data => 
     await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
+
+    [mq.job.load.riskGroup]: async data => 
+    await upsertBatch(data.batch, 'risk_group', 'chain_id, name'),
 
     [mq.job.load.transfer]: async data => 
     await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
@@ -99,6 +114,26 @@ async function upsertBatch(batch: any[], table: string, pk: string, where?: stri
     for(const object of batch) {
       await client.query(
         toUpsertSql(table, pk, object, where),
+        Object.values(object)
+      )
+    }
+    await client.query('COMMIT')
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+async function replaceWithBatch(batch: any[], table: string, pk: string, where: string) {
+  const client = await db.connect()
+  try {
+    await client.query('BEGIN')
+    await client.query(`DELETE FROM ${table} WHERE ${where};`)
+    for(const object of batch) {
+      await client.query(
+        toUpsertSql(table, pk, object),
         Object.values(object)
       )
     }

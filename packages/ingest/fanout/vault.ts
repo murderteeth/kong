@@ -26,11 +26,15 @@ export default class VaultFanout implements Processor {
         const from = max(pointer.blockNumber, pointer.activationBlockNumber, default_start_block)
         const to = await getLatestBlock(chain.id)
 
+        await this.queues[mq.q.extract].add(mq.job.extract.vault, {
+          chainId: chain.id,
+          address: pointer.address
+        })
+
         await this.fanoutExtract(
         chain.id,
         pointer.address,
         parseAbi([
-          `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
           `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 debtPaid, uint256 totalGain, uint256 totalLoss, uint256 totalDebt, uint256 debtAdded, uint256 debtRatio)`,
           `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
         ]),
@@ -43,8 +47,8 @@ export default class VaultFanout implements Processor {
 
   async fanoutExtract(chainId: number, address: string, events: any, from: bigint, to: bigint) {
     console.log('📤', 'fanout', chainId, address, from, to)
-    const stride = BigInt(process.env.LOG_STRIDE || 100_000)
-    const throttle = 16
+    const stride = BigInt(process.env.LOG_STRIDE || 10_000)
+    const throttle = 8
     for (let block = from; block <= to; block += stride) {
       const toBlock = block + stride - 1n < to ? block + stride - 1n : to
       const options = {

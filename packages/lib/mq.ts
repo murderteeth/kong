@@ -27,6 +27,8 @@ export const job = {
     strategy: 'strategy',
     harvest: 'harvest',
     transfer: 'transfer',
+    risk: 'risk',
+    meta: 'meta'
   },
 
   compute: {
@@ -42,7 +44,9 @@ export const job = {
     vault: 'vault',
     withdrawalQueue: 'withdrawal-queue',
     strategy: 'strategy',
+    strategyLenderStatus: 'strategy-lender-status',
     harvest: 'harvest',
+    riskGroup: 'risk',
     tvl: 'tvl',
     apy: 'apy',
     apr: 'apr',
@@ -100,7 +104,10 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
 
   const timer = setInterval(async () => {
     const jobs = await queue.count()
-    const targetConcurrency = computeConcurrency(jobs)
+    const targetConcurrency = computeConcurrency(jobs, {
+      min: 1, max: 50,
+      threshold: 200  
+    })
 
     if(targetConcurrency > concurrency) {
       console.log('🚀', 'concurrency up', queueName, targetConcurrency)
@@ -125,11 +132,14 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
   return worker
 }
 
-export function computeConcurrency(jobs: number) {
-  const min = 1
-  const max = 20
-  const threshold = 200
-  const m = (max - min) / (threshold - 0)
-  const concurrency = Math.floor(m * jobs + min)
-  return Math.min(Math.max(concurrency, min), max)
+export interface ConcurrencyOptions {
+  min: number
+  max: number
+  threshold: number
+}
+
+export function computeConcurrency(jobs: number, options: ConcurrencyOptions) {
+  const m = (options.max - options.min) / (options.threshold - 0)
+  const concurrency = Math.floor(m * jobs + options.min)
+  return Math.min(Math.max(concurrency, options.min), options.max)
 }

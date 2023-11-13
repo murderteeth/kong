@@ -168,39 +168,153 @@ CREATE TABLE sparkline (
 --- VIEWS
 CREATE VIEW vault_gql AS
 SELECT 
-  v.*,
-  t.tvl_usd AS tvl_usd,
+	v.*,
+	t.tvl_usd AS tvl_usd,
 	a.net AS apy_net
 FROM vault v
 LEFT JOIN LATERAL (
-  SELECT 
-    tvl_usd
-  FROM tvl
-  WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
-  ORDER BY block_time DESC
-  LIMIT 1
+	SELECT 
+		tvl_usd
+	FROM tvl
+	WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
+	ORDER BY block_time DESC
+	LIMIT 1
 ) t ON TRUE
 LEFT JOIN LATERAL (
-  SELECT 
-    net
-  FROM apy
-  WHERE v.chain_id = apy.chain_id AND v.address = apy.address
-  ORDER BY block_time DESC
-  LIMIT 1
+	SELECT 
+		net
+	FROM apy
+	WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+	ORDER BY block_time DESC
+	LIMIT 1
 ) a ON TRUE;
 
 CREATE VIEW strategy_gql AS
 SELECT 
-  s.*,
-  a.gross AS gross_apr,
-  a.net AS net_apr
+	s.*,
+	a.gross AS gross_apr,
+	a.net AS net_apr
 FROM strategy s
 LEFT JOIN LATERAL (
-  SELECT 
-    gross,
-    net
-  FROM apr
-  WHERE s.chain_id = apr.chain_id AND s.address = apr.address
-  ORDER BY block_time DESC
-  LIMIT 1
+	SELECT 
+		gross,
+		net
+	FROM apr
+	WHERE s.chain_id = apr.chain_id AND s.address = apr.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) a ON TRUE;
+
+--------------------------------------
+-------------
+--- MIGRATION 1
+CREATE TABLE strategy_lender_status (
+	chain_id int4 NOT NULL,
+	strategy_address text NOT NULL,
+	name text NULL,
+	assets numeric NULL,
+	rate numeric NULL,
+	address text NOT NULL,
+	as_of_block_number int8 NOT NULL,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT strategy_lender_status_pkey PRIMARY KEY (chain_id, strategy_address, address)
+);
+
+CREATE TABLE risk_group (
+	chain_id int4 NOT NULL,
+	name text NOT NULL,
+	audit_score int4 NULL,
+	code_review_score int4 NULL,
+	complexity_score int4 NULL,
+	protocol_safety_score int4 NULL,
+	team_knowledge_score int4 NULL,
+	testing_score int4 NULL,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT risk_pkey PRIMARY KEY (chain_id, name)
+);
+
+ALTER TABLE vault ADD COLUMN management_fee numeric NULL;
+ALTER TABLE vault ADD COLUMN performance_fee numeric NULL;
+ALTER TABLE vault ADD COLUMN available_deposit_limit numeric NULL;
+ALTER TABLE vault ADD COLUMN governance text NULL;
+ALTER TABLE vault ADD COLUMN locked_profit_degradation numeric NULL;
+ALTER TABLE vault ADD COLUMN total_debt numeric NULL;
+ALTER TABLE vault ADD COLUMN debt_ratio numeric NULL;
+ALTER TABLE vault ALTER COLUMN as_of_block_number DROP NOT NULL;
+
+ALTER TABLE erc20
+ALTER COLUMN name DROP NOT NULL,
+ALTER COLUMN symbol DROP NOT NULL,
+ALTER COLUMN decimals DROP NOT NULL;
+ALTER TABLE erc20 ADD COLUMN meta_description text NULL;
+
+ALTER TABLE strategy ADD COLUMN estimated_total_assets numeric NULL;
+ALTER TABLE strategy ADD COLUMN delegated_assets numeric NULL;
+ALTER TABLE strategy ADD COLUMN asset_address text NULL;
+ALTER TABLE strategy ADD COLUMN performance_fee numeric NULL;
+ALTER TABLE strategy ADD COLUMN debt_ratio numeric NULL;
+ALTER TABLE strategy ADD COLUMN min_debt_per_harvest numeric NULL;
+ALTER TABLE strategy ADD COLUMN max_debt_per_harvest numeric NULL;
+ALTER TABLE strategy ADD COLUMN last_report_block_time timestamptz NULL;
+ALTER TABLE strategy ADD COLUMN total_debt numeric NULL;
+ALTER TABLE strategy ADD COLUMN total_debt_usd numeric NULL;
+ALTER TABLE strategy ADD COLUMN total_gain numeric NULL;
+ALTER TABLE strategy ADD COLUMN total_loss numeric NULL;
+ALTER TABLE strategy ADD COLUMN withdrawal_queue_index numeric NULL;
+ALTER TABLE strategy ADD COLUMN keeper text NULL;
+ALTER TABLE strategy ADD COLUMN strategist text NULL;
+ALTER TABLE strategy ADD COLUMN health_check text NULL;
+ALTER TABLE strategy ADD COLUMN do_health_check boolean NULL;
+ALTER TABLE strategy ADD COLUMN trade_factory text NULL;
+ALTER TABLE strategy ADD COLUMN meta_description text NULL;
+ALTER TABLE strategy ADD COLUMN risk_group text NULL;
+ALTER TABLE strategy ALTER COLUMN as_of_block_number DROP NOT NULL;
+
+ALTER TABLE tvl ADD COLUMN price_usd numeric NOT NULL DEFAULT 0;
+
+DROP VIEW vault_gql;
+CREATE VIEW vault_gql AS
+SELECT 
+	v.*,
+	erc20.meta_description as asset_description,
+	t.price_usd AS price_usd,
+	t.tvl_usd AS tvl_usd,
+	a.net AS apy_net
+FROM vault v
+JOIN erc20 
+	ON v.chain_id = erc20.chain_id 
+	AND v.asset_address = erc20.address
+LEFT JOIN LATERAL (
+	SELECT 
+		price_usd,
+		tvl_usd
+	FROM tvl
+	WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) t ON TRUE
+LEFT JOIN LATERAL (
+	SELECT 
+		net
+	FROM apy
+	WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) a ON TRUE;
+
+DROP VIEW strategy_gql;
+CREATE VIEW strategy_gql AS
+SELECT 
+	s.*,
+	a.gross AS gross_apr,
+	a.net AS net_apr
+FROM strategy s
+LEFT JOIN LATERAL (
+	SELECT 
+		gross,
+		net
+	FROM apr
+	WHERE s.chain_id = apr.chain_id AND s.address = apr.address
+	ORDER BY block_time DESC
+	LIMIT 1
 ) a ON TRUE;
