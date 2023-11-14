@@ -12,3 +12,5 @@ DROP TABLE harvest;
 DROP TABLE apr;
 DROP TABLE apy;
 DROP TABLE sparkline;
+DROP TABLE strategy_lender_status;
+DROP TABLE risk_group;
