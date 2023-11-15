@@ -15,7 +15,7 @@ dotenv.config({ path: envPath })
 
 const port = process.env.GQL_PORT || 3001
 
-const server = new ApolloServer({ 
+const server = new ApolloServer({
   typeDefs,
   resolvers,
   introspection: true,
@@ -34,7 +34,7 @@ Promise.all([
   server.applyMiddleware({ app })
   app.listen(port, () => {
     console.log(`🐒 gql up (${port})`)
-  })  
+  })
 
 }).catch(error => {
   console.error(error)

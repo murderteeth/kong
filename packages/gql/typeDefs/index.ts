@@ -9,6 +9,7 @@ import transfer from './transfer'
 import harvest from './harvest'
 import apy from './apy'
 import period from './period'
+import stats from './stats'
 
 const query = gql`
   scalar BigInt
@@ -22,7 +23,8 @@ const query = gql`
     apys(chainId: Int!, address: String!, period: Period, limit: Int): [Apy],
     harvests(chainId: Int, address: String): [Harvest],
     transfers(chainId: Int, address: String): [Transfer],
-    monitor: MonitorResults
+    monitor: MonitorResults,
+    stats: Stats,
   }
 `
 
@@ -37,5 +39,6 @@ export default [
   vault, 
   monitorResults,
   harvest,
-  transfer
+  transfer,
+  stats
 ]

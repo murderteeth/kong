@@ -5,14 +5,11 @@ import Panel from './Panel'
 import { fEvmAddress, fPercent, fUSD } from '@/util/format'
 import Frosty from './Frosty'
 import Minibars from './Minibars'
-import { useMemo } from 'react'
 import Linechart, { formatters } from './Linechart'
 
 export default function Vault() {
-  const { vaults, tvls, apys } = useData()
-  const address = '0xa258C4606Ca8206D8aA700cE2143D7db854D168c'
-  const vault = useMemo(() => vaults.find(v => v.address === address), [vaults])
-  if (!vault) return null
+  const { vault, tvls, apys } = useData()
+  if (!(vault && vault.address)) return null
 
   return <Panel className="w-full flex flex-col gap-1 border border-yellow-950/50">
     <div className="flex items-center justify-between">

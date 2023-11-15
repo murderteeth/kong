@@ -99,45 +99,37 @@ export interface MonitorResults {
   }
 }
 
+export interface Stats {
+  total: number
+  endorsed: number
+  experimental: number
+  networks: {
+    chainId: number
+    count: number
+  }[]
+  apetax: {
+    stealth: number
+    new: number
+    active: number
+    withdraw: number
+  }
+}
+
 export interface DataContext {
   latestBlocks: LatestBlock[]
-  vaults: Vault[]
+  vault: Vault
   tvls: TVL[]
   apys: APY[]
   transfers: Transfer[]
   harvests: Harvest[]
   monitor: MonitorResults
+  stats: Stats
 }
 
 const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
   latestBlocks {
     chainId
     blockNumber
-  }
-
-  vaults {
-    chainId
-    address
-    name
-    apetaxStatus
-    apetaxType
-    apiVersion
-    registryStatus
-    tvlUsd
-    tvlSparkline {
-      value
-      time
-    }
-    apyNet
-    apySparkline {
-      value
-      time
-    }
-    withdrawalQueue {
-      name
-      address
-      netApr
-    }
   }
 
   monitor {
@@ -170,6 +162,47 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
         total
         used
       }
+    }
+  }
+
+  stats {
+    total
+    endorsed
+    experimental
+    networks {
+      chainId
+      count
+    }
+    apetax {
+      stealth
+      new
+      active
+      withdraw
+    }
+  }
+
+  vault(chainId: $chainId, address: $address) {
+    chainId
+    address
+    name
+    apetaxStatus
+    apetaxType
+    apiVersion
+    registryStatus
+    tvlUsd
+    tvlSparkline {
+      value
+      time
+    }
+    apyNet
+    apySparkline {
+      value
+      time
+    }
+    withdrawalQueue {
+      name
+      address
+      netApr
     }
   }
 
@@ -225,7 +258,7 @@ async function fetchData() {
 
 const DEFAULT = {
   latestBlocks: [],
-  vaults: [],
+  vault: {} as Vault,
   tvls: [],
   apys: [],
   transfers: [],
@@ -256,7 +289,19 @@ const DEFAULT = {
         used: 0
       }
     }
-  } as MonitorResults
+  } as MonitorResults,
+  stats: {
+    total: 0,
+    endorsed: 0,
+    experimental: 0,
+    networks: [],
+    apetax: {
+      stealth: 0,
+      new: 0,
+      active: 0,
+      withdraw: 0
+    }
+  } as Stats
 } as DataContext
 
 export const dataContext = createContext<DataContext>(DEFAULT)

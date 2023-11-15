@@ -59,7 +59,7 @@ export async function getVaults(where: string, aggGroupBy: string, values: any[]
     ${where}
     ${aggGroupBy}
   ),
-  
+
   tvl_agg AS (
     SELECT
       v.chain_id,
