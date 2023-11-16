@@ -126,7 +126,7 @@ export interface DataContext {
   stats: Stats
 }
 
-const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
+const STATUS_QUERY = `query Data {
   latestBlocks {
     chainId
     blockNumber
@@ -180,7 +180,9 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
       withdraw
     }
   }
+}`
 
+const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
   vault(chainId: $chainId, address: $address) {
     chainId
     address
@@ -242,18 +244,34 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
 }`
 
 async function fetchData() {
-  const response = await fetch(process.env.NEXT_PUBLIC_GQL || 'http://localhost:3001/graphql', {
+  const endpoint = process.env.NEXT_PUBLIC_GQL || 'http://localhost:3001/graphql'
+
+  const statusResponsePromise = fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
-      query: GRAPHQL_QUERY,
+      query: STATUS_QUERY
+    })
+  })
+
+  const vaultResponsePromise = fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      query: VAULT_QUERY,
       variables: { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c' }
     })
   })
 
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+  const [statusResponse, vaultResponse] = await Promise.all([statusResponsePromise, vaultResponsePromise])
 
-  return (await response.json()).data as DataContext
+  if (!statusResponse.ok) throw new Error(`HTTP error! status: ${statusResponse.status}`)
+  if (!vaultResponse.ok) throw new Error(`HTTP error! status: ${vaultResponse.status}`)
+
+  return {
+    ...(await statusResponse.json()).data, 
+    ...(await vaultResponse.json()).data
+  } as DataContext
 }
 
 const DEFAULT = {
