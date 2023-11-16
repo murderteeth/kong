@@ -11,7 +11,7 @@ dev:
 	@tmux splitw -h -p 50
 
 	# Run commands in the three top panes
-	@tmux send-keys -t devenv:0.0 'yarn workspace gql dev' C-m
+	@tmux send-keys -t devenv:0.0 '' C-m
 	@tmux send-keys -t devenv:0.1 'yarn workspace web dev' C-m
 	@tmux send-keys -t devenv:0.2 'yarn workspace ingest dev' C-m
 

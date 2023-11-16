@@ -3,13 +3,13 @@ crons:
   - name: LatestBlocks
     queue: extract
     job: block
-    schedule: "*/5 * * * * *" # every 5 seconds
+    schedule: "*/2 * * * * *" # every 2 seconds
     start: true
 
-  - name: IngestProbe
+  - name: SystemProbe
     queue: probe
-    job: ingest
-    schedule: "*/5 * * * * *" # every 5 seconds
+    job: all
+    schedule: "*/2 * * * * *" # every 2 seconds
     start: true
 
   - name: IndexRegistries

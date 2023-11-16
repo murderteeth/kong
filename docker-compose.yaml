@@ -30,19 +30,3 @@ services:
       POSTGRES_PASSWORD: password
     build:
       dockerfile: Dockerfile.ingest
-
-  gql:
-    depends_on:
-      - redis
-      - postgres
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    build:
-      dockerfile: Dockerfile.gql
-    ports:
-      - "3000:3000"

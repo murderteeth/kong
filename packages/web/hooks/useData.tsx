@@ -66,19 +66,21 @@ export interface Harvest {
   transactionHash: string
 }
 
-export interface MonitorResults {
+export interface Monitor {
   queues: {
     name: string
     waiting: number
     active: number
     failed: number
   }[]
+
   db: {
     databaseSize: number
     indexHitRate: number
     cacheHitRate: number
     clients: number
   }
+
   redis: {
     uptime: number
     clients: number
@@ -88,6 +90,7 @@ export interface MonitorResults {
       peak: number
     }
   }
+
   ingest: {
     cpu: {
       usage: number
@@ -97,21 +100,21 @@ export interface MonitorResults {
       used: number
     }
   }
-}
 
-export interface Stats {
-  total: number
-  endorsed: number
-  experimental: number
-  networks: {
-    chainId: number
-    count: number
-  }[]
-  apetax: {
-    stealth: number
-    new: number
-    active: number
-    withdraw: number
+  stats: {
+    total: number
+    endorsed: number
+    experimental: number
+    networks: {
+      chainId: number
+      count: number
+    }[]
+    apetax: {
+      stealth: number
+      new: number
+      active: number
+      withdraw: number
+    }
   }
 }
 
@@ -122,8 +125,7 @@ export interface DataContext {
   apys: APY[]
   transfers: Transfer[]
   harvests: Harvest[]
-  monitor: MonitorResults
-  stats: Stats
+  monitor: Monitor
 }
 
 const STATUS_QUERY = `query Data {
@@ -139,21 +141,28 @@ const STATUS_QUERY = `query Data {
       active
       failed
     }
-    db {
-      databaseSize
-      indexHitRate
-      cacheHitRate
-      clients
-    }
+
     redis {
+      version
+      mode
+      os
       uptime
       clients
       memory {
         total
         used
         peak
+        fragmentation
       }
     }
+
+    db {
+      clients
+      databaseSize
+      indexHitRate
+      cacheHitRate
+    }
+
     ingest {
       cpu {
         usage
@@ -163,21 +172,21 @@ const STATUS_QUERY = `query Data {
         used
       }
     }
-  }
 
-  stats {
-    total
-    endorsed
-    experimental
-    networks {
-      chainId
-      count
-    }
-    apetax {
-      stealth
-      new
-      active
-      withdraw
+    stats {
+      total
+      endorsed
+      experimental
+      networks {
+        chainId
+        count
+      }
+      apetax {
+        stealth
+        new
+        active
+        withdraw
+      }
     }
   }
 }`
@@ -244,7 +253,7 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
 }`
 
 async function fetchData() {
-  const endpoint = process.env.NEXT_PUBLIC_GQL || 'http://localhost:3001/graphql'
+  const endpoint = process.env.NEXT_PUBLIC_GQL || 'http://localhost:3000/api/gql'
 
   const statusResponsePromise = fetch(endpoint, {
     method: 'POST',
@@ -306,20 +315,20 @@ const DEFAULT = {
         total: 0,
         used: 0
       }
+    },
+    stats: {
+      total: 0,
+      endorsed: 0,
+      experimental: 0,
+      networks: [],
+      apetax: {
+        stealth: 0,
+        new: 0,
+        active: 0,
+        withdraw: 0
+      }
     }
-  } as MonitorResults,
-  stats: {
-    total: 0,
-    endorsed: 0,
-    experimental: 0,
-    networks: [],
-    apetax: {
-      stealth: 0,
-      new: 0,
-      active: 0,
-      withdraw: 0
-    }
-  } as Stats
+  } as Monitor
 } as DataContext
 
 export const dataContext = createContext<DataContext>(DEFAULT)

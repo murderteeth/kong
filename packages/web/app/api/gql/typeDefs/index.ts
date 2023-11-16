@@ -2,14 +2,13 @@ import gql from 'graphql-tag'
 import latestBlock from './latestBlock'
 import strategy from './strategy'
 import vault from './vault'
-import monitorResults from './monitorResults'
 import sparklineItem from './sparklineItem'
 import tvl from './tvl'
 import transfer from './transfer'
 import harvest from './harvest'
 import apy from './apy'
 import period from './period'
-import stats from './stats'
+import monitor from './monitor'
 
 const query = gql`
   scalar BigInt
@@ -28,8 +27,7 @@ const query = gql`
   type Query {
     bananas: String @cacheControl(maxAge: 0)
     latestBlocks(chainId: Int): [LatestBlock] @cacheControl(maxAge: 2)
-    monitor: MonitorResults @cacheControl(maxAge: 2)
-    stats: Stats @cacheControl(maxAge: 2)
+    monitor: Monitor @cacheControl(maxAge: 2)
 
     vaults(chainId: Int): [Vault]
     vault(chainId: Int!, address: String!): Vault
@@ -49,8 +47,7 @@ export default [
   apy,
   strategy, 
   vault, 
-  monitorResults,
   harvest,
   transfer,
-  stats
+  monitor
 ]

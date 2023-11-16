@@ -82,6 +82,9 @@ export default class Loader implements Processor {
 
     [mq.job.load.sparkline.apr]: async data => 
     await sparkline.apr(data),
+
+    [mq.job.load.monitor]: async data => 
+    await upsert({ singleton: true, latest: data }, 'monitor', 'singleton'),
   }
 
   async up() {

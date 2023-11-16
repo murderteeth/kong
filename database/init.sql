@@ -318,3 +318,13 @@ LEFT JOIN LATERAL (
 	ORDER BY block_time DESC
 	LIMIT 1
 ) a ON TRUE;
+
+--------------------------------------
+-------------
+--- MIGRATION 2
+CREATE TABLE monitor (
+	singleton boolean NOT NULL,
+	latest JSON,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT monitor_pkey PRIMARY KEY (singleton)
+);

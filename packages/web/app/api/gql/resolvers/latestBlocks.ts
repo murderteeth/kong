@@ -1,4 +1,4 @@
-import db from '../db'
+import db from '../../db'
 
 export default async (_: any, args: { chainId?: number }) => {
   const { chainId } = args

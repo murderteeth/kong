@@ -1,11 +1,12 @@
 import gql from 'graphql-tag'
 
 export default gql`
-type MonitorResults {
+type Monitor {
   queues: [QueueStatus]
   redis: RedisInfo!
-  db: DbInfo!
+  db: DbInfo!,
   ingest: IngestInfo!
+  stats: Stats!
 }
 
 type QueueStatus {
@@ -38,6 +39,18 @@ type DbInfo {
   cacheHitRate: Float!
 }
 
+type NetworkStat {
+  chainId: Int!
+  count: Int!
+}
+
+type ApetaxStat {
+  stealth: Int!
+  new: Int!
+  active: Int!
+  withdraw: Int!
+}
+
 type IngestCpu {
   usage: Float!
 }
@@ -50,5 +63,13 @@ type IngestMemory {
 type IngestInfo {
   cpu: IngestCpu!
   memory: IngestMemory!
+}
+
+type Stats {
+  total: Int!
+  endorsed: Int!
+  experimental: Int!
+  networks: [NetworkStat]!
+  apetax: ApetaxStat!
 }
 `

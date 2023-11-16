@@ -7,7 +7,8 @@ import Frosty from './Frosty'
 import { useData } from '@/hooks/useData'
 
 export default function Vaults() {
-  const { stats } = useData()
+  const { monitor } = useData()
+  const { stats } = monitor
 
   function pad(value: number) {
     return value.toString().padStart(3, '0')

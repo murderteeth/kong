@@ -1,4 +1,4 @@
-import { getVaults } from '../db'
+import { getVaults } from '../../db'
 
 export default async (_: any, args: { chainId?: number }) => {
   const { chainId } = args
