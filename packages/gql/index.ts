@@ -16,13 +16,14 @@ const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
 const port = Number(process.env.GQL_PORT || 3001)
+const defaultCacheMaxAge = Number(process.env.GQL_DEFAULT_CACHE_MAX_AGE || 60 * 5)
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   introspection: true,
   plugins: [
-    ApolloServerPluginCacheControl({ defaultMaxAge: 60 }),
+    ApolloServerPluginCacheControl({ defaultMaxAge: defaultCacheMaxAge }),
     responseCachePlugin()
   ]
 })
