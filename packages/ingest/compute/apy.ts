@@ -55,6 +55,11 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
     return null
   }
 
+  if(inception > blockNumber) {
+    console.warn('🚨', 'inception > blockNumber', chainId, address)
+    return null
+  }
+
   const block = await getBlock(chainId, blockNumber)
 
   const result = {
@@ -81,15 +86,15 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
     abi: parseAbi(['function pricePerShare() returns (uint256)'])
   } as ReadContractParameters
 
+  const day = 24n * 60n * 60n
+  result.weeklyBlockNumber = await estimateHeight(chainId, block.timestamp - 7n * day)
+  result.monthlyBlockNumber = await estimateHeight(chainId, block.timestamp - 30n * day)
+
   result.pricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber}) as bigint
   result.inceptionPricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber: result.inceptionBlockNumber}) as bigint
 
   if (result.pricePerShare === result.inceptionPricePerShare) return result
 
-  const day = 24n * 60n * 60n
-  result.weeklyBlockNumber = await estimateHeight(chainId, block.timestamp - 7n * day)
-  result.monthlyBlockNumber = await estimateHeight(chainId, block.timestamp - 30n * day)
-  
   result.weeklyPricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber: result.weeklyBlockNumber}) as bigint
   result.monthlyPricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber: result.monthlyBlockNumber}) as bigint
 
