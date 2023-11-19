@@ -1,22 +1,33 @@
 require('lib/json.monkeypatch')
+import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 import { rpcs } from 'lib/rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
 import { cache, crons as cronsConfig, mq } from 'lib'
 import db from './db'
-import processorConfig, { toCamelPath } from './processors'
 import { camelToSnake } from 'lib/strings'
 
 const envPath = path.join(__dirname, '../..', '.env')
 dotenv.config({ path: envPath })
 
-const pools = processorConfig.processors.map(p => {
-  const path = `./${toCamelPath(p.name)}`
-  const ProcessorClass = require(path).default
-  console.log('⬆', 'processor up', path)
-  return new ProcessorPool(ProcessorClass, 2, processorConfig.recycleMs)
-}) as Processor[]
+const exportsProcessor = (filePath: string): boolean => {
+  const fileContent = fs.readFileSync(filePath, 'utf8')
+  const regex = /export default class \S+ implements Processor/
+  return regex.test(fileContent)
+}
+
+const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
+  const tenMinutes = 10 * 60 * 1000
+  if (dirent.isDirectory()) {
+    const indexPath = path.join(__dirname, dirent.name, 'index.ts')
+    if (fs.existsSync(indexPath) && exportsProcessor(indexPath)) {
+      const ProcessorClass = require(indexPath).default
+      console.log('⬆', 'processor up', dirent.name)
+      return new ProcessorPool(ProcessorClass, 2, tenMinutes)
+    }
+  }
+}).filter(p => p) as Processor[]
 
 const crons = cronsConfig.default
 .filter(cron => cron.start)
@@ -37,9 +48,9 @@ function up() {
     ...pools.map(pool => pool.up()),
     ...crons
   ]).then(() => {
-  
+
     console.log('🐒 ingest up')
-  
+
   }).catch(error => {
     console.error('🤬', error)
     process.exit(1)

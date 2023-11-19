@@ -5,5 +5,7 @@
   "author": "murderteeth <murdertxxth@gmail.com>",
   "license": "MIT",
   "private": true,
-  "workspaces": [ "packages/*" ]
+  "workspaces": [
+    "packages/*"
+  ]
 }

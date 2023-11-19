@@ -6,7 +6,8 @@ const viemchains = { arbitrum, base, fantom, mainnet, optimism, polygon }
 
 interface YamlConfig { chains: string [] }
 
-const yamlFile = fs.readFileSync(path.join(__dirname, 'chains.yaml'), 'utf8')
+const yamlPath = path.join(__dirname, '../../config', 'chains.yaml')
+const yamlFile = fs.readFileSync(yamlPath, 'utf8')
 const config = yaml.load(yamlFile) as YamlConfig
 const chains = config.chains.map(name => {
   const viemchain = viemchains[name as keyof typeof viemchains]

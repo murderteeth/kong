@@ -3,7 +3,7 @@ import { chains, mq } from 'lib'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { parse as parseRedisRaw } from 'redis-info'
-import db from './db'
+import db from '../db'
 
 export interface ProbeResults {
   queues: {
