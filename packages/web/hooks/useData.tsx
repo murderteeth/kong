@@ -253,7 +253,7 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
 }`
 
 async function fetchData() {
-  const endpoint = process.env.NEXT_PUBLIC_GQL || 'http://localhost:3000/api/gql'
+  const endpoint = process.env.NEXT_PUBLIC_GQL || '/api/gql'
 
   const statusResponsePromise = fetch(endpoint, {
     method: 'POST',
