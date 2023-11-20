@@ -27,7 +27,8 @@ export const job = {
     harvest: 'harvest',
     transfer: 'transfer',
     risk: 'risk',
-    meta: 'meta'
+    meta: 'meta',
+    waveydb: 'waveydb'
   },
 
   compute: {

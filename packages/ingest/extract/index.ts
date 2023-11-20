@@ -10,6 +10,7 @@ import { TransferExtractor } from './transfer'
 import { BlockExtractor } from './block'
 import { RiskExtractor } from './risk'
 import { MetaExtractor } from './meta'
+import { WaveyDbExtract } from './waveydb'
 
 export default class Extract implements Processor {
   worker: Worker | undefined
@@ -23,7 +24,8 @@ export default class Extract implements Processor {
     [mq.job.extract.apetax]: new ApetaxExtractor(),
     [mq.job.extract.transfer]: new TransferExtractor(),
     [mq.job.extract.risk]: new RiskExtractor(),
-    [mq.job.extract.meta]: new MetaExtractor()
+    [mq.job.extract.meta]: new MetaExtractor(),
+    [mq.job.extract.waveydb]: new WaveyDbExtract()
   }
 
   async up() {

@@ -19,6 +19,7 @@
     "eslint-config-next": "13.4.19",
     "figlet": "^1.6.0",
     "framer-motion": "^10.16.1",
+    "graphql": "^16.8.1",
     "graphql-tag": "^2.12.6",
     "next": "13.4.19",
     "postcss": "8.4.28",

@@ -45,7 +45,7 @@ export default class Loader implements Processor {
     },
 
     [mq.job.load.harvest]: async data => 
-    await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index'),
+    await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index, address'),
 
     [mq.job.load.riskGroup]: async data => 
     await upsertBatch(data.batch, 'risk_group', 'chain_id, name'),
