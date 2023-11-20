@@ -7,6 +7,7 @@ import { getAddress } from 'viem'
 const db = new Pool({
   host: process.env.WAVEYDB_HOST,
   port: (process.env.WAVEYDB_PORT || 5432) as number,
+  ssl: (process.env.WAVEYDB_SSL || false) as boolean,
   database: process.env.WAVEYDB_NAME,
   user: process.env.WAVEYDB_USER,
   password: process.env.WAVEYDB_PASSWORD,
