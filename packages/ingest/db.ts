@@ -9,6 +9,7 @@ pgTypes.setTypeParser(1700, 'text', parseFloat)
 const db = new Pool({
   host: process.env.POSTGRES_HOST || 'localhost',
   port: (process.env.POSTGRES_PORT || 5432) as number,
+  ssl: (process.env.POSTGRES_SSL || false) as boolean,
   database: process.env.POSTGRES_DATABASE || 'user',
   user: process.env.POSTGRES_USER || 'user',
   password: process.env.POSTGRES_PASSWORD || 'password',
