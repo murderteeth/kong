@@ -66,19 +66,21 @@ export interface Harvest {
   transactionHash: string
 }
 
-export interface MonitorResults {
+export interface Monitor {
   queues: {
     name: string
     waiting: number
     active: number
     failed: number
   }[]
+
   db: {
     databaseSize: number
     indexHitRate: number
     cacheHitRate: number
     clients: number
   }
+
   redis: {
     uptime: number
     clients: number
@@ -88,6 +90,7 @@ export interface MonitorResults {
       peak: number
     }
   }
+
   ingest: {
     cpu: {
       usage: number
@@ -97,25 +100,99 @@ export interface MonitorResults {
       used: number
     }
   }
+
+  stats: {
+    total: number
+    endorsed: number
+    experimental: number
+    networks: {
+      chainId: number
+      count: number
+    }[]
+    apetax: {
+      stealth: number
+      new: number
+      active: number
+      withdraw: number
+    }
+  }
 }
 
 export interface DataContext {
   latestBlocks: LatestBlock[]
-  vaults: Vault[]
+  vault: Vault
   tvls: TVL[]
   apys: APY[]
   transfers: Transfer[]
   harvests: Harvest[]
-  monitor: MonitorResults
+  monitor: Monitor
 }
 
-const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
+const STATUS_QUERY = `query Data {
   latestBlocks {
     chainId
     blockNumber
   }
 
-  vaults {
+  monitor {
+    queues {
+      name
+      waiting
+      active
+      failed
+    }
+
+    redis {
+      version
+      mode
+      os
+      uptime
+      clients
+      memory {
+        total
+        used
+        peak
+        fragmentation
+      }
+    }
+
+    db {
+      clients
+      databaseSize
+      indexHitRate
+      cacheHitRate
+    }
+
+    ingest {
+      cpu {
+        usage
+      }
+      memory {
+        total
+        used
+      }
+    }
+
+    stats {
+      total
+      endorsed
+      experimental
+      networks {
+        chainId
+        count
+      }
+      apetax {
+        stealth
+        new
+        active
+        withdraw
+      }
+    }
+  }
+}`
+
+const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
+  vault(chainId: $chainId, address: $address) {
     chainId
     address
     name
@@ -137,39 +214,6 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
       name
       address
       netApr
-    }
-  }
-
-  monitor {
-    queues {
-      name
-      waiting
-      active
-      failed
-    }
-    db {
-      databaseSize
-      indexHitRate
-      cacheHitRate
-      clients
-    }
-    redis {
-      uptime
-      clients
-      memory {
-        total
-        used
-        peak
-      }
-    }
-    ingest {
-      cpu {
-        usage
-      }
-      memory {
-        total
-        used
-      }
     }
   }
 
@@ -209,23 +253,39 @@ const GRAPHQL_QUERY = `query Data($chainId: Int!, $address: String!) {
 }`
 
 async function fetchData() {
-  const response = await fetch(process.env.NEXT_PUBLIC_GQL || 'http://localhost:3001/graphql', {
+  const endpoint = process.env.NEXT_PUBLIC_GQL || '/api/gql'
+
+  const statusResponsePromise = fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
-      query: GRAPHQL_QUERY,
+      query: STATUS_QUERY
+    })
+  })
+
+  const vaultResponsePromise = fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      query: VAULT_QUERY,
       variables: { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c' }
     })
   })
 
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+  const [statusResponse, vaultResponse] = await Promise.all([statusResponsePromise, vaultResponsePromise])
 
-  return (await response.json()).data as DataContext
+  if (!statusResponse.ok) throw new Error(`HTTP error! status: ${statusResponse.status}`)
+  if (!vaultResponse.ok) throw new Error(`HTTP error! status: ${vaultResponse.status}`)
+
+  return {
+    ...(await statusResponse.json()).data, 
+    ...(await vaultResponse.json()).data
+  } as DataContext
 }
 
 const DEFAULT = {
   latestBlocks: [],
-  vaults: [],
+  vault: {} as Vault,
   tvls: [],
   apys: [],
   transfers: [],
@@ -255,8 +315,20 @@ const DEFAULT = {
         total: 0,
         used: 0
       }
+    },
+    stats: {
+      total: 0,
+      endorsed: 0,
+      experimental: 0,
+      networks: [],
+      apetax: {
+        stealth: 0,
+        new: 0,
+        active: 0,
+        withdraw: 0
+      }
     }
-  } as MonitorResults
+  } as Monitor
 } as DataContext
 
 export const dataContext = createContext<DataContext>(DEFAULT)

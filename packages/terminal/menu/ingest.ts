@@ -42,6 +42,10 @@ async function action() {
           name: mq.q.extract,
           job: mq.job.extract.meta
         }},
+        { title: 'extract waveydb', value: {
+          name: mq.q.extract,
+          job: mq.job.extract.waveydb
+        }},
       ]
     },
     {

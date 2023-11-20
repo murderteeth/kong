@@ -5,8 +5,7 @@ export const q = {
   extract: 'extract',
   compute: 'compute',
   load: 'load',
-  probe: 'probe',
-  monitor: 'monitor'
+  probe: 'probe'
 }
 
 export const job = {
@@ -28,7 +27,8 @@ export const job = {
     harvest: 'harvest',
     transfer: 'transfer',
     risk: 'risk',
-    meta: 'meta'
+    meta: 'meta',
+    waveydb: 'waveydb'
   },
 
   compute: {
@@ -54,15 +54,12 @@ export const job = {
       tvl: 'sparkline-tvl',
       apy: 'sparkline-apy',
       apr: 'sparkline-apr'
-    }
+    },
+    monitor: 'monitor'
   },
 
   probe: {
-    ingest: 'ingest'
-  },
-
-  monitor: {
-    ingest: 'ingest'
+    all: 'all'
   }
 }
 

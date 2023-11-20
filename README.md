@@ -41,15 +41,13 @@ make dev
 
 ## workspace
 ### packages
-`gql` - graphql schema and server
-
 `ingest` - etl logic
 
 `lib` - shared code
 
 `terminal` - cli app for interacting with kong at runtime
 
-`web` - kong runtime dash
+`web` - kong gqphql api and runtime dash
 
 ## yamls
 ## ingest

@@ -65,6 +65,8 @@ export class StrategyExtractor implements Processor {
     ]
     if(borked.includes(strategy.vaultAddress.toLowerCase())) return 0;
 
+    if(assetAddress === zeroAddress) return 0;
+
     const { price } = await fetchErc20PriceUsd(strategy.chainId, assetAddress, asOfBlockNumber)
     const decimals = await rpcs.next(strategy.chainId).readContract({
       address: assetAddress,

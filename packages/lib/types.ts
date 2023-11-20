@@ -9,8 +9,8 @@ export interface APR {
   address: string
   gross: number
   net: number
-  blockNumber: string
-  blockTime: string
+  blockNumber: bigint
+  blockTime: bigint
 }
 
 export interface APY {
@@ -151,18 +151,18 @@ export interface RiskGroup {
 export interface Harvest {
   chainId: number
   address: `0x${string}`
-  profit: string
+  profit: bigint
   profitUsd?: number
-  loss: string
+  loss: bigint
   lossUsd?: number
-  totalProfit: string
+  totalProfit: bigint
   totalProfitUsd?: number
-  totalLoss: string
+  totalLoss: bigint
   totalLossUsd?: number
-  totalDebt?: string
-  blockNumber: string
+  totalDebt?: bigint
+  blockNumber: bigint
   blockIndex: number
-  blockTime: string
+  blockTime: bigint
   transactionHash: `0x${string}`
 }
 

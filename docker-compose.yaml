@@ -8,7 +8,7 @@ services:
       - "6379:6379"
 
   postgres:
-    image: timescale/timescaledb-ha:pg14-latest
+    image: timescale/timescaledb-ha:pg15-latest
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -16,33 +16,3 @@ services:
       - "5432:5432"
     volumes:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  ingest:
-    depends_on:
-      - redis
-      - postgres
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    build:
-      dockerfile: Dockerfile.ingest
-
-  gql:
-    depends_on:
-      - redis
-      - postgres
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    build:
-      dockerfile: Dockerfile.gql
-    ports:
-      - "3000:3000"

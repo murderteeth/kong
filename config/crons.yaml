@@ -1,0 +1,53 @@
+
+crons:
+  - name: LatestBlocks
+    queue: extract
+    job: block
+    schedule: "*/2 * * * * *" # every 2 seconds
+    start: true
+
+  - name: SystemProbe
+    queue: probe
+    job: all
+    schedule: "*/2 * * * * *" # every 2 seconds
+    start: true
+
+  - name: IndexRegistries
+    queue: fanout
+    job: registry
+    schedule: "0-59/15 * * * *"
+
+  - name: IndexVaults
+    queue: fanout
+    job: vault
+    schedule: "2-59/15 * * * *"
+
+  - name: IndexApeTaxVaults
+    queue: extract
+    job: apetax
+    schedule: "4-59/15 * * * *"
+
+  - name: ComputeTvl
+    queue: fanout
+    job: tvl
+    schedule: "6-59/15 * * * *"
+
+  - name: ComputeApy
+    queue: fanout
+    job: apy
+    schedule: "8-59/15 * * * *"
+
+  - name: ComputeHarvestApr
+    queue: fanout
+    job: harvest-apr
+    schedule: "10-59/15 * * * *"
+
+  - name: UpdateRisk
+    queue: extract
+    job: risk
+    schedule: "0 * * * *"
+
+  - name: UpdateMeta
+    queue: extract
+    job: meta
+    schedule: "30 * * * *"

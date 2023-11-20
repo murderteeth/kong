@@ -12,6 +12,7 @@ interface YamlConfig {
   }[]
 }
 
-const yamlFile = fs.readFileSync(path.join(__dirname, 'crons.yaml'), 'utf8')
+const yamlPath = path.join(__dirname, '../../config', 'crons.yaml')
+const yamlFile = fs.readFileSync(yamlPath, 'utf8')
 const config = yaml.load(yamlFile) as YamlConfig
 export default config.crons

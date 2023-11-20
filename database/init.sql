@@ -318,3 +318,21 @@ LEFT JOIN LATERAL (
 	ORDER BY block_time DESC
 	LIMIT 1
 ) a ON TRUE;
+
+--------------------------------------
+-------------
+--- MIGRATION 2
+CREATE TABLE monitor (
+	singleton boolean NOT NULL,
+	latest JSON,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT monitor_pkey PRIMARY KEY (singleton)
+);
+
+DROP INDEX IF EXISTS apr_idx_chainid_address_blocknumber;
+CREATE INDEX apr_idx_chainid_address_blocknumber ON apr (chain_id, address, block_number);
+
+ALTER TABLE harvest
+DROP CONSTRAINT harvest_pkey;
+ALTER TABLE harvest
+ADD CONSTRAINT harvest_pkey PRIMARY KEY (chain_id, block_number, block_index, address);
