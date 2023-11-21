@@ -26,6 +26,10 @@ type Vault {
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
   apyNet: Float
+  apyWeeklyNet: Float
+  apyMonthlyNet: Float
+  apyInceptionNet: Float
+  aprGross: Float
   apySparkline: [SparklineItem]
   managementFee: Float
   performanceFee: Float
