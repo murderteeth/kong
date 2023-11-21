@@ -17,5 +17,7 @@ type Harvest {
   blockIndex: Int!
   blockTime: String!
   transactionHash: String!
+  aprGross: Float
+  aprNet: Float
 }
 `

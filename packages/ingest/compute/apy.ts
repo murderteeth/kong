@@ -115,14 +115,14 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
     { block: blockNumber, pps: result.pricePerShare }, blocksPerDay
   )
 
-  const candinets = []
+  const candidates = []
 	if(chainId !== mainnet.id) {
-		candinets.push(result.weeklyNet, result.monthlyNet, result.inceptionNet)
+		candidates.push(result.weeklyNet, result.monthlyNet, result.inceptionNet)
 	} else {
-		candinets.push(result.monthlyNet, result.weeklyNet, result.inceptionNet)
+		candidates.push(result.monthlyNet, result.weeklyNet, result.inceptionNet)
 	}
 
-	result.net = candinets.find(apy => apy > 0) || 0
+	result.net = candidates.find(apy => apy > 0) || 0
 
   const annualCompoundingPeriods = 52
   const fees = await getFees(chainId, address, blockNumber)

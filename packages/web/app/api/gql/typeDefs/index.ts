@@ -33,7 +33,7 @@ const query = gql`
     vault(chainId: Int!, address: String!): Vault
     tvls(chainId: Int!, address: String!, period: Period, limit: Int): [Tvl]
     apys(chainId: Int!, address: String!, period: Period, limit: Int): [Apy]
-    harvests(chainId: Int, address: String): [Harvest]
+    harvests(chainId: Int, address: String, limit: Int): [Harvest]
     transfers(chainId: Int, address: String): [Transfer]
   }
 `

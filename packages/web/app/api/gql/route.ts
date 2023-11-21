@@ -4,6 +4,7 @@ import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheContr
 import responseCachePlugin from '@apollo/server-plugin-response-cache'
 import typeDefs from './typeDefs'
 import resolvers from './resolvers'
+import { NextRequest } from 'next/server'
 
 const enableCache = process.env.GQL_ENABLE_CACHE === 'true'
 const defaultCacheMaxAge = Number(process.env.GQL_DEFAULT_CACHE_MAX_AGE || 60 * 5)
@@ -21,6 +22,25 @@ const server = new ApolloServer({
   introspection: true
 })
 
-const handler = startServerAndCreateNextHandler(server)
+const handle = startServerAndCreateNextHandler(server)
 
-export { handler as GET, handler as POST }
+async function respondTo(request: NextRequest) {
+  const response = await handle(request)
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
+  return response
+}
+
+async function OPTIONS() {
+  const response = new Response('', {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  })
+  return response
+}
+
+export { respondTo as GET, respondTo as POST, OPTIONS }
