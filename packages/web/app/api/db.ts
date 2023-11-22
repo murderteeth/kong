@@ -14,9 +14,32 @@ const db = new Pool({
 
 export default db
 
-export async function getVaults(where: string, aggGroupBy: string, values: any[]) {
+export async function getVaults(where: string, values: any[]) {
   const result = await db.query(`
-  WITH withdrawal_queue_agg AS (
+  WITH strategy_lender_status_agg AS (
+    SELECT
+      s.chain_id,
+      s.address as strategy_address,
+      json_agg(json_build_object(
+        'chainId', s.chain_id,
+        'address', ls.address,
+        'name', ls.name,
+        'assets', ls.assets,
+        'rate', ls.rate
+      ) ORDER BY ls.assets DESC
+      ) AS results
+    FROM strategy s
+    JOIN strategy_lender_status ls
+      ON s.chain_id = ls.chain_id
+      AND s.address = ls.strategy_address
+    JOIN vault v
+      ON v.chain_id = s.chain_id
+      AND v.address = s.vault_address
+    ${where}
+    GROUP BY s.chain_id, s.address
+  ),
+
+  withdrawal_queue_agg AS (
     SELECT
       v.chain_id,
       v.address,
@@ -30,6 +53,7 @@ export async function getVaults(where: string, aggGroupBy: string, values: any[]
         'netApr', s.net_apr,
         'estimatedTotalAssets', s.estimated_total_assets::text,
         'delegatedAssets', s.delegated_assets::text,
+        'lenderStatuses', COALESCE(ls.results, '[]'::json),
         'assetAddress', s.asset_address,
         'performanceFee', s.performance_fee,
         'debtRatio', s.debt_ratio,
@@ -57,8 +81,9 @@ export async function getVaults(where: string, aggGroupBy: string, values: any[]
     FROM vault v
     JOIN withdrawal_queue wq ON v.chain_id = wq.chain_id AND v.address = wq.vault_address
     JOIN strategy_gql s ON wq.chain_id = s.chain_id AND wq.strategy_address = s.address
+    LEFT JOIN strategy_lender_status_agg ls ON wq.chain_id = ls.chain_id AND wq.strategy_address = ls.strategy_address
     ${where}
-    ${aggGroupBy}
+    GROUP BY v.chain_id, v.address
   ),
 
   tvl_agg AS (
@@ -79,7 +104,7 @@ export async function getVaults(where: string, aggGroupBy: string, values: any[]
       AND v.chain_id = s.chain_id 
       AND v.address = s.address
     ${where}
-    ${aggGroupBy}
+    GROUP BY v.chain_id, v.address
   ),
 
   apy_agg AS (
@@ -100,7 +125,7 @@ export async function getVaults(where: string, aggGroupBy: string, values: any[]
       AND v.chain_id = s.chain_id 
       AND v.address = s.address
     ${where}
-    ${aggGroupBy}
+    GROUP BY v.chain_id, v.address
   )
 
   SELECT
@@ -115,6 +140,7 @@ export async function getVaults(where: string, aggGroupBy: string, values: any[]
     v.name, 
     v.decimals, 
     v.total_assets as "totalAssets", 
+    v.deposit_limit as "depositLimit",
     v.available_deposit_limit as "availableDepositLimit",
     v.locked_profit_degradation as "lockedProfitDegradation",
     v.total_debt as "totalDebt",

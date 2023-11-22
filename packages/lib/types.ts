@@ -59,6 +59,7 @@ export interface Vault {
   totalDebt?: bigint,
   debtRatio?: number,
   availableDepositLimit?: bigint,
+  depositLimit?: bigint,
   governance?: `0x${string}`,
   performanceFee?: number,
   managementFee?: number,

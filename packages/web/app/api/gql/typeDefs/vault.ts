@@ -13,6 +13,7 @@ type Vault {
   name: String
   decimals: Int
   totalAssets: BigInt
+  depositLimit: BigInt
   availableDepositLimit: BigInt
   lockedProfitDegradation: BigInt
   totalDebt: String

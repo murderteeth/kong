@@ -401,3 +401,46 @@ LEFT JOIN LATERAL (
 	ORDER BY block_time DESC
 	LIMIT 1
 ) a ON TRUE;
+
+--------------------------------------
+-------------
+--- MIGRATION 4
+ALTER TABLE vault ADD COLUMN deposit_limit numeric NULL;
+
+DROP VIEW vault_gql;
+CREATE VIEW vault_gql AS
+SELECT 
+	v.*,
+	erc20.meta_description as asset_description,
+	t.price_usd AS price_usd,
+	t.tvl_usd AS tvl_usd,
+	a.net AS apy_net,
+	a.weekly_net AS apy_weekly_net,
+	a.monthly_net AS apy_monthly_net,
+	a.inception_net AS apy_inception_net,
+	a.gross_apr AS apr_gross
+FROM vault v
+JOIN erc20 
+	ON v.chain_id = erc20.chain_id 
+	AND v.asset_address = erc20.address
+LEFT JOIN LATERAL (
+	SELECT 
+		price_usd,
+		tvl_usd
+	FROM tvl
+	WHERE v.chain_id = tvl.chain_id AND v.address = tvl.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) t ON TRUE
+LEFT JOIN LATERAL (
+	SELECT 
+		net,
+		weekly_net,
+		monthly_net,
+		inception_net,
+		gross_apr
+	FROM apy
+	WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) a ON TRUE;
