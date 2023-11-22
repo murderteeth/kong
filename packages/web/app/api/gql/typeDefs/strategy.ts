@@ -1,6 +1,13 @@
 import gql from 'graphql-tag'
 
 export default gql`
+type LenderStatus {
+  name: String!
+  address: String!
+  assets: BigInt!
+  rate: BigInt!
+}
+
 type Strategy {
   chainId: Int!
   address: String!
@@ -11,6 +18,7 @@ type Strategy {
   netApr: Float
   estimatedTotalAssets: BigInt
   delegatedAssets: BigInt
+  lenderStatuses: [LenderStatus]
   assetAddress: String
   performanceFee: Int
   debtRatio: Int

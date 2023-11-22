@@ -5,7 +5,6 @@ export default async (_: any, args: { chainId?: number }) => {
   try {
     return await getVaults(
       'WHERE v.chain_id = $1 OR $1 IS NULL',
-      'GROUP BY v.chain_id, v.address',
       [chainId]
     )
   } catch (error) {

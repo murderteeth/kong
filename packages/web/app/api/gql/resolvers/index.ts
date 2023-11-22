@@ -7,6 +7,7 @@ import apys from './apys'
 import harvests from './harvests'
 import transfers from './transfers'
 import monitor from './monitor'
+import riskGroups from './riskGroups'
 
 export default {
   Query: {
@@ -18,6 +19,7 @@ export default {
     apys,
     harvests,
     transfers,
-    monitor
+    monitor,
+    riskGroups
   }
 }
