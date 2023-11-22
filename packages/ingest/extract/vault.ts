@@ -151,6 +151,10 @@ export class VaultExtractor implements Processor {
       {
         address: vault.address, functionName: 'debtRatio',
         abi: parseAbi(['function debtRatio() returns (uint256)'])
+      },
+      {
+        address: vault.address, functionName: 'depositLimit',
+        abi: parseAbi(['function depositLimit() returns (uint256)'])
       }
     ]})
 
@@ -167,7 +171,8 @@ export class VaultExtractor implements Processor {
       managementFee: multicallResult[11].result,
       lockedProfitDegradation: multicallResult[12].result || multicallResult[13].result,
       totalDebt: multicallResult[14].result,
-      debtRatio: multicallResult[15].result
+      debtRatio: multicallResult[15].result,
+      depositLimit: multicallResult[16].result
     } as types.Vault
   }
 
