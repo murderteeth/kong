@@ -11,8 +11,8 @@ cp .env.example .env
 # configure .env
 make dev
 ```
-- http://localhost:3000 for dash
-- http://localhost:3001/graphql for graphql explorer
+`dash` - http://localhost:3000
+`graphql explorer ` - http://localhost:3000/api/gql
 
 ## requirements
 - node, yarn, make, tmux, docker, docker compose
@@ -21,8 +21,6 @@ make dev
 
 ## make
 `dev` - run eveything in dev
-
-`ingest` - just run ingest in dev
 
 `test` - test everything
 

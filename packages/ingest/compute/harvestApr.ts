@@ -38,7 +38,7 @@ export class HarvestAprComputer implements Processor {
       blockNumber: apr.blockNumber,
       blockTime: block.timestamp
     } as types.APR, {
-      jobId: `${chainId}-${blockNumber}-${blockIndex}-harvest-apr`
+      jobId: `${chainId}-${address}-${blockNumber}-${blockIndex}-harvest-apr`
     })
   }
 }

@@ -40,7 +40,8 @@ LEFT JOIN
     AND rh.block_number = a.block_number
 WHERE 
   a.chain_id IS NULL
-  AND rh.row_num > 1;`)).rows
+  AND rh.row_num > 1
+ORDER BY rh.block_number ASC, rh.block_index ASC;`)).rows
 
     for(const harvest of harvestsMissingAprs) {
       await this.queues[mq.q.compute].add(mq.job.compute.harvestApr, harvest)
