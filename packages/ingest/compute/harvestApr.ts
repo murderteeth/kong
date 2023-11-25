@@ -46,7 +46,7 @@ export class HarvestAprComputer implements Processor {
 export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const [ latest, previous ] = await getHarvests(chainId, address, blockNumber)
   if(!(latest && previous)) return null
-  if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return null
+  if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return { gross: 0, net: 0, blockNumber: latest.blockNumber }
 
   const profit = BigInt(latest.totalProfit || 0) - BigInt(previous.totalProfit || 0)
   const loss = BigInt(latest.totalLoss || 0) - BigInt(previous.totalLoss || 0)
