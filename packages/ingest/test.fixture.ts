@@ -64,29 +64,29 @@ export const yvusdtDb = {
     const harvest = {
       chainId: 1,
       address: addresses.strategyLenderYieldOptimiser,
-      profit: '0',
-      loss: '0',
-      totalProfit: '0',
-      totalLoss: '0',
-      totalDebt: '0',
-      blockNumber: '15243268',
-      blockTime: '1',
+      profit: 0n,
+      loss: 0n,
+      totalProfit: 0n,
+      totalLoss: 0n,
+      totalDebt: 0n,
+      blockNumber: 15243268n,
+      blockTime: 1n,
       blockIndex: 1,
       transactionHash: '0x0000000001'
     } as types.Harvest
     await db.query(
-      toUpsertSql('harvest', 'chain_id, block_number, block_index', harvest),
+      toUpsertSql('harvest', 'chain_id, block_number, block_index, address', harvest),
       Object.values(harvest)
     )
     await db.query(
-      toUpsertSql('harvest', 'chain_id, block_number, block_index', harvest),
+      toUpsertSql('harvest', 'chain_id, block_number, block_index, address', harvest),
       Object.values({
         ...harvest,
-        profit: '0',
-        totalProfit: '0',
-        totalDebt: '0',
-        blockNumber: '15243269',
-        blockTime: '2',
+        profit: 0n,
+        totalProfit: 0n,
+        totalDebt: 0n,
+        blockNumber: 15243269n,
+        blockTime: 2n,
         transactionHash: '0x0000000002'
       })
     )
@@ -138,29 +138,29 @@ export const yvwethDb = {
     const harvest = {
       chainId: 1,
       address: addresses.strategystEthAccumulator_v2,
-      profit: '122295812297070635612',
-      loss: '0',
-      totalProfit: '1205071216861557778611',
-      totalLoss: '0',
-      totalDebt: '25247124300383549383601',
-      blockNumber: '17613565',
-      blockTime: '1',
+      profit: 122295812297070635612n,
+      loss: 0n,
+      totalProfit: 1205071216861557778611n,
+      totalLoss: 0n,
+      totalDebt: 25247124300383549383601n,
+      blockNumber: 17613565n,
+      blockTime: 1n,
       blockIndex: 1,
       transactionHash: '0x0000000001'
     } as types.Harvest
     await db.query(
-      toUpsertSql('harvest', 'chain_id, block_number, block_index', harvest),
+      toUpsertSql('harvest', 'chain_id, block_number, block_index, address', harvest),
       Object.values(harvest)
     )
     await db.query(
-      toUpsertSql('harvest', 'chain_id, block_number, block_index', harvest),
+      toUpsertSql('harvest', 'chain_id, block_number, block_index, address', harvest),
       Object.values({
         ...harvest,
-        profit: '194459789900456241429',
-        totalProfit: '1399531006762014020040',
-        totalDebt: '33677195107170865265139',
-        blockNumber: '18116044',
-        blockTime: (70 * 24 * 60 * 60 + (9 * 60 * 60)).toString(),
+        profit: 194459789900456241429n,
+        totalProfit: 1399531006762014020040n,
+        totalDebt: 33677195107170865265139n,
+        blockNumber: 18116044n,
+        blockTime: BigInt(70 * 24 * 60 * 60 + (9 * 60 * 60)),
         transactionHash: '0x0000000002'
       })
     )

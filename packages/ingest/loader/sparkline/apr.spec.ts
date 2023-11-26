@@ -29,8 +29,8 @@ describe('loader sparkline tvl', function() {
       address: addresses.strategystEthAccumulator_v2,
       gross: 0,
       net: 0.1,
-      blockNumber: '1',
-      blockTime: '1'
+      blockNumber: 1n,
+      blockTime: 1n
     } as types.APR
 
     await db.query(
@@ -50,8 +50,8 @@ describe('loader sparkline tvl', function() {
       address: addresses.strategystEthAccumulator_v2,
       gross: 0,
       net: 0.1,
-      blockNumber: '1',
-      blockTime: '1'
+      blockNumber: 1n,
+      blockTime: 1n
     } as types.APR
 
     await db.query(

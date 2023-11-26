@@ -23,13 +23,6 @@ export const rpcs = {
 
   next: (chainId: number, blockNumber?: bigint) => {
     const archive = useArchiveNode(chainId, blockNumber)
-
-    if(archive) {
-      console.log('🔥🔥🔥', 'rpc archive node')
-    } else {
-      console.log('💚💚💚', 'rpc full node')
-    }
-
     return _rpcs.next(chainId, archive)
   }
 }
