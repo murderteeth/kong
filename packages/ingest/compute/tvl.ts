@@ -1,5 +1,5 @@
 import { Processor } from 'lib/processor'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from '../rpcs'
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import { estimateHeight, getBlock } from 'lib/blocks'
@@ -53,7 +53,7 @@ export async function _compute(chainId: number, address: `0x${string}`, time: bi
   const { assetAddress, decimals } = await getAsset(chainId, address)
   const { price } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber)
 
-  const totalAssets = await rpcs.next(chainId).readContract({
+  const totalAssets = await rpcs.next(chainId, blockNumber).readContract({
     address,
     functionName: 'totalAssets' as never,
     abi: parseAbi(['function totalAssets() view returns (uint256)']),

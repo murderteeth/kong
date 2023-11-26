@@ -1,7 +1,7 @@
 export interface LatestBlock {
   chainId: number
-  blockNumber: string
-  blockTime: string
+  blockNumber: bigint
+  blockTime: bigint
 }
 
 export interface APR {

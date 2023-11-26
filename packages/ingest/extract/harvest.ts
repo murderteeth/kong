@@ -1,5 +1,5 @@
 import { Processor } from 'lib/processor'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from '../rpcs'
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import db from '../db'

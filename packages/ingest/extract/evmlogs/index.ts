@@ -1,5 +1,5 @@
 import { Processor } from 'lib/processor'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from '../../rpcs'
 import { RegistryHandler } from './handlers/registry'
 import { VaultHandler } from './handlers/vault'
 
@@ -23,7 +23,7 @@ export class EvmLogsExtractor implements Processor {
 
   async extract(data: any) {
     const { chainId, address, events, from, to, handler } = data
-    const logs = await rpcs.next(chainId).getLogs({
+    const logs = await rpcs.next(chainId, from).getLogs({
       address,
       events: JSON.parse(events),
       fromBlock: BigInt(from), toBlock: BigInt(to)

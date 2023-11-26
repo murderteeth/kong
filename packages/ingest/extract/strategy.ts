@@ -2,7 +2,7 @@ import { mq, multicall3, types } from 'lib'
 import { ContractFunctionExecutionError, parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from '../rpcs'
 import { clean } from 'lib/version'
 import { estimateHeight } from 'lib/blocks'
 import { fetchErc20PriceUsd } from 'lib/prices'
@@ -165,7 +165,7 @@ export class StrategyExtractor implements Processor {
 
 export async function extractLenderStatuses(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   try {
-    return (await rpcs.next(chainId).readContract({
+    return (await rpcs.next(chainId, blockNumber).readContract({
       address, functionName: 'lendStatuses', 
       abi: parseAbi([
         'struct lendStatus { string name; uint256 assets; uint256 rate; address add; }',
@@ -194,7 +194,7 @@ export async function extractDelegatedAssets(chainId: number, addresses: `0x${st
     args: [], address, functionName: 'delegatedAssets', abi: parseAbi(['function delegatedAssets() returns (uint256)'])
   }))
 
-  const multicallresults = await rpcs.next(chainId).multicall({ contracts, blockNumber})
+  const multicallresults = await rpcs.next(chainId, blockNumber).multicall({ contracts, blockNumber})
 
   multicallresults.forEach((result, index) => {
     const delegatedAssets = result.status === 'failure'

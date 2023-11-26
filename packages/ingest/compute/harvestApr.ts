@@ -1,6 +1,6 @@
 import { math, mq, multicall3, types } from 'lib'
 import db from '../db'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from '../rpcs'
 import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
@@ -86,7 +86,7 @@ async function getHarvests(chainId: number, address: `0x${string}`, blockNumber:
 }
 
 async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
+  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     {
       address, functionName: 'vault',
       abi: parseAbi(['function vault() returns (address)'])

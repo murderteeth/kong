@@ -31,7 +31,7 @@ async function __estimateHeight(chainId: number, timestamp: bigint) {
 }
 
 async function estimateHeightLlama(chainId: number, timestamp: bigint) {
-	const chain = (rpcs.nextAll()[chainId]?.chain?.name as string).toLowerCase()
+	const chain = (rpcs.next(chainId).chain?.name as string).toLowerCase()
 	const response = await fetch(`https://coins.llama.fi/block/${chain}/${timestamp}`, {
 		headers: {accept: 'application/json'}
 	});
