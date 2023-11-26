@@ -1,6 +1,6 @@
 import { math, mq, multicall3, types } from 'lib'
 import db from '../db'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from '../rpcs'
 import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
@@ -38,7 +38,7 @@ export class HarvestAprComputer implements Processor {
       blockNumber: apr.blockNumber,
       blockTime: block.timestamp
     } as types.APR, {
-      jobId: `${chainId}-${blockNumber}-${blockIndex}-harvest-apr`
+      jobId: `${chainId}-${address}-${blockNumber}-${blockIndex}-harvest-apr`
     })
   }
 }
@@ -46,7 +46,7 @@ export class HarvestAprComputer implements Processor {
 export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const [ latest, previous ] = await getHarvests(chainId, address, blockNumber)
   if(!(latest && previous)) return null
-  if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return null
+  if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return { gross: 0, net: 0, blockNumber: latest.blockNumber }
 
   const profit = BigInt(latest.totalProfit || 0) - BigInt(previous.totalProfit || 0)
   const loss = BigInt(latest.totalLoss || 0) - BigInt(previous.totalLoss || 0)
@@ -86,7 +86,7 @@ async function getHarvests(chainId: number, address: `0x${string}`, blockNumber:
 }
 
 async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
+  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     {
       address, functionName: 'vault',
       abi: parseAbi(['function vault() returns (address)'])

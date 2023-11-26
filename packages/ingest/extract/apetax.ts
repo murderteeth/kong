@@ -1,8 +1,7 @@
-import { chains, mq, types } from 'lib'
+import { mq, types } from 'lib'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { rpcs } from 'lib/rpcs'
-import { getBlock } from 'lib/blocks'
+import { rpcs } from '../rpcs'
 
 interface ApetaxVault { 
   TITLE: string

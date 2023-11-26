@@ -3,7 +3,7 @@ import { blocks } from 'lib'
 import { parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import { rpcs } from 'lib/rpcs'
+import { latestBlocks, rpcs } from '../rpcs'
 import db from '../db'
 import { estimateCreationBlock } from 'lib/blocks'
 
@@ -241,7 +241,7 @@ export async function extractFees(chainId: number, address: `0x${string}`, block
 }
 
 export async function extractFeesBps(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
+  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     {
       address, functionName: 'performanceFee',
       abi: parseAbi(['function performanceFee() returns (uint256)'])
@@ -259,7 +259,7 @@ export async function extractFeesBps(chainId: number, address: `0x${string}`, bl
 }
 
 export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const results = await rpcs.next(chainId).multicall({ contracts: [
+  const results = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     { args: [0n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
     { args: [1n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
     { args: [2n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },

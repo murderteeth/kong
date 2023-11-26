@@ -2,7 +2,7 @@ require('lib/json.monkeypatch')
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
 import { cache, crons as cronsConfig, mq } from 'lib'
 import db from './db'
@@ -42,8 +42,8 @@ const crons = cronsConfig.default
 }))
 
 function up() {
-  rpcs.up()
   Promise.all([
+    rpcs.up(),
     cache.up(),
     ...pools.map(pool => pool.up()),
     ...crons
@@ -64,8 +64,10 @@ function down() {
     cache.down(),
     db.end()
   ]).then(() => {
+
     console.log('🐒 ingest down')
     process.exit(0)
+
   }).catch(error => {
     console.error('🤬', error)
     process.exit(1)

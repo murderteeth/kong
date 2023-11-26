@@ -1,6 +1,6 @@
 import { math, mq, multicall3, types } from 'lib'
 import db from '../db'
-import { rpcs } from 'lib/rpcs'
+import { rpcs } from '../rpcs'
 import { ReadContractParameters, parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
@@ -90,13 +90,13 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
   result.weeklyBlockNumber = await estimateHeight(chainId, block.timestamp - 7n * day)
   result.monthlyBlockNumber = await estimateHeight(chainId, block.timestamp - 30n * day)
 
-  result.pricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber}) as bigint
-  result.inceptionPricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber: result.inceptionBlockNumber}) as bigint
+  result.pricePerShare = await rpcs.next(chainId, blockNumber).readContract({...ppsParameters, blockNumber}) as bigint
+  result.inceptionPricePerShare = await rpcs.next(chainId, result.inceptionBlockNumber).readContract({...ppsParameters, blockNumber: result.inceptionBlockNumber}) as bigint
 
   if (result.pricePerShare === result.inceptionPricePerShare) return result
 
-  result.weeklyPricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber: result.weeklyBlockNumber}) as bigint
-  result.monthlyPricePerShare = await rpcs.next(chainId).readContract({...ppsParameters, blockNumber: result.monthlyBlockNumber}) as bigint
+  result.weeklyPricePerShare = await rpcs.next(chainId, result.weeklyBlockNumber).readContract({...ppsParameters, blockNumber: result.weeklyBlockNumber}) as bigint
+  result.monthlyPricePerShare = await rpcs.next(chainId, result.monthlyBlockNumber).readContract({...ppsParameters, blockNumber: result.monthlyBlockNumber}) as bigint
 
   const blocksPerDay = (blockNumber - result.weeklyBlockNumber) / 7n
 
@@ -173,7 +173,7 @@ async function getFirstTwoHarvestBlocks(chainId: number, vault: `0x${string}`) {
 async function getFees(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
 
-  const strategiesMulticall = await rpcs.next(chainId).multicall({ contracts: strategies.map(s => ({
+  const strategiesMulticall = await rpcs.next(chainId, blockNumber).multicall({ contracts: strategies.map(s => ({
     args: [s as string], address, functionName: 'strategies', abi: parseAbi(['function strategies(address) returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)'])
   })), blockNumber})
 

@@ -6,40 +6,53 @@ export interface RpcClients { [chaindId: number]: PublicClient }
 
 class pool {
   private recycling: NodeJS.Timeout | undefined
-  private rpcs = {} as { [chainId: number]: { 
+  private rpcs = {} as { [key: string]: { 
     clients: PublicClient[], 
     pointers: { next: number, recycle: number } 
   }}
 
   constructor(private size: number, private recycleMs: number) {}
 
-  private wss(chain: Chain) {
-    return process.env[`WSS_NETWORK_${chain.id}`] as string
+  private wss(chain: Chain, archive: boolean) {
+    if(archive) return process.env[`WSS_ARCHIVE_${chain.id}`] as string
+    return process.env[`WSS_FULLNODE_${chain.id}`] as string
+  }
+
+  private key(chain: Chain, archive: boolean) {
+    return `${chain.id}-${archive}`
+  }
+
+  private parseKey(key: string) {
+    const parts = key.split('-')
+    return { chainId: parseInt(parts[0]), archive: parts[1] === 'true' }
   }
 
   private setupRpcs() {
     for(const chain of chains) {
-      this.rpcs[chain.id] = {
-        clients: Array(this.size).fill(createPublicClient({
-          chain, transport: webSocket(this.wss(chain))
-        })),
-        pointers: { next: 0, recycle: 0 }
+      for(const archive of [true, false]) {
+        this.rpcs[this.key(chain, archive)] = {
+          clients: Array(this.size).fill(createPublicClient({
+            chain, transport: webSocket(this.wss(chain, archive))
+          })),
+          pointers: { next: 0, recycle: 0 }
+        }
       }
     }
   }
 
   private startRecycling() {
     this.recycling = setInterval(async () => {
-      Object.keys(this.rpcs).forEach(chainId => {
-        const forChain = this.rpcs[parseInt(chainId)]
-        const clients = forChain.clients
-        const pointer = forChain.pointers.recycle
+      Object.keys(this.rpcs).forEach(key => {
+        const { chainId, archive } = this.parseKey(key)
+        const rpcsForKey = this.rpcs[key]
+        const clients = rpcsForKey.clients
+        const pointer = rpcsForKey.pointers.recycle
         const rpc = clients[pointer]
         console.log('♻️ ', 'rpc', chainId, pointer)
         clients[pointer] = createPublicClient({
-          chain: rpc.chain, transport: webSocket(this.wss(rpc.chain as Chain))
+          chain: rpc.chain, transport: webSocket(this.wss(rpc.chain as Chain, archive))
         })
-        forChain.pointers.recycle = (pointer + 1) % clients.length
+        rpcsForKey.pointers.recycle = (pointer + 1) % clients.length
         rpc.transport.getSocket().then((socket: any) => socket.close())
       })
     }, this.recycleMs)
@@ -63,17 +76,13 @@ class pool {
     }
   }
 
-  next(chainId: number) {
-    const result = this.rpcs[chainId].clients[this.rpcs[chainId].pointers.next]
-    this.rpcs[chainId].pointers.next = (this.rpcs[chainId].pointers.next + 1) % this.rpcs[chainId].clients.length
-    return result
-  }
-
-  nextAll() {
-    const result = {} as RpcClients
-    Object.keys(this.rpcs).forEach(chainId => {
-      result[parseInt(chainId)] = this.next(parseInt(chainId))
-    })
+  next(chainId: number, archive = true) {
+    const chain = chains.find(chain => chain.id === chainId)
+    if(!chain) throw new Error(`!chain, ${chainId}`)
+    const key = this.key(chain, archive)
+    const rpcs = this.rpcs[key]
+    const result = rpcs.clients[rpcs.pointers.next]
+    rpcs.pointers.next = (rpcs.pointers.next + 1) % rpcs.clients.length
     return result
   }
 }
