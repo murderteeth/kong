@@ -19,17 +19,19 @@ export class HarvestAprComputer implements Processor {
   }
 
   async compute(data: any) {
-    const { chainId, address, blockNumber, blockIndex } = data as { chainId: number, address: `0x${string}`, blockNumber: string, blockIndex: number }
+    const { chainId, address, blockNumber, blockIndex } = data as { chainId: number, address: `0x${string}`, blockNumber: bigint, blockIndex: number }
 
     if(!multicall3.supportsBlock(chainId, BigInt(blockNumber))) {
       console.warn('🚨', 'block not supported', chainId, blockNumber)
       return
     }
 
-    const apr = await _compute(chainId, address, BigInt(blockNumber))
-    if(apr === null) return
+    const [ latest, previous ] = await getHarvests(chainId, address, blockNumber)
+    if(!(latest && previous)) return
 
-    const block = await getBlock(chainId, BigInt(apr.blockNumber))
+    const apr = await _compute(latest, previous)
+
+    const block = await getBlock(chainId, apr.blockNumber)
     await this.queue?.add(mq.job.load.apr, {
       chainId: chainId,
       address: address,
@@ -43,25 +45,27 @@ export class HarvestAprComputer implements Processor {
   }
 }
 
-export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const [ latest, previous ] = await getHarvests(chainId, address, blockNumber)
-  if(!(latest && previous)) return null
-  if(!latest.totalDebt || BigInt(latest.totalDebt) === BigInt(0)) return { gross: 0, net: 0, blockNumber: latest.blockNumber }
+export async function _compute(latest: types.Harvest, previous: types.Harvest) {
+  if(!latest.totalDebt) return { 
+    gross: 0, net: 0, blockNumber: latest.blockNumber 
+  }
 
-  const profit = BigInt(latest.totalProfit || 0) - BigInt(previous.totalProfit || 0)
-  const loss = BigInt(latest.totalLoss || 0) - BigInt(previous.totalLoss || 0)
+  const profit = (latest.totalProfit || 0n) - (previous.totalProfit || 0n)
+  const loss = (latest.totalLoss || 0n) - (previous.totalLoss || 0n)
 
   const performance = (loss > profit)
-  ? math.div(-loss, BigInt(latest.totalDebt))
-  : math.div(profit, BigInt(latest.totalDebt))
+  ? math.div(-loss, latest.totalDebt)
+  : math.div(profit, latest.totalDebt)
 
-  const periodInHours = Number((BigInt(latest.blockTime) - BigInt(previous.blockTime)) / BigInt(60 * 60)) || 1
+  const periodInHours = Number((latest.blockTime - previous.blockTime) / (60n * 60n)) || 1
   const hoursInOneYear = 24 * 365
   const gross = performance * hoursInOneYear / periodInHours
 
-  const { vault, delegatedAssets } = await getStrategyInfo(chainId, address, BigInt(latest.blockNumber))
+  if(gross < 0) return { gross, net: gross, blockNumber: latest.blockNumber }
 
-  const fees = await extractFees(chainId, vault, BigInt(latest.blockNumber))
+  const { vault, delegatedAssets } = await getStrategyInfo(latest.chainId, latest.address, latest.blockNumber)
+
+  const fees = await extractFees(latest.chainId, vault, latest.blockNumber)
 
   const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(latest.totalDebt))
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))
@@ -99,6 +103,6 @@ async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNum
 
   return {
     vault: multicallResult[0].result as `0x${string}`,
-    delegatedAssets: multicallResult[1].result as bigint
+    delegatedAssets: (multicallResult[1].result || 0n) as bigint
   }
 }
