@@ -1,3 +1,4 @@
+
 export interface LatestBlock {
   chainId: number
   blockNumber: bigint

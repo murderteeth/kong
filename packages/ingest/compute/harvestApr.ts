@@ -75,10 +75,10 @@ export async function _compute(latest: types.Harvest, previous: types.Harvest) {
 
 async function getHarvests(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const query = `
-    SELECT 
-      total_profit as "totalProfit",
-      total_loss as "totalLoss",
-      total_debt as "totalDebt",
+    SELECT
+      COALESCE(total_profit, 0) as "totalProfit",
+      COALESCE(total_loss, 0) as "totalLoss",
+      COALESCE(total_debt, 0) as "totalDebt",
       block_number as "blockNumber",
       FLOOR(EXTRACT(EPOCH FROM block_time)) as "blockTime"
     FROM harvest 
@@ -86,7 +86,15 @@ async function getHarvests(chainId: number, address: `0x${string}`, blockNumber:
     ORDER BY block_number desc
     LIMIT 2`
   const result = await db.query(query, [chainId, address, blockNumber])
-  return result.rows as types.Harvest[]
+  return result.rows.map(row => ({
+    chainId,
+    address,
+    totalProfit: BigInt(row.totalProfit),
+    totalLoss: BigInt(row.totalLoss),
+    totalDebt: BigInt(row.totalDebt),
+    blockNumber: BigInt(row.blockNumber),
+    blockTime: BigInt(row.blockTime)
+  })) as types.Harvest[]
 }
 
 async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNumber: bigint) {

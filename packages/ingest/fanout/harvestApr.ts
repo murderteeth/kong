@@ -22,7 +22,7 @@ WITH RankedHarvests AS (
     h.address, 
     h.block_number,
     h.block_index,
-    ROW_NUMBER() OVER(PARTITION BY h.address ORDER BY h.block_number) AS row_num
+    ROW_NUMBER() OVER(PARTITION BY h.chain_id, h.address ORDER BY h.block_number ASC) AS row_num
   FROM 
     harvest h
 )
