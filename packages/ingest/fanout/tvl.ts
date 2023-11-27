@@ -18,7 +18,7 @@ export default class TvlFanout implements Processor {
 
   async fanout() {
     for(const chain of chains) {
-      const throttle = 8
+      const throttle = 16
       const oneDay = BigInt(24 * 60 * 60)
 
       for(const { address, activation, blockTime } of await getLatestTvlTimes(chain.id)) {
@@ -28,8 +28,8 @@ export default class TvlFanout implements Processor {
           await this.queue?.add(mq.job.compute.tvl, {
             chainId: chain.id, address, time
           })
+          await setTimeout(throttle)
         }
-        await setTimeout(throttle)
       }
     }
   }

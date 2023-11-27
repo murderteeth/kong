@@ -39,7 +39,7 @@ export default class RegistryFanout implements Processor {
   async fanoutExtract(chainId: number, address: string, events: any, from: bigint, to: bigint) {
     console.log('📤', 'fanout', chainId, address, from, to)
     const stride = BigInt(process.env.LOG_STRIDE || 10_000)
-    const throttle = 8
+    const throttle = 16
     for (let block = from; block <= to; block += stride) {
       const toBlock = block + stride - 1n < to ? block + stride - 1n : to
       const options = {

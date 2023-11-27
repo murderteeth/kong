@@ -11,14 +11,21 @@ export const lens = {
   [arbitrum.id]: '0x043518AB266485dC085a1DB095B8d9C2Fc78E9b9' as `0x${string}`
 }
 
-export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
+export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint, latest = false) {
   return cache.wrap(`fetchErc20PriceUsd:${chainId}:${token}:${blockNumber}`, async () => {
-    return await __fetchErc20PriceUsd(chainId, token, blockNumber)
+    return await __fetchErc20PriceUsd(chainId, token, blockNumber, latest)
   }, 10_000)
 }
 
-async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
-  let price = await fetchLensPriceUsd(chainId, token, blockNumber)
+async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint, latest = false) {
+  let price: number = 0
+
+  if(latest) {
+    price = await fetchYDaemonPriceUsd(chainId, token)
+    if(price !== 0) return { price, source: 'ydaemon' }
+  }
+
+  price = await fetchLensPriceUsd(chainId, token, blockNumber)
   if(price !== 0) return { price, source: 'lens' }
 
   if(JSON.parse(process.env.YPRICE_ENABLED || 'false')) {
@@ -68,6 +75,22 @@ async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNum
 
   } catch(error) {
     console.warn('🚨', 'no lens price', chainId, token, blockNumber)
+    return 0
+  }
+}
+
+async function fetchYDaemonPriceUsd(chainId: number, token: `0x${string}`) {
+  if(!process.env.YDAEMON_API) throw new Error('!YDAEMON_API')
+
+  try {
+    const url = `${process.env.YDAEMON_API}/${chainId}/prices/${token}?humanized=true`
+    const result = await fetch(url)
+    const text = await result.text()
+    const price = parseFloat(text)
+    if(isNaN(price)) return 0
+    return price
+  } catch(error) {
+    console.warn('🚨', 'no ydaemon price', chainId, token)
     return 0
   }
 }

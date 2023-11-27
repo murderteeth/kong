@@ -27,20 +27,22 @@ export class TvlComputer implements Processor {
   {
     let number: bigint = 0n
     let timestamp: bigint = 0n
-    if(time > BigInt((new Date()).getTime() * 1000)) {
-      ({ number, timestamp } = await rpcs.next(chainId).getBlock())
+    let latest: boolean = false
+    if(time > BigInt(Math.floor(new Date().getTime() / 1000))) {
+      ({ number, timestamp, latest } = {...await rpcs.next(chainId).getBlock(), latest: true})
     } else {
       const estimate = await estimateHeight(chainId, time);
       ({ number, timestamp } = await getBlock(chainId, estimate))
     }
 
-    const { price: priceUsd, tvl: tvlUsd } = await _compute(chainId, address, timestamp)
+    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, timestamp, latest)
     const artificialBlockTime = endOfDay(time)
 
     await this.queue?.add(mq.job.load.tvl, {
       chainId,
       address,
       priceUsd,
+      priceSource,
       tvlUsd,
       blockNumber: number,
       blockTime: artificialBlockTime
@@ -48,10 +50,10 @@ export class TvlComputer implements Processor {
   }
 }
 
-export async function _compute(chainId: number, address: `0x${string}`, time: bigint) {
+export async function _compute(chainId: number, address: `0x${string}`, time: bigint, latest = false) {
   const blockNumber = await estimateHeight(chainId, time)
   const { assetAddress, decimals } = await getAsset(chainId, address)
-  const { price } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber)
+  const { price, source } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber, latest)
 
   const totalAssets = await rpcs.next(chainId, blockNumber).readContract({
     address,
@@ -67,7 +69,7 @@ export async function _compute(chainId: number, address: `0x${string}`, time: bi
   const totalDelegatedAssets = delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
   const tvl = price * (scaleDown(totalAssets, decimals) - scaleDown(totalDelegatedAssets, decimals))
 
-  return { price, tvl }
+  return { price, source, tvl }
 }
 
 export async function getAsset(chainId: number, address: string) {
