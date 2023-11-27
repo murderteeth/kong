@@ -8,7 +8,7 @@ dev:
 	# Layout panes
 	@tmux splitw -v -p 50
 	@tmux selectp -t 0
-	@tmux splitw -h -p 50
+	@tmux splitw -h -p 80
 	@tmux selectp -t 2
 	@tmux splitw -h -p 50
 

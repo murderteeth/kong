@@ -22,8 +22,9 @@ type Vault {
   assetSymbol: String
   assetName: String
   assetDescription: String
+  assetPriceUsd: Float
+  assetPriceSource: String
   withdrawalQueue: [Strategy]
-  priceUsd: Float
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
   apyNet: Float
