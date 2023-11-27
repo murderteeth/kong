@@ -20,7 +20,7 @@ export class MetaExtractor implements Processor {
       const tokenMetas = await extractTokenMetas(chain.id)
       const vaults = (await db.query(`SELECT DISTINCT chain_id as "chainId", asset_address as "assetAddress" FROM vault WHERE chain_id = $1;`, [chain.id])).rows
       for(const vault of vaults as { chainId: number, assetAddress: `0x${string}` } []) {
-        const meta = tokenMetas[vault.assetAddress]
+        const meta = tokenMetas[vault.assetAddress] || tokenMetas[vault.assetAddress.toLowerCase()]
         if(meta === undefined) continue
         await this.queue?.add(mq.job.load.erc20, {
           chainId: vault.chainId,
@@ -35,7 +35,7 @@ export class MetaExtractor implements Processor {
       if(strategies.length === 0) continue
       const metas = await extractStrategyMetas(chain.id)
       for(const strategy of strategies as { address: `0x${string}` } []) {
-        const meta = metas[strategy.address]
+        const meta = metas[strategy.address] || metas[strategy.address.toLowerCase()]
         if(meta === undefined) continue
         await this.queue?.add(mq.job.load.strategy, {
           chainId: chain.id,
