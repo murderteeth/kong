@@ -79,14 +79,19 @@ async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNum
   }
 }
 
-async function fetchYDaemonPriceUsd(chainId: number, token: `0x${string}`) {
+async function fetchAllYDaemonPrices() {
   if(!process.env.YDAEMON_API) throw new Error('!YDAEMON_API')
-
-  try {
-    const url = `${process.env.YDAEMON_API}/${chainId}/prices/${token}?humanized=true`
+  return cache.wrap('fetchAllYDaemonPrices', async () => {
+    const url = `${process.env.YDAEMON_API}/prices/all?humanized=true`
     const result = await fetch(url)
-    const text = await result.text()
-    const price = parseFloat(text)
+    return await result.json()
+  }, 60_000)
+}
+
+async function fetchYDaemonPriceUsd(chainId: number, token: `0x${string}`) {
+  try {
+    const prices = await fetchAllYDaemonPrices()
+    const price = parseFloat(prices[chainId]?.[token] || '0')
     if(isNaN(price)) return 0
     return price
   } catch(error) {
