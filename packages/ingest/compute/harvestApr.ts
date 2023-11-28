@@ -46,7 +46,7 @@ export class HarvestAprComputer implements Processor {
 }
 
 export async function _compute(latest: types.Harvest, previous: types.Harvest) {
-  if(!latest.totalDebt) return { 
+  if(!(latest.totalDebt && previous.totalDebt)) return { 
     gross: 0, net: 0, blockNumber: latest.blockNumber 
   }
 
@@ -54,8 +54,8 @@ export async function _compute(latest: types.Harvest, previous: types.Harvest) {
   const loss = (latest.totalLoss || 0n) - (previous.totalLoss || 0n)
 
   const performance = (loss > profit)
-  ? math.div(-loss, latest.totalDebt)
-  : math.div(profit, latest.totalDebt)
+  ? math.div(-loss, previous.totalDebt)
+  : math.div(profit, previous.totalDebt)
 
   const periodInHours = Number((latest.blockTime - previous.blockTime) / (60n * 60n)) || 1
   const hoursInOneYear = 24 * 365
@@ -67,7 +67,7 @@ export async function _compute(latest: types.Harvest, previous: types.Harvest) {
 
   const fees = await extractFees(latest.chainId, vault, latest.blockNumber)
 
-  const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(latest.totalDebt))
+  const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(previous.totalDebt))
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))
 
   return { gross, net, blockNumber: latest.blockNumber }

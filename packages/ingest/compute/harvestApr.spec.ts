@@ -40,8 +40,8 @@ describe('harvest apr', function() {
     } as types.Harvest
 
     const apr = await _compute(latest, profitable)
-    expect(apr.gross).to.equal(0.02996577836835368)
-    expect(apr.net).to.equal(0.023972622694682946)
+    expect(apr.gross).to.equal(0.039971418235301995)
+    expect(apr.net).to.equal(0.0319771345882416)
     expect(apr.blockNumber).to.equal(18116044n)
   })
 
@@ -68,7 +68,7 @@ describe('harvest apr', function() {
     } as types.Harvest
 
     const apr = await _compute(loss, zero)
-    expect(apr.gross).to.equal(-0.023891453652655895)
+    expect(apr.gross).to.equal(-0.023979592588218704)
     expect(apr.net).to.equal(apr.gross)
     expect(apr.blockNumber).to.equal(85961102n)
   })
