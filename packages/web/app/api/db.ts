@@ -59,7 +59,7 @@ export async function getVaults(where: string, values: any[]) {
         'debtRatio', s.debt_ratio,
         'minDebtPerHarvest', s.min_debt_per_harvest::text,
         'maxDebtPerHarvest', s.max_debt_per_harvest::text,
-        'lastReportBlockTime', FLOOR(EXTRACT(EPOCH FROM s.last_report_block_time)) * 1000,
+        'lastReportBlockTime', FLOOR(EXTRACT(EPOCH FROM s.last_report_block_time)),
         'totalDebt', s.total_debt::text,
         'totalDebtUsd', s.total_debt_usd,
         'totalGain', s.total_gain::text,
@@ -72,7 +72,7 @@ export async function getVaults(where: string, values: any[]) {
         'tradeFactory', s.trade_factory,
         'description', s.meta_description,
         'riskGroup', s.risk_group,
-        'activationBlockTime', FLOOR(EXTRACT(EPOCH FROM s.activation_block_time)) * 1000,
+        'activationBlockTime', FLOOR(EXTRACT(EPOCH FROM s.activation_block_time)),
         'activationBlockNumber', s.activation_block_number,
         'asOfBlockNumber', s.as_of_block_number,
         'queueIndex', wq.queue_index
