@@ -4,15 +4,15 @@ export default gql`
 type Harvest {
   chainId: Int!
   address: String!
-  profit: Float!
+  profit: BigInt!
   profitUsd: Float!
-  loss: Float!
+  loss: BigInt!
   lossUsd: Float!
-  totalProfit: Float!
+  totalProfit: BigInt!
   totalProfitUsd: Float!
-  totalLoss: Float!
+  totalLoss: BigInt!
   totalLossUsd: Float!
-  totalDebt: Float!
+  totalDebt: BigInt!
   blockNumber: Int!
   blockIndex: Int!
   blockTime: String!
