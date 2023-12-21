@@ -70,7 +70,7 @@ export class StrategyExtractor implements Processor {
     const { price } = await fetchErc20PriceUsd(strategy.chainId, assetAddress, asOfBlockNumber)
     const decimals = await rpcs.next(strategy.chainId).readContract({
       address: assetAddress,
-      functionName: 'decimals' as never,
+      functionName: 'decimals',
       abi: parseAbi(['function decimals() view returns (uint8)']),
     }) as number
     return price * Number(scaleDown(totalDebt, decimals))

@@ -5,7 +5,7 @@ import { addresses } from '../test.fixture'
 
 const profitable = {
   chainId: 1,
-  address: addresses.strategystEthAccumulator_v2,
+  address: addresses.v2.strategystEthAccumulator_v2,
   profit: 122295812297070635612n,
   loss: 0n,
   totalProfit: 1205071216861557778611n,

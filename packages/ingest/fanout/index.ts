@@ -21,7 +21,7 @@ export default class Fanout implements Processor {
   async up() {
     await Promise.all(Object.values(this.fanouts).map(f => f.up()))
     this.worker = mq.worker(mq.q.fanout, async job => {
-      const label = `📤 ${job.name} ${job.id}`
+      const label = `🍃 ${job.name} ${job.id}`
       console.time(label)
       await this.fanouts[job.name].fanout()
       console.timeEnd(label)

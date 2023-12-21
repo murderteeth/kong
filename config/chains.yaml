@@ -1,9 +1,14 @@
 
+# chains: [
+#   'mainnet',
+#   'optimism',
+#   'polygon',
+#   'fantom',
+#   'base',
+#   'arbitrum'
+# ]
+
 chains: [
   'mainnet',
-  'optimism',
-  'polygon',
-  'fantom',
-  'base',
-  'arbitrum'
+  'polygon'
 ]

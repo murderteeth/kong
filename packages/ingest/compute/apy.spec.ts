@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { addresses, withYvUsdtDb } from '../test.fixture'
+import { addresses, withYvUsdtDb, withYvWethDb } from '../test.fixture'
 import { mainnet } from 'viem/chains'
 import { _compute } from './apy'
 
@@ -8,7 +8,7 @@ describe('apy', function() {
 
   it('yvUSDT 0.4.3 @ block 18344466', withYvUsdtDb(async function(this: Mocha.Context) {
     const blockNumber = 18344466n
-		const apy = await _compute(mainnet.id, addresses.yvusdt, blockNumber)
+		const apy = await _compute(mainnet.id, addresses.v2.yvusdt, blockNumber)
 
     expect(apy).to.not.be.null
     if(apy === null) return
@@ -33,7 +33,7 @@ describe('apy', function() {
 
   it('yvUSDT 0.4.3 @ block 15871070', withYvUsdtDb(async function(this: Mocha.Context) {
     const blockNumber = 15871070n
-		const apy = await _compute(mainnet.id, addresses.yvusdt, blockNumber)
+		const apy = await _compute(mainnet.id, addresses.v2.yvusdt, blockNumber)
 
     expect(apy).to.not.be.null
     if(apy === null) return

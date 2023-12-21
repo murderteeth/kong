@@ -6,7 +6,7 @@ import { estimateHeight, getBlock } from 'lib/blocks'
 import db from '../db'
 import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
-import { extractWithdrawalQueue } from '../extract/vault'
+import { extractWithdrawalQueue } from '../extract/vault/version2'
 import { scaleDown } from 'lib/math'
 import { endOfDay } from 'lib/dates'
 import { extractDelegatedAssets } from '../extract/strategy'
@@ -57,7 +57,7 @@ export async function _compute(chainId: number, address: `0x${string}`, time: bi
 
   const totalAssets = await rpcs.next(chainId, blockNumber).readContract({
     address,
-    functionName: 'totalAssets' as never,
+    functionName: 'totalAssets',
     abi: parseAbi(['function totalAssets() view returns (uint256)']),
     blockNumber
   }) as bigint

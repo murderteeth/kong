@@ -5,7 +5,7 @@ import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { getBlock } from 'lib/blocks'
-import { extractFees } from '../extract/vault'
+import { extractFees } from '../extract/vault/version2'
 
 export class HarvestAprComputer implements Processor {
   queue: Queue | undefined

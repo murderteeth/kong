@@ -8,7 +8,7 @@ describe('tvl', function() {
   it('yvWETH 0.4.2 @ block 18417431', withYvWethDb(async function(this: Mocha.Context) {
     const blockNumber = 18417431n
     const block = await rpcs.next(mainnet.id, blockNumber).getBlock({ blockNumber })
-		const { price, tvl } = await _compute(mainnet.id, addresses.yvweth, block.timestamp)
+		const { price, tvl } = await _compute(mainnet.id, addresses.v2.yvweth, block.timestamp)
     expect(price).to.be.almost(1_833, 1)
     expect(tvl).to.be.almost(107_045_649, 1)
   }))

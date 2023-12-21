@@ -12,6 +12,7 @@ cp .env.example .env
 make dev
 ```
 `dash` - http://localhost:3000
+
 `graphql explorer ` - http://localhost:3000/api/gql
 
 ## requirements
@@ -27,7 +28,7 @@ make dev
 `down` - 'make' sure your dev environment is shutdown lol
 
 
-## tmux cheats
+## tmux
 `quit` - `ctrl+b`, `:` then `kill-session` (your dev environment will also shutdown gracefully)
 
 `pane navigation` - `ctrl+b` then `arrow keys`
@@ -47,10 +48,18 @@ make dev
 
 `web` - kong gqphql api and runtime dash
 
+
+## testing
+`make test` - test everything
+
+`yarn workspace <workspace> test` - test a specific workspace (eg, `lib` or `ingest`)
+
+
 ## yamls
 ## ingest
 ### processors
 #### paths
+
 
 ## postgres x timescale
 locally you can run postgres and timescale from a docker image, eg using `make postgres`. connect to your local with

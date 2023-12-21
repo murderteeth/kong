@@ -1,10 +1,16 @@
 import { strings, types } from 'lib'
 import { Pool, types as pgTypes } from 'pg'
 
-// tell pg to parse numeric as float
-// otherwise it returns numerics as strings
-// 1700 is pg's oid for NUMERIC
+// Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
+
+// Convert bigtin (OID 20) to BigInt
+pgTypes.setTypeParser(20, BigInt)
+
+// Convert timestamptz (OID 1184) to seconds
+pgTypes.setTypeParser(1184, (stringValue) => {
+  return BigInt(Math.floor(Date.parse(stringValue) / 1000))
+})
 
 const db = new Pool({
   host: process.env.POSTGRES_HOST || 'localhost',
@@ -19,6 +25,11 @@ const db = new Pool({
 })
 
 export default db
+
+export async function firstRow(query: string, params: any[] = [], ) {
+  const result = await db.query(query, params)
+  return result.rows[0]
+}
 
 export async function getLatestBlock(chainId: number) {
   const result = await db.query(`

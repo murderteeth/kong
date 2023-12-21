@@ -1,3 +1,7 @@
+import { z } from "zod"
+
+export const zaddress = z.custom<`0x${string}`>((val: any) => /^0x/.test(val))
+export const zvaultType = z.enum(['vault', 'strategy'])
 
 export interface LatestBlock {
   chainId: number
@@ -41,34 +45,36 @@ export interface TVL {
   blockTime: bigint
 }
 
-export interface Vault {
-  chainId: number
-  address: `0x${string}`
-  type?: 'vault' | 'strategy'
-  apiVersion?: string
-  apetaxType?: string
-  apetaxStatus?: string
-  registryStatus?: string
-  registryAddress?: `0x${string}`
-  symbol?: string,
-  name?: string,
-  decimals?: number,
-  assetAddress?: `0x${string}`
-  assetName?: string,
-  assetSymbol?: string,
-  totalAssets?: bigint,
-  totalDebt?: bigint,
-  debtRatio?: number,
-  availableDepositLimit?: bigint,
-  depositLimit?: bigint,
-  governance?: `0x${string}`,
-  performanceFee?: number,
-  managementFee?: number,
-  lockedProfitDegradation?: bigint,
-  activationBlockTime?: bigint,
-  activationBlockNumber?: bigint,
-  asOfBlockNumber: bigint
-}
+export const VaultSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  type: zvaultType.optional(),
+  apiVersion: z.string().optional(),
+  apetaxType: z.string().optional(),
+  apetaxStatus: z.string().optional(),
+  registryStatus: z.string().optional(),
+  registryAddress: zaddress.optional(),
+  symbol: z.string().optional(),
+  name: z.string().optional(),
+  decimals: z.number().optional(),
+  assetAddress: zaddress.optional(),
+  assetName: z.string().optional(),
+  assetSymbol: z.string().optional(),
+  totalAssets: z.bigint().optional(),
+  totalDebt: z.bigint().optional(),
+  debtRatio: z.number().optional(),
+  availableDepositLimit: z.bigint().optional(),
+  depositLimit: z.bigint().optional(),
+  governance: zaddress.optional(),
+  performanceFee: z.number().optional(),
+  managementFee: z.number().optional(),
+  lockedProfitDegradation: z.bigint().optional(),
+  activationBlockTime: z.bigint().optional(),
+  activationBlockNumber: z.bigint().optional(),
+  asOfBlockNumber: z.bigint()
+})
+
+export type Vault = z.infer<typeof VaultSchema>
 
 export interface Strategy {
   chainId: number

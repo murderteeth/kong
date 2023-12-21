@@ -73,16 +73,16 @@ export async function getAsset(chainId: number, address: `0x${string}`) {
 
   const want = await rpcs.next(chainId).readContract({
     address, 
-    functionName: 'want' as never,
-    abi: parseAbi(['function want() returns (address)'])
+    functionName: 'want',
+    abi: parseAbi(['function want() view returns (address)'])
   }) as `0x${string}`
 
   if(want) {
     const decimals = await rpcs.next(chainId).readContract({
       address: want,
-      functionName: 'decimals' as never,
-      abi: parseAbi(['function decimals() returns (uint256)'])
-    }) as number
+      functionName: 'decimals',
+      abi: parseAbi(['function decimals() view returns (uint256)'])
+    }) as bigint
     return {
       address: want,
       decimals: Number(decimals),

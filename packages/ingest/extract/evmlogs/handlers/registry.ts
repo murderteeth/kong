@@ -14,7 +14,7 @@ export class RegistryHandler implements Handler {
   }
 
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
-    const newVaultEvents = ['NewExperimentalVault', 'NewVault', 'NewEndorsedVault']
+    const newVaultEvents = ['NewExperimentalVault', 'NewVault']
 
     for(const log of logs) {
       if(newVaultEvents.includes(log.eventName)) {

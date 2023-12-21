@@ -1,11 +1,11 @@
 import { expect } from 'chai'
 import { mainnet } from 'viem/chains'
-import { addresses } from '../test.fixture'
-import { extractFees, extractWithdrawalQueue } from './vault'
+import { addresses } from '../../test.fixture'
+import { extractFees, extractWithdrawalQueue } from './version2'
 
 describe('vault', function() {
   it('extracts withdrawal queue', async function() {
-    const q = await extractWithdrawalQueue(mainnet.id, addresses.yvweth, 18530014n)
+    const q = await extractWithdrawalQueue(mainnet.id, addresses.v2.yvweth, 18530014n)
     expect(q).to.be.an('array')
     expect(q.length).to.eq(3)
     expect(q[0]).to.eq('0xec2DB4A1Ad431CC3b102059FA91Ba643620F0826')
@@ -14,7 +14,7 @@ describe('vault', function() {
   })
 
   it('extracts fees', async function() {
-    const { performance, management } = await extractFees(mainnet.id, addresses.yvweth, 18530014n)
+    const { performance, management } = await extractFees(mainnet.id, addresses.v2.yvweth, 18530014n)
     expect(performance).to.eq(.2)
     expect(management).to.eq(0)
   })
