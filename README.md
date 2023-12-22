@@ -38,6 +38,14 @@ make dev
 `scroll` - `ctrl+b` then `[` then `arrow keys` or `page up\down keys` then `q` to quit scroll mode
 
 
+## database migrations
+**create** - `yarn workspace db migrate create <migration-name> --sql-file`
+
+**up** - `yarn workspace db migrate up [name|-c count|...]`
+
+**down** - `yarn workspace db migrate down [-c count|...]`
+
+
 ## workspace
 ### packages
 `ingest` - etl logic

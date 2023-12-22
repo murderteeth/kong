@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 export const zaddress = z.custom<`0x${string}`>((val: any) => /^0x/.test(val))
 export const zvaultType = z.enum(['vault', 'strategy'])
