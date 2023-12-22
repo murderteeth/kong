@@ -5,7 +5,7 @@ import { types } from 'lib'
 import db, { toUpsertSql } from '../../db'
 import { extractApiVersion, getApiVersion } from '.'
 
-describe.only('vault', function() {
+describe('vault', function() {
   it('extracts api version', async function() {
     const vault = {
       chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n

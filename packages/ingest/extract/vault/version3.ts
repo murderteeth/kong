@@ -19,8 +19,6 @@ export class VaultExtractor__v3 implements Processor {
   }
 
   async extract(vault: types.Vault, asOfBlockNumber: bigint) {
-    if(!vault.registryAddress) throw new Error('vault.registryAddress')
-
     const registration = await getRegistration(vault) ?? await extractRegistration(vault)
     const fields = await extractFields(vault)
     const asset = await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
@@ -29,51 +27,44 @@ export class VaultExtractor__v3 implements Processor {
     const update = {
       ...vault,
       ...registration,
-
       ...fields,
       ...asset,
       asOfBlockNumber
     } as types.Vault
 
-    await this.queues[mq.q.load].add(
-      mq.job.load.erc20, {
-        chainId: vault.chainId,
-        address: fields.assetAddress,
-        name: asset.assetName,
-        symbol: asset.assetSymbol,
-        decimals: fields.decimals
-      }
-    )
+    await this.queues[mq.q.load].add(mq.job.load.erc20, {
+      chainId: vault.chainId,
+      address: fields.assetAddress,
+      name: asset.assetName,
+      symbol: asset.assetSymbol,
+      decimals: fields.decimals
+    })
 
-    await this.queues[mq.q.load].add(
-      mq.job.load.erc20, {
-        chainId: vault.chainId,
-        address: vault.address,
-        name: fields.name,
-        symbol: fields.symbol,
-        decimals: fields.decimals
-      }
-    )
+    await this.queues[mq.q.load].add(mq.job.load.erc20, {
+      chainId: vault.chainId,
+      address: vault.address,
+      name: fields.name,
+      symbol: fields.symbol,
+      decimals: fields.decimals
+    })
 
-    await this.queues[mq.q.load].add(
-      mq.job.load.vault, update
-    )
-  
-    await this.queues[mq.q.load].add(
-      mq.job.load.withdrawalQueue, { batch: withdrawalQueue.map((strategyAddress, queueIndex) => ({
+    await this.queues[mq.q.load].add(mq.job.load.vault, update)
+
+    await this.queues[mq.q.load].add(mq.job.load.withdrawalQueue,
+      { batch: withdrawalQueue.map((strategyAddress, queueIndex) => ({
         chainId: vault.chainId,
         vaultAddress: vault.address,
         queueIndex, strategyAddress, asOfBlockNumber
-    })) as types.WithdrawalQueueItem[] })
-  
+      })) as types.WithdrawalQueueItem[]
+    })
+
     for(const strategy of withdrawalQueue) {
-      await this.queues[mq.q.extract].add(
-        mq.job.extract.strategy, {
-          chainId: vault.chainId,
-          address: strategy,
-          vaultAddress: vault.address,
-          withdrawalQueueIndex: withdrawalQueue.indexOf(strategy),
-          asOfBlockNumber
+      await this.queues[mq.q.extract].add(mq.job.extract.strategy, {
+        chainId: vault.chainId,
+        address: strategy,
+        vaultAddress: vault.address,
+        withdrawalQueueIndex: withdrawalQueue.indexOf(strategy),
+        asOfBlockNumber
       } as types.Strategy)
     }
   }
@@ -88,7 +79,7 @@ export async function getRegistration(vault: types.Vault) {
 }
 
 export async function extractRegistration(vault: types.Vault) {
-  if(!vault.registryAddress) throw new Error('vault.registryAddress')
+  if(!vault.registryAddress) throw new Error('!vault.registryAddress')
   const [asset, releaseVersion, vaultType, deploymentTimestamp, tag] = await rpcs.next(vault.chainId).readContract({
     address: vault.registryAddress as `0x${string}`,
     abi: parseAbi(['function vaultInfo(address) view returns (address, uint96, uint128, uint128, string)']),
@@ -118,14 +109,22 @@ async function extractFields(vault: types.Vault) {
       abi: parseAbi(['function decimals() returns (uint32)'])
     },
     {
+      address: vault.address, functionName: 'asset',
+      abi: parseAbi(['function asset() returns (address)'])
+    },
+    {
       address: vault.address, functionName: 'totalAssets',
       abi: parseAbi(['function totalAssets() returns (uint256)'])
     },
     {
-      address: vault.address, functionName: 'asset',
-      abi: parseAbi(['function asset() returns (address)'])
+      address: vault.address, functionName: 'totalDebt',
+      abi: parseAbi(['function totalDebt() returns (uint256)'])
     },
 
+    {
+      address: vault.address, functionName: 'lockedProfitDegradation',
+      abi: parseAbi(['function lockedProfitDegradation() returns (uint256)'])
+    },
 
 
     {
@@ -140,18 +139,7 @@ async function extractFields(vault: types.Vault) {
       address: vault.address, functionName: 'managementFee',
       abi: parseAbi(['function managementFee() returns (uint256)'])
     },
-    {
-      address: vault.address, functionName: 'lockedProfitDegradation',
-      abi: parseAbi(['function lockedProfitDegradation() returns (uint256)'])
-    },
-    {
-      address: vault.address, functionName: 'lockedProfitDegration',
-      abi: parseAbi(['function lockedProfitDegration() returns (uint256)'])
-    },
-    {
-      address: vault.address, functionName: 'totalDebt',
-      abi: parseAbi(['function totalDebt() returns (uint256)'])
-    },
+
     {
       address: vault.address, functionName: 'debtRatio',
       abi: parseAbi(['function debtRatio() returns (uint256)'])

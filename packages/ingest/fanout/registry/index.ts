@@ -46,7 +46,7 @@ export default class RegistryFanout implements Processor {
   }
 
   async fanoutEvmExtract(chainId: number, address: string, events: any, from: bigint, to: bigint) {
-    console.log('🍃', 'fanout', chainId, address, from, to)
+    console.log('🪭', 'fanout', chainId, address, from, to)
     const stride = BigInt(process.env.LOG_STRIDE || 10_000)
     const throttle = 16
     for (let block = from; block <= to; block += stride) {
@@ -78,15 +78,15 @@ export default class RegistryFanout implements Processor {
 
     const numAssets = multicallResult[0].result as number | undefined
     const vaults = multicallResult[1].result as `0x${string}`[][] | undefined
-    if(numAssets === undefined) throw new Error('numAssets')
-    if(vaults === undefined) throw new Error('vaults')
+    if(numAssets === undefined) throw new Error('!numAssets')
+    if(vaults === undefined) throw new Error('!vaults')
 
     for(let i = 0; i < numAssets; i++) {
       for (const vault of vaults[i]) {
         await this.queues[mq.q.extract].add(mq.job.extract.vault, { 
           chainId, 
           address: vault,
-          registry,
+          registryAddress: registry,
           registryStatus: 'endorsed'
         })
       }

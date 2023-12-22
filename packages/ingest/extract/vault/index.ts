@@ -64,5 +64,5 @@ export async function extractApiVersion(vault: types.Vault) {
 
   if(multicallResult[0].status === 'success') return multicallResult[0].result as string
   if(multicallResult[1].status === 'success') return multicallResult[1].result as string
-  throw new Error('apiVersion')
+  throw new Error('!apiVersion')
 }

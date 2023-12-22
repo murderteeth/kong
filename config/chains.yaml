@@ -9,6 +9,5 @@
 # ]
 
 chains: [
-  'mainnet',
   'polygon'
 ]
