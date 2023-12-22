@@ -21,6 +21,8 @@ export class VaultExtractor__v3 implements Processor {
   async extract(vault: types.Vault, asOfBlockNumber: bigint) {
     const registration = await getRegistration(vault) ?? await extractRegistration(vault)
     const fields = await extractFields(vault)
+    const fees = await extractFeesBps({...vault, ...fields} as types.Vault)
+
     const asset = await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
     const withdrawalQueue = await extractWithdrawalQueue(vault.chainId, vault.address, asOfBlockNumber)
 
@@ -28,6 +30,7 @@ export class VaultExtractor__v3 implements Processor {
       ...vault,
       ...registration,
       ...fields,
+      ...fees,
       ...asset,
       asOfBlockNumber
     })
@@ -80,13 +83,14 @@ export async function getRegistration(vault: types.Vault) {
   )
 }
 
-export async function extractRegistration(vault: types.Vault) {
+export async function extractRegistration(vault: types.Vault, blockNumber?: bigint) {
   if(!vault.registryAddress) throw new Error('!vault.registryAddress')
-  const [asset, releaseVersion, vaultType, deploymentTimestamp, tag] = await rpcs.next(vault.chainId).readContract({
+  const [asset, releaseVersion, vaultType, deploymentTimestamp, tag] = await rpcs.next(vault.chainId, blockNumber).readContract({
     address: vault.registryAddress as `0x${string}`,
     abi: parseAbi(['function vaultInfo(address) view returns (address, uint96, uint128, uint128, string)']),
     functionName: 'vaultInfo',
-    args: [vault.address]
+    args: [vault.address],
+    blockNumber
   })
 
   return { 
@@ -149,6 +153,14 @@ export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
     {
       address: vault.address, functionName: 'deposit_limit',
       abi: parseAbi(['function deposit_limit() returns (uint256)'])
+    },
+    {
+      address: vault.address, functionName: 'accountant',
+      abi: parseAbi(['function accountant() returns (address)'])
+    },
+    {
+      address: vault.address, functionName: 'role_manager',
+      abi: parseAbi(['function role_manager() returns (address)'])
     }
   ], blockNumber })
 
@@ -165,8 +177,44 @@ export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
     profitUnlockingRate: multicallResult[9].result,
     fullProfitUnlockDate: multicallResult[10].result,
     lastProfitUpdate: multicallResult[11].result,
-    depositLimit: multicallResult[12].result
+    depositLimit: multicallResult[12].result,
+    accountant: multicallResult[13].result,
+    roleManager: multicallResult[14].result
   } as types.Vault
+}
+
+export async function extractFees(vault: types.Vault, blockNumber?: bigint) {
+  const feesBps = await extractFeesBps(vault, blockNumber)
+  return {
+    managementFee: feesBps.managementFee / 10_000,
+    performanceFee: feesBps.performanceFee / 10_000
+  }
+}
+
+export async function extractFeesBps(vault: types.Vault, blockNumber?: bigint) {
+  if(vault.accountant) {
+    const defaultConfig = await rpcs.next(vault.chainId, blockNumber).readContract({
+      address: vault.accountant,
+      abi: parseAbi(['function defaultConfig() view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
+      functionName: 'defaultConfig',
+      blockNumber
+    })
+    return {
+      managementFee: defaultConfig[0],
+      performanceFee: defaultConfig[1]
+    }
+  } else {
+    const performanceFee = await rpcs.next(vault.chainId, blockNumber).readContract({
+      address: vault.address,
+      abi: parseAbi(['function performanceFee() view returns (uint16)']),
+      functionName: 'performanceFee',
+      blockNumber
+    })
+    return {
+      managementFee: 0,
+      performanceFee: performanceFee
+    }
+  }
 }
 
 async function extractAsset(chainId: number, address: `0x${string}`) {
@@ -187,68 +235,6 @@ async function extractAsset(chainId: number, address: `0x${string}`) {
   }
 }
 
-async function extractActivation(chainId: number, address: `0x${string}`) {
-  const { activation_block_time, activation_block_number } = (await db.query(
-    `SELECT
-      FLOOR(EXTRACT(EPOCH FROM activation_block_time)) as activation_block_time,
-      activation_block_number
-    FROM
-      vault
-    WHERE
-      chain_id = $1 AND address = $2`, 
-    [chainId, address]
-  )).rows[0] || {}
-
-  if(activation_block_time) return {
-    activationBlockTime: activation_block_time,
-    activationBlockNumber: activation_block_number as bigint
-  }
-
-  try {
-    const activationBlockTime = await rpcs.next(chainId).readContract({
-      address, functionName: 'activation',
-      abi: parseAbi(['function activation() view returns (uint256)'])
-    }) as bigint
-
-    return {
-      activationBlockTime: activationBlockTime,
-      activationBlockNumber: (await blocks.estimateHeight(chainId, activationBlockTime))
-    }
-  } catch(error) {
-    console.warn('🚨', chainId, address, '!activation field')
-    const createBlock = await estimateCreationBlock(chainId, address)
-    return {
-      activationBlockTime: createBlock.timestamp,
-      activationBlockNumber: createBlock.number
-    }
-  }
-}
-
-export async function extractFees(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const bps = await extractFeesBps(chainId, address, blockNumber)
-  return {
-    performance: math.div(bps.performance, 10_000n),
-    management: math.div(bps.management, 10_000n)
-  }
-}
-
-export async function extractFeesBps(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
-    {
-      address, functionName: 'performanceFee',
-      abi: parseAbi(['function performanceFee() returns (uint256)'])
-    },
-    {
-      address, functionName: 'managementFee',
-      abi: parseAbi(['function managementFee() returns (uint256)'])
-    }
-  ], blockNumber })
-
-  return {
-    performance: multicallResult[0].result || 0n,
-    management: multicallResult[1].result || 0n
-  }
-}
 
 export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const results = await rpcs.next(chainId, blockNumber).multicall({ contracts: [

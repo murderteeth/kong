@@ -75,6 +75,8 @@ export const VaultSchema = z.object({
   profitUnlockingRate: z.bigint().optional(),
   fullProfitUnlockDate: z.bigint().optional(),
   lastProfitUpdate: z.bigint().optional(),
+  accountant: zaddress.optional(),
+  roleManager: zaddress.optional(),
   activationBlockTime: z.bigint().optional(),
   activationBlockNumber: z.bigint().optional(),
   asOfBlockNumber: z.bigint()

@@ -4,3 +4,5 @@ ALTER TABLE vault ADD COLUMN full_profit_unlock_date numeric NULL;
 ALTER TABLE vault ADD COLUMN last_profit_update numeric NULL;
 ALTER TABLE vault ADD COLUMN total_idle numeric NULL;
 ALTER TABLE vault ADD COLUMN minimum_total_idle numeric NULL;
+ALTER TABLE vault ADD COLUMN accountant text NULL;
+ALTER TABLE vault ADD COLUMN role_manager text NULL;

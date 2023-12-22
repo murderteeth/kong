@@ -4,3 +4,5 @@ ALTER TABLE vault DROP COLUMN full_profit_unlock_date;
 ALTER TABLE vault DROP COLUMN last_profit_update;
 ALTER TABLE vault DROP COLUMN total_idle;
 ALTER TABLE vault DROP COLUMN minimum_total_idle;
+ALTER TABLE vault DROP COLUMN accountant;
+ALTER TABLE vault DROP COLUMN role_manager;
