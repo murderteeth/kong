@@ -46,6 +46,28 @@ make dev
 **down** - `yarn workspace db migrate down [-c count|...]`
 
 
+### how to baseline the production db in-flight
+We started using db-migrate after the db was already in production. But db-migrate doesn't provide support retro-fitting a production database with migrations. To get around this, we:
+
+- create a baseline migration that is only applied via `migrate up` in dev, `20231222031425-baseline`
+
+- in the production db, manually create the migrations table with
+```sql
+CREATE TABLE migrations (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  run_on TIMESTAMP NOT NULL
+);
+```
+
+- in the production db, manually insert a row into the migrations table for the baseline migration
+```sql
+INSERT INTO migrations (name, run_on) VALUES ('/20231222031425-baseline', CURRENT_TIMESTAMP);
+```
+
+This way production thinks it was migrated starting from the baseline and handles future migrations normally.
+
+
 ## workspace
 ### packages
 `ingest` - etl logic
