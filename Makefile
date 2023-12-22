@@ -16,7 +16,7 @@ dev:
 	@tmux send-keys -t devenv:0.0 'yarn workspace web dev' C-m
 	@tmux send-keys -t devenv:0.1 'yarn workspace ingest dev' C-m
 	@tmux send-keys -t devenv:0.2 'yarn workspace terminal dev' C-m
-	@tmux send-keys -t devenv:0.3 'sleep 10 && PGPASSWORD=password psql --host=localhost --port=5432 --username=user --dbname=user' C-m
+	@tmux send-keys -t devenv:0.3 'sleep 4 && yarn workspace db migrate up && PGPASSWORD=password psql --host=localhost --port=5432 --username=user --dbname=user' C-m
 
 	@tmux selectp -t 2
 	@tmux attach-session -t devenv

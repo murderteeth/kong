@@ -24,13 +24,15 @@ export class VaultExtractor__v3 implements Processor {
     const asset = await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
     const withdrawalQueue = await extractWithdrawalQueue(vault.chainId, vault.address, asOfBlockNumber)
 
-    const update = {
+    const update = types.VaultSchema.safeParse({
       ...vault,
       ...registration,
       ...fields,
       ...asset,
       asOfBlockNumber
-    } as types.Vault
+    })
+
+    if(!update.success) throw new Error(update.error.errors.join(', '))
 
     await this.queues[mq.q.load].add(mq.job.load.erc20, {
       chainId: vault.chainId,
@@ -48,7 +50,7 @@ export class VaultExtractor__v3 implements Processor {
       decimals: fields.decimals
     })
 
-    await this.queues[mq.q.load].add(mq.job.load.vault, update)
+    await this.queues[mq.q.load].add(mq.job.load.vault, update.data)
 
     await this.queues[mq.q.load].add(mq.job.load.withdrawalQueue,
       { batch: withdrawalQueue.map((strategyAddress, queueIndex) => ({
@@ -94,8 +96,8 @@ export async function extractRegistration(vault: types.Vault) {
   } as types.Vault
 }
 
-async function extractFields(vault: types.Vault) {
-  const multicallResult = await rpcs.next(vault.chainId).multicall({ contracts: [
+export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
+  const multicallResult = await rpcs.next(vault.chainId, blockNumber).multicall({ contracts: [
     {
       address: vault.address, functionName: 'name',
       abi: parseAbi(['function name() returns (string)'])
@@ -120,51 +122,50 @@ async function extractFields(vault: types.Vault) {
       address: vault.address, functionName: 'totalDebt',
       abi: parseAbi(['function totalDebt() returns (uint256)'])
     },
-
     {
-      address: vault.address, functionName: 'lockedProfitDegradation',
-      abi: parseAbi(['function lockedProfitDegradation() returns (uint256)'])
-    },
-
-
-    {
-      address: vault.address, functionName: 'availableDepositLimit',
-      abi: parseAbi(['function availableDepositLimit() returns (uint256)'])
+      address: vault.address, functionName: 'totalIdle',
+      abi: parseAbi(['function totalIdle() returns (uint256)'])
     },
     {
-      address: vault.address, functionName: 'performanceFee',
-      abi: parseAbi(['function performanceFee() returns (uint256)'])
+      address: vault.address, functionName: 'minimum_total_idle',
+      abi: parseAbi(['function minimum_total_idle() returns (uint256)'])
     },
     {
-      address: vault.address, functionName: 'managementFee',
-      abi: parseAbi(['function managementFee() returns (uint256)'])
-    },
-
-    {
-      address: vault.address, functionName: 'debtRatio',
-      abi: parseAbi(['function debtRatio() returns (uint256)'])
+      address: vault.address, functionName: 'profitMaxUnlockTime',
+      abi: parseAbi(['function profitMaxUnlockTime() returns (uint256)'])
     },
     {
-      address: vault.address, functionName: 'depositLimit',
-      abi: parseAbi(['function depositLimit() returns (uint256)'])
+      address: vault.address, functionName: 'profitUnlockingRate',
+      abi: parseAbi(['function profitUnlockingRate() returns (uint256)'])
+    },
+    {
+      address: vault.address, functionName: 'fullProfitUnlockDate',
+      abi: parseAbi(['function fullProfitUnlockDate() returns (uint256)'])
+    },
+    {
+      address: vault.address, functionName: 'lastProfitUpdate',
+      abi: parseAbi(['function lastProfitUpdate() returns (uint256)'])
+    },    
+    {
+      address: vault.address, functionName: 'deposit_limit',
+      abi: parseAbi(['function deposit_limit() returns (uint256)'])
     }
-  ]})
+  ], blockNumber })
 
   return {
     name: multicallResult[0].result,
     symbol: multicallResult[1].result,
     decimals: multicallResult[2].result,
-    totalAssets: multicallResult[3].result,
-    apiVersion: multicallResult[4].result || multicallResult[5].result || '0.0.0',
-    assetAddress: multicallResult[6].result || multicallResult[7].result,
-    // governance: multicallResult[8].result,
-    // availableDepositLimit: multicallResult[9].result,
-    // performanceFee: multicallResult[10].result,
-    // managementFee: multicallResult[11].result,
-    // lockedProfitDegradation: multicallResult[12].result || multicallResult[13].result,
-    // totalDebt: multicallResult[14].result,
-    // debtRatio: multicallResult[15].result,
-    // depositLimit: multicallResult[16].result
+    assetAddress: multicallResult[3].result,
+    totalAssets: multicallResult[4].result,
+    totalDebt: multicallResult[5].result,
+    totalIdle: multicallResult[6].result,
+    minimumTotalIdle: multicallResult[7].result,
+    profitMaxUnlockTime: multicallResult[8].result,
+    profitUnlockingRate: multicallResult[9].result,
+    fullProfitUnlockDate: multicallResult[10].result,
+    lastProfitUpdate: multicallResult[11].result,
+    depositLimit: multicallResult[12].result
   } as types.Vault
 }
 

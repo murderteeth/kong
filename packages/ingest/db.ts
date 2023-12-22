@@ -4,7 +4,7 @@ import { Pool, types as pgTypes } from 'pg'
 // Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
 
-// Convert bigtin (OID 20) to BigInt
+// Convert bigint (OID 20) to BigInt
 pgTypes.setTypeParser(20, BigInt)
 
 // Convert timestamptz (OID 1184) to seconds
@@ -108,6 +108,8 @@ export async function getSparkline(chainId: number, address: string, type: strin
 }
 
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {
+  const timestampConversionExceptions = [ 'profit_max_unlock_time' ]
+
   const fields = Object.keys(data).map(key => 
     strings.camelToSnake(key)
   ) as string[]
@@ -115,7 +117,7 @@ export function toUpsertSql(table: string, pk: string, data: any, where?: string
   const columns = fields.join(', ')
 
   const values = fields.map((field, index) => 
-    (field.endsWith('timestamp') || field.endsWith('time')) 
+    (field.endsWith('timestamp') || field.endsWith('time') && !timestampConversionExceptions.includes(field)) 
     ? `to_timestamp($${index + 1}::double precision)`
     : `$${index + 1}`
   ).join(', ')
