@@ -22,9 +22,8 @@ export class VaultExtractor__v3 implements Processor {
     const registration = await getRegistration(vault) ?? await extractRegistration(vault)
     const fields = await extractFields(vault)
     const fees = await extractFeesBps({...vault, ...fields} as types.Vault)
-
-    const asset = await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
-    const withdrawalQueue = await extractWithdrawalQueue(vault.chainId, vault.address, asOfBlockNumber)
+    const asset = await getAsset(vault) ?? await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
+    const defaultQueue = await extractDefaultQueue({...vault, ...registration})
 
     const update = types.VaultSchema.safeParse({
       ...vault,
@@ -56,22 +55,12 @@ export class VaultExtractor__v3 implements Processor {
     await this.queues[mq.q.load].add(mq.job.load.vault, update.data)
 
     await this.queues[mq.q.load].add(mq.job.load.withdrawalQueue,
-      { batch: withdrawalQueue.map((strategyAddress, queueIndex) => ({
+      { batch: defaultQueue.map((strategyAddress, queueIndex) => ({
         chainId: vault.chainId,
         vaultAddress: vault.address,
         queueIndex, strategyAddress, asOfBlockNumber
       })) as types.WithdrawalQueueItem[]
     })
-
-    for(const strategy of withdrawalQueue) {
-      await this.queues[mq.q.extract].add(mq.job.extract.strategy, {
-        chainId: vault.chainId,
-        address: strategy,
-        vaultAddress: vault.address,
-        withdrawalQueueIndex: withdrawalQueue.indexOf(strategy),
-        asOfBlockNumber
-      } as types.Strategy)
-    }
   }
 }
 
@@ -161,6 +150,10 @@ export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
     {
       address: vault.address, functionName: 'role_manager',
       abi: parseAbi(['function role_manager() returns (address)'])
+    },
+    {
+      address: vault.address, functionName: 'isShutdown',
+      abi: parseAbi(['function isShutdown() returns (bool)'])
     }
   ], blockNumber })
 
@@ -179,7 +172,8 @@ export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
     lastProfitUpdate: multicallResult[11].result,
     depositLimit: multicallResult[12].result,
     accountant: multicallResult[13].result,
-    roleManager: multicallResult[14].result
+    roleManager: multicallResult[14].result,
+    isShutdown: multicallResult[15].result
   } as types.Vault
 }
 
@@ -217,17 +211,25 @@ export async function extractFeesBps(vault: types.Vault, blockNumber?: bigint) {
   }
 }
 
-async function extractAsset(chainId: number, address: `0x${string}`) {
-  const result = await rpcs.next(chainId).multicall({ contracts: [
+export async function getAsset(vault: types.Vault) {
+  return await firstRow(
+    `SELECT asset_name as "assetName", asset_symbol as "assetSymbol"
+    FROM vault WHERE chain_id = $1 AND address = $2`,
+    [vault.chainId, vault.address]
+  )
+}
+
+export async function extractAsset(chainId: number, address: `0x${string}`, blockNumber?: bigint) {
+  const result = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     {
       address, functionName: 'name',
-      abi: parseAbi(['function name() returns (string)'])
+      abi: parseAbi(['function name() view returns (string)'])
     },
     {
       address, functionName: 'symbol',
-      abi: parseAbi(['function symbol() returns (string)'])
+      abi: parseAbi(['function symbol() view returns (string)'])
     }
-  ]})
+  ], blockNumber })
 
   return {
     assetName: result[0].result,
@@ -235,31 +237,12 @@ async function extractAsset(chainId: number, address: `0x${string}`) {
   }
 }
 
-
-export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const results = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
-    { args: [0n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [1n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [2n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [3n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [4n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [5n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [6n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [7n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [8n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [9n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [10n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [11n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [12n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [13n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [14n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [15n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [16n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [17n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [18n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-    { args: [19n], address, functionName: 'withdrawalQueue', abi: parseAbi(['function withdrawalQueue(uint256) returns (address)']) },
-  ], blockNumber})
-
-  return results.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
-  .map(result => result.result as `0x${string}`)
+export async function extractDefaultQueue(vault: types.Vault, blockNumber?: bigint) {
+  if(vault.type === 'strategy') return []
+  return await rpcs.next(vault.chainId, blockNumber).readContract({
+    address: vault.address,
+    abi: parseAbi(['function get_default_queue() view returns (address[])']),
+    functionName: 'get_default_queue',
+    blockNumber
+  })
 }

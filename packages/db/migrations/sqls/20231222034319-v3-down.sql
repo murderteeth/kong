@@ -6,3 +6,5 @@ ALTER TABLE vault DROP COLUMN total_idle;
 ALTER TABLE vault DROP COLUMN minimum_total_idle;
 ALTER TABLE vault DROP COLUMN accountant;
 ALTER TABLE vault DROP COLUMN role_manager;
+ALTER TABLE vault DROP COLUMN emergency_shutdown;
+ALTER TABLE vault DROP COLUMN is_shutdown;

@@ -145,6 +145,10 @@ async function extractFields(vault: types.Vault) {
     {
       address: vault.address, functionName: 'depositLimit',
       abi: parseAbi(['function depositLimit() returns (uint256)'])
+    },
+    {
+      address: vault.address, functionName: 'emergencyShutdown',
+      abi: parseAbi(['function emergencyShutdown() returns (bool)'])
     }
   ]})
 
@@ -162,7 +166,8 @@ async function extractFields(vault: types.Vault) {
     lockedProfitDegradation: multicallResult[12].result || multicallResult[13].result,
     totalDebt: multicallResult[14].result,
     debtRatio: multicallResult[15].result,
-    depositLimit: multicallResult[16].result
+    depositLimit: multicallResult[16].result,
+    emergencyShutdown: multicallResult[17].result
   } as types.Vault
 }
 

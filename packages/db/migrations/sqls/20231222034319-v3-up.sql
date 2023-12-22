@@ -6,3 +6,5 @@ ALTER TABLE vault ADD COLUMN total_idle numeric NULL;
 ALTER TABLE vault ADD COLUMN minimum_total_idle numeric NULL;
 ALTER TABLE vault ADD COLUMN accountant text NULL;
 ALTER TABLE vault ADD COLUMN role_manager text NULL;
+ALTER TABLE vault ADD COLUMN emergency_shutdown boolean NULL;
+ALTER TABLE vault ADD COLUMN is_shutdown boolean NULL;

@@ -77,6 +77,8 @@ export const VaultSchema = z.object({
   lastProfitUpdate: z.bigint().optional(),
   accountant: zaddress.optional(),
   roleManager: zaddress.optional(),
+  emergencyShutdown: z.boolean().optional(),
+  isShutdown: z.boolean().optional(),
   activationBlockTime: z.bigint().optional(),
   activationBlockNumber: z.bigint().optional(),
   asOfBlockNumber: z.bigint()
