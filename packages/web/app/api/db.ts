@@ -131,6 +131,7 @@ export async function getVaults(where: string, values: any[]) {
   SELECT
     v.chain_id as "chainId",
     v.address, 
+    v.type,
     v.api_version as "apiVersion",
     v.apetax_type as "apetaxType",
     v.apetax_status as "apetaxStatus",
@@ -163,11 +164,11 @@ export async function getVaults(where: string, values: any[]) {
     v.activation_block_time as "activationBlockTime",
     v.activation_block_number as "activationBlockNumber",
     v.as_of_block_number as "asOfBlockNumber",
-    withdrawal_queue_agg.results AS "withdrawalQueue",
+    COALESCE(withdrawal_queue_agg.results, '[]'::json) AS "withdrawalQueue",
     COALESCE(tvl_agg.results, '[]'::json) AS "tvlSparkline",
     COALESCE(apy_agg.results, '[]'::json) AS "apySparkline"
   FROM vault_gql v
-  JOIN withdrawal_queue_agg 
+  LEFT JOIN withdrawal_queue_agg 
     ON v.chain_id = withdrawal_queue_agg.chain_id 
     AND v.address = withdrawal_queue_agg.address
   LEFT JOIN tvl_agg

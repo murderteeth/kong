@@ -3,7 +3,7 @@ import { chains, dates, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { getLatestBlock, getVaultBlockPointers, setBlockPointer } from '../db'
-import { parseAbi } from 'viem'
+import { parseAbi, parseAbiItem } from 'viem'
 import { max } from 'lib/math'
 import { estimateHeight } from 'lib/blocks'
 
@@ -36,7 +36,8 @@ export default class VaultFanout implements Processor {
         pointer.address,
         parseAbi([
           `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 debtPaid, uint256 totalGain, uint256 totalLoss, uint256 totalDebt, uint256 debtAdded, uint256 debtRatio)`,
-          `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
+          `event Transfer(address indexed sender, address indexed receiver, uint256 value)`,
+          `event Reported(uint256 profit, uint256 loss, uint256 protocolFees, uint256 performanceFees)`
         ]),
         from, to)
 

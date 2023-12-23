@@ -95,6 +95,15 @@ export async function getErc20(chainId: number, address: string) {
   }
 }
 
+export async function getApiVersion(vault: types.Vault) {
+  const result = await firstRow(`
+    SELECT api_version as "apiVersion" FROM vault WHERE chain_id = $1 AND address = $2
+    UNION SELECT api_version as "apiVersion" FROM strategy WHERE chain_id = $1 AND address = $2;`,
+    [vault.chainId, vault.address]
+  )
+  return result?.apiVersion as string | undefined
+}
+
 export async function getSparkline(chainId: number, address: string, type: string) {
   const result = await db.query(`
     SELECT

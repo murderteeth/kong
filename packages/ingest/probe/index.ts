@@ -177,19 +177,19 @@ export default class Probe implements Processor {
 
   private async probeStats() {
     const networkCounts = chains
-    .map(chain => `(SELECT count(*) FROM vault WHERE chain_id = ${chain.id}) AS network_${chain.id}`)
+    .map(chain => `(SELECT count(*) FROM vault WHERE chain_id = ${chain.id})::int AS network_${chain.id}`)
     .join(', ')
 
     const query = `
     WITH counts AS ( SELECT 
-      (SELECT count(*) FROM vault) AS total,
-      (SELECT count(*) FROM vault WHERE registry_status = 'endorsed') AS endorsed,
-      (SELECT count(*) FROM vault WHERE registry_status = 'experimental') AS experimental,
+      (SELECT count(*) FROM vault)::int AS total,
+      (SELECT count(*) FROM vault WHERE registry_status = 'endorsed')::int AS endorsed,
+      (SELECT count(*) FROM vault WHERE registry_status = 'experimental')::int AS experimental,
       ${networkCounts},
-      (SELECT count(*) FROM vault WHERE apetax_status = 'stealth') AS apetax_stealth,
-      (SELECT count(*) FROM vault WHERE apetax_status = 'new') AS apetax_new,
-      (SELECT count(*) FROM vault WHERE apetax_status = 'active') AS apetax_active,
-      (SELECT count(*) FROM vault WHERE apetax_status = 'withdraw') AS apetax_withdraw
+      (SELECT count(*) FROM vault WHERE apetax_status = 'stealth')::int AS apetax_stealth,
+      (SELECT count(*) FROM vault WHERE apetax_status = 'new')::int AS apetax_new,
+      (SELECT count(*) FROM vault WHERE apetax_status = 'active')::int AS apetax_active,
+      (SELECT count(*) FROM vault WHERE apetax_status = 'withdraw')::int AS apetax_withdraw
     )
     SELECT * FROM counts;`
 

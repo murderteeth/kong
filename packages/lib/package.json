@@ -6,7 +6,7 @@
   "scripts": {
     "pretest": "docker compose up -d postgres && docker compose up -d redis && wait-on tcp:localhost:5432 && wait-on tcp:localhost:6379 && sleep 6 && yarn workspace db migrate up",
     "test": "mocha; exit_code=$?; npm run posttest; exit $exit_code",
-    "posttest": "docker compose down"
+    "posttest": "echo 'docker compose down' && docker compose down"
   },
   "dependencies": {
     "bullmq": "^4.7.3",

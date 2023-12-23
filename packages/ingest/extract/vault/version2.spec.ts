@@ -3,7 +3,9 @@ import { mainnet } from 'viem/chains'
 import { addresses } from '../../test.fixture'
 import { extractFees, extractWithdrawalQueue } from './version2'
 
-describe('vault', function() {
+describe('vault v2', function() {
+  this.timeout(10_000)
+
   it('extracts withdrawal queue', async function() {
     const q = await extractWithdrawalQueue(mainnet.id, addresses.v2.yvweth, 18530014n)
     expect(q).to.be.an('array')

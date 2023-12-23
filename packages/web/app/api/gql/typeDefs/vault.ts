@@ -4,6 +4,7 @@ export default gql`
 type Vault {
   chainId: Int!
   address: String!
+  type: String!
   apiVersion: String!
   apetaxType: String
   apetaxStatus: String
@@ -25,6 +26,7 @@ type Vault {
   assetPriceUsd: Float
   assetPriceSource: String
   withdrawalQueue: [Strategy]
+  defaultQueue: [Vault]
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
   apyNet: Float

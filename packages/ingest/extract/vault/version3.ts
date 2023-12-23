@@ -1,10 +1,9 @@
-import { blocks, math, mq, types } from 'lib'
+import { blocks, mq, types } from 'lib'
 import { rpcs } from '../../rpcs'
-import { parseAbi, zeroAddress } from 'viem'
-import { estimateCreationBlock } from 'lib/blocks'
+import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
-import db, { firstRow } from '../../db'
+import { firstRow } from '../../db'
 
 export class VaultExtractor__v3 implements Processor {
   queues: { [name: string]: Queue } = {}

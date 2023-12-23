@@ -1,6 +1,7 @@
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import { Handler } from '..'
+import { HarvestSchema } from 'lib/types'
 
 export class VaultHandler implements Handler {
   queues: { [key: string]: Queue } = {}
@@ -15,32 +16,54 @@ export class VaultHandler implements Handler {
   }
 
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
-    const harvests = logs.filter(log => log.eventName === 'StrategyReported')
-    console.log('📋', chainId, address, 'harvests', harvests.length)
-    await this.handleHarvests(chainId, address, harvests)
+    const harvestLogs__v2 = logs.filter(log => log.eventName === 'StrategyReported' && log.args.gain !== undefined)
+    const harvests__v2 = this.logs2Harvests__v2(chainId, address, harvestLogs__v2)
+    console.log('📋', chainId, address, 'harvests__v2', harvests__v2.length)
+    await this.handleHarvests(harvests__v2)
+
+    const harvestLogs__v3 = logs.filter(log => log.eventName === 'Reported')
+    const harvests__v3 = this.logs2Harvests__v3(chainId, address, harvestLogs__v3)
+    console.log('📋', chainId, address, 'harvests__v3', harvests__v3.length)
+    await this.handleHarvests(harvests__v3)
 
     const transfers = logs.filter(log => log.eventName === 'Transfer')
     console.log('📋', chainId, address, 'transfers', transfers.length)
     await this.handleTransfers(chainId, address, transfers)
   }
 
-  private async handleHarvests(chainId: number, address: string, logs: any[]) {
+  private logs2Harvests__v2(chainId: number, address: string, logs: any[]) {
+    return HarvestSchema.array().parse(logs.map(log => ({
+      chainId,
+      address: log.args.strategy.toString(),
+      profit: log.args.gain.toString(),
+      loss: log.args.loss.toString(),
+      totalProfit: log.args.totalGain.toString(),
+      totalLoss: log.args.totalLoss.toString(),
+      totalDebt: log.args.totalDebt.toString(),
+      blockNumber: log.blockNumber.toString(),
+      blockIndex: log.logIndex,
+      transactionHash: log.transactionHash
+    })))
+  }
+
+  private logs2Harvests__v3(chainId: number, address: string, logs: any[]) {
+    return HarvestSchema.array().parse(logs.map(log => ({
+      chainId,
+      address,
+      profit: log.args.profit.toString(),
+      loss: log.args.loss.toString(),
+      protocolFees: log.args.protocolFees.toString(),
+      performanceFees: log.performanceFees.toString(),
+      blockNumber: log.blockNumber.toString(),
+      blockIndex: log.logIndex,
+      transactionHash: log.transactionHash
+    })))
+  }
+
+  private async handleHarvests(harvests: types.Harvest[]) {
     const batchSize = 250
     const batch = [] as any[]
-    for(const log of logs) {
-      const harvest = {
-        chainId,
-        address: log.args.strategy.toString(),
-        profit: log.args.gain.toString(),
-        loss: log.args.loss.toString(),
-        totalProfit: log.args.totalGain.toString(),
-        totalLoss: log.args.totalLoss.toString(),
-        totalDebt: log.args.totalDebt.toString(),
-        blockNumber: log.blockNumber.toString(),
-        blockIndex: log.logIndex,
-        transactionHash: log.transactionHash
-      }
-
+    for(const harvest of harvests) {
       batch.push(harvest)
 
       this.queues[mq.q.extract].add(mq.job.extract.harvest, harvest, {

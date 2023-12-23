@@ -166,23 +166,29 @@ export interface RiskGroup {
   strategies: `0x${string}` []
 }
 
-export interface Harvest {
-  chainId: number
-  address: `0x${string}`
-  profit: bigint
-  profitUsd?: number
-  loss: bigint
-  lossUsd?: number
-  totalProfit: bigint
-  totalProfitUsd?: number
-  totalLoss: bigint
-  totalLossUsd?: number
-  totalDebt?: bigint
-  blockNumber: bigint
-  blockIndex: number
-  blockTime: bigint
-  transactionHash: `0x${string}`
-}
+export const HarvestSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  profit: z.bigint(),
+  profitUsd: z.number().optional(),
+  loss: z.bigint(),
+  lossUsd: z.number().optional(),
+  totalProfit: z.bigint(),
+  totalProfitUsd: z.number().optional(),
+  totalLoss: z.bigint(),
+  totalLossUsd: z.number().optional(),
+  totalDebt: z.bigint().optional(),
+  protocolFees: z.bigint().optional(),
+  protocolFeesUsd: z.number().optional(),
+  performanceFees: z.bigint().optional(),
+  performanceFeesUsd: z.number().optional(),
+  blockNumber: z.bigint(),
+  blockIndex: z.number(),
+  blockTime: z.bigint(),
+  transactionHash: zaddress
+})
+
+export type Harvest = z.infer<typeof HarvestSchema>
 
 export interface SparklinePoint {
   chainId: number

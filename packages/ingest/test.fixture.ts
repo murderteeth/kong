@@ -41,8 +41,8 @@ export const addresses = {
     registry: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500' as `0x${string}`,
     yvusdca: '0xA013Fbd4b711f9ded6fB09C1c0d358E2FbC2EAA0' as `0x${string}`,
     usdc: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' as `0x${string}`,
-    compoundV3UsdcLender: '0xb1403908F772E4374BB151F7C67E88761a0Eb4f1' as `0x${string}`,
     aaveV3UsdcLender: '0xdB92B89Ca415c0dab40Dc96E99Fc411C08F20780' as `0x${string}`,
+    compoundV3UsdcLender: '0xb1403908F772E4374BB151F7C67E88761a0Eb4f1' as `0x${string}`,
     stargateUsdcStaker: '0x8BBa7AFd0f9B1b664C161EC31d812a8Ec15f7e1a' as `0x${string}`
   }
 }

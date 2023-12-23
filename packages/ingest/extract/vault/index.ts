@@ -1,9 +1,8 @@
-import { mq, multicall3, types } from 'lib'
-import { parseAbi, zeroAddress } from 'viem'
+import { multicall3, types } from 'lib'
+import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
-import { Queue } from 'bullmq'
 import { rpcs } from '../../rpcs'
-import { firstRow } from '../../db'
+import { getApiVersion } from '../../db'
 import { compare } from 'compare-versions'
 import { VaultExtractor__v3 } from './version3'
 import { VaultExtractor__v2 } from './version2'
@@ -42,16 +41,8 @@ export class VaultExtractor implements Processor {
   }
 }
 
-export async function getApiVersion(vault: types.Vault) {
-  const result = await firstRow(
-    'SELECT api_version as "apiVersion" FROM vault WHERE chain_id = $1 AND address = $2', 
-    [vault.chainId, vault.address]
-  )
-  return result?.apiVersion as string | undefined
-}
-
-export async function extractApiVersion(vault: types.Vault) {
-  const multicallResult = await rpcs.next(vault.chainId).multicall({ contracts: [
+export async function extractApiVersion(vault: types.Vault, blockNumber?: bigint) {
+  const multicallResult = await rpcs.next(vault.chainId, blockNumber).multicall({ contracts: [
     {
       address: vault.address, functionName: 'apiVersion',
       abi: parseAbi(['function apiVersion() returns (string)'])
@@ -60,7 +51,7 @@ export async function extractApiVersion(vault: types.Vault) {
       address: vault.address, functionName: 'api_version',
       abi: parseAbi(['function api_version() returns (string)'])
     }
-  ]})
+  ], blockNumber })
 
   if(multicallResult[0].status === 'success') return multicallResult[0].result as string
   if(multicallResult[1].status === 'success') return multicallResult[1].result as string

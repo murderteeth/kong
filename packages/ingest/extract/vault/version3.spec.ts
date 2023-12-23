@@ -5,7 +5,7 @@ import { extractAsset, extractDefaultQueue, extractFeesBps, extractFields, extra
 import { types } from 'lib'
 import db, { toUpsertSql } from '../../db'
 
-describe.only('vaults v3', function() {
+describe('vault v3', function() {
   this.timeout(10_000)
   const block = 51413288n
 
