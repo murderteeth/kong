@@ -33,7 +33,14 @@ async function action() {
   if (confirm || tool === 'extract-vault') {
     switch(tool) {
       case 'extract-vault': {
-        const { address } = await prompts([
+        const { chainId, address } = await prompts([
+          {
+            type: 'number',
+            name: 'chainId',
+            message: 'chainId',
+            initial: '1',
+            validate: (value) => `\d+`.match(value) ? true : 'must be integer'
+          },
           {
             type: 'text',
             name: 'address',
@@ -44,7 +51,7 @@ async function action() {
         ])
 
         await rpcs.up()
-        const multicall = await rpcs.next(1).multicall({ contracts: [
+        const multicall = await rpcs.next(chainId).multicall({ contracts: [
           {
             address, functionName: 'apiVersion',
             abi: parseAbi(['function apiVersion() returns (string)'])
@@ -58,7 +65,7 @@ async function action() {
 
         const queue = mq.queue(mq.q.extract)
         await queue.add(mq.job.extract.vault, {
-          chainId: 1,
+          chainId: chainId,
           type: 'vault',
           registryStatus: 'endorsed',
           address,
