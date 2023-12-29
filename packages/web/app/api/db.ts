@@ -1,4 +1,9 @@
-import { Pool } from 'pg'
+import { Pool, types as pgTypes } from 'pg'
+
+// Convert timestamptz (OID 1184) to seconds
+pgTypes.setTypeParser(1184, (stringValue) => {
+  return BigInt(Math.floor(Date.parse(stringValue) / 1000))
+})
 
 const db = new Pool({
   host: process.env.POSTGRES_HOST || 'localhost',
@@ -86,6 +91,30 @@ export async function getVaults(where: string, values: any[]) {
     GROUP BY v.chain_id, v.address
   ),
 
+  default_queue_agg AS (
+    SELECT
+      v.chain_id,
+      v.address,
+      json_agg(json_build_object(
+        'chainId', s.chain_id,
+        'address', s.address,
+        'name', s.name,
+        'apiVersion', s.api_version,
+        'vaultAddress', v.address,
+        'netApy', s.apy_net,
+        'activationBlockTime', FLOOR(EXTRACT(EPOCH FROM s.activation_block_time)),
+        'activationBlockNumber', s.activation_block_number,
+        'asOfBlockNumber', s.as_of_block_number,
+        'queueIndex', wq.queue_index
+      ) ORDER BY wq.chain_id, wq.vault_address, wq.queue_index ASC
+      ) AS results
+    FROM vault v
+    JOIN withdrawal_queue wq ON v.chain_id = wq.chain_id AND v.address = wq.vault_address
+    JOIN vault_gql s ON wq.chain_id = s.chain_id AND wq.strategy_address = s.address
+    ${where}
+    GROUP BY v.chain_id, v.address
+  ),
+
   tvl_agg AS (
     SELECT
       v.chain_id,
@@ -95,7 +124,7 @@ export async function getVaults(where: string, values: any[]) {
         'address', s.address,
         'type', s.type,
         'value', s.value,
-        'time', s.time
+        'time', FLOOR(EXTRACT(EPOCH FROM s.time))
       ) ORDER BY s.time ASC
       ) AS results
     FROM vault v
@@ -116,7 +145,7 @@ export async function getVaults(where: string, values: any[]) {
         'address', s.address,
         'type', s.type,
         'value', s.value,
-        'time', s.time
+        'time', FLOOR(EXTRACT(EPOCH FROM s.time))
       ) ORDER BY s.time ASC
       ) AS results
     FROM vault v
@@ -164,10 +193,14 @@ export async function getVaults(where: string, values: any[]) {
     v.activation_block_time as "activationBlockTime",
     v.activation_block_number as "activationBlockNumber",
     v.as_of_block_number as "asOfBlockNumber",
+    COALESCE(default_queue_agg.results, '[]'::json) AS "defaultQueue",
     COALESCE(withdrawal_queue_agg.results, '[]'::json) AS "withdrawalQueue",
     COALESCE(tvl_agg.results, '[]'::json) AS "tvlSparkline",
     COALESCE(apy_agg.results, '[]'::json) AS "apySparkline"
   FROM vault_gql v
+  LEFT JOIN default_queue_agg 
+    ON v.chain_id = default_queue_agg.chain_id 
+    AND v.address = default_queue_agg.address
   LEFT JOIN withdrawal_queue_agg 
     ON v.chain_id = withdrawal_queue_agg.chain_id 
     AND v.address = withdrawal_queue_agg.address

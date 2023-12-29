@@ -3,9 +3,10 @@ import { chains, dates, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { getLatestBlock, getVaultBlockPointers, setBlockPointer } from '../db'
-import { parseAbi, parseAbiItem } from 'viem'
+import { parseAbi } from 'viem'
 import { max } from 'lib/math'
 import { estimateHeight } from 'lib/blocks'
+import { compare } from 'compare-versions'
 
 export default class VaultFanout implements Processor {
   queues: { [key: string]: Queue } = {}
@@ -31,15 +32,18 @@ export default class VaultFanout implements Processor {
           address: pointer.address
         })
 
-        await this.fanoutExtract(
-        chain.id,
-        pointer.address,
-        parseAbi([
+        console.log('pointer.apiVersion', pointer.apiVersion)
+        const events = compare(pointer.apiVersion, '3.0.0', '>=') 
+        ? parseAbi([
+          `event Reported(uint256 profit, uint256 loss, uint256 protocolFees, uint256 performanceFees)`,
+          `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
+        ])
+        : parseAbi([
           `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 debtPaid, uint256 totalGain, uint256 totalLoss, uint256 totalDebt, uint256 debtAdded, uint256 debtRatio)`,
-          `event Transfer(address indexed sender, address indexed receiver, uint256 value)`,
-          `event Reported(uint256 profit, uint256 loss, uint256 protocolFees, uint256 performanceFees)`
-        ]),
-        from, to)
+          `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
+        ])
+
+        await this.fanoutExtract(chain.id, pointer.address, events, from, to)
 
         await setBlockPointer(chain.id, pointer.address, to)       
       }

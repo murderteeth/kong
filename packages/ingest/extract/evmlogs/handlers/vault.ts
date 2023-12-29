@@ -53,7 +53,7 @@ export class VaultHandler implements Handler {
       profit: log.args.profit.toString(),
       loss: log.args.loss.toString(),
       protocolFees: log.args.protocolFees.toString(),
-      performanceFees: log.performanceFees.toString(),
+      performanceFees: log.args.performanceFees.toString(),
       blockNumber: log.blockNumber.toString(),
       blockIndex: log.logIndex,
       transactionHash: log.transactionHash

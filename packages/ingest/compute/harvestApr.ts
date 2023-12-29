@@ -57,7 +57,7 @@ export async function _compute(latest: types.Harvest, previous: types.Harvest) {
   ? math.div(-loss, previous.totalDebt)
   : math.div(profit, previous.totalDebt)
 
-  const periodInHours = Number((latest.blockTime - previous.blockTime) / (60n * 60n)) || 1
+  const periodInHours = Number(((latest.blockTime || 0n) - (previous.blockTime || 0n)) / (60n * 60n)) || 1
   const hoursInOneYear = 24 * 365
   const gross = performance * hoursInOneYear / periodInHours
 

@@ -6,6 +6,6 @@ type SparklineItem {
   address: String!
   type: String!
   value: Float!
-  time: String!
+  time: Int!
 }
 `

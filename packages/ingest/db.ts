@@ -63,6 +63,7 @@ export async function getVaultBlockPointers(chainId: number) {
   const result = await db.query(`
     SELECT 
       v.address, 
+      v.api_version as "apiVersion",
       COALESCE(v.activation_block_number, 0) AS "activationBlockNumber",
       COALESCE(p.block_number, 0) AS "blockNumber"
     FROM vault v
@@ -72,6 +73,7 @@ export async function getVaultBlockPointers(chainId: number) {
   `, [chainId])
   return result.rows.map(r => ({
     address: r.address,
+    apiVersion: r.apiVersion,
     activationBlockNumber: BigInt(r.activationBlockNumber),
     blockNumber: BigInt(r.blockNumber)
   }))

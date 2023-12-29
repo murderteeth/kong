@@ -2,6 +2,9 @@
 
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react'
 import { DEFAULT_CONTEXT, DataContext, DataContextSchema } from './types'
+import useSWR from 'swr'
+
+const endpoint = process.env.NEXT_PUBLIC_GQL || '/api/gql'
 
 const STATUS_QUERY = `query Data {
   latestBlocks {
@@ -85,6 +88,11 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
       value
       time
     }
+    defaultQueue {
+      name
+      address
+      apyNet
+    }
     withdrawalQueue {
       name
       address
@@ -128,8 +136,6 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
 }`
 
 async function fetchData() {
-  const endpoint = process.env.NEXT_PUBLIC_GQL || '/api/gql'
-
   const statusResponsePromise = fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -168,19 +174,35 @@ export const useData = () => useContext(dataContext)
 export default function DataProvider({children}: {children: ReactNode}) {
   const [data, setData] = useState<DataContext>(DEFAULT_CONTEXT)
 
+  const { data: status } = useSWR(
+    `${endpoint}?status`,
+    (...args) => fetch(...args, { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        query: STATUS_QUERY
+      })
+    }).then(res => res.json()),
+    { refreshInterval: 10_000 }
+  )
+
+  const { data: vault } = useSWR(
+    `${endpoint}?vault`,
+    (...args) => fetch(...args, { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        query: VAULT_QUERY,
+        variables: { chainId: 137, address: '0xA013Fbd4b711f9ded6fB09C1c0d358E2FbC2EAA0' }
+      })
+    }).then(res => res.json()),
+    { refreshInterval: 10_000 }
+  )
+
   useEffect(() => {
-    let handle: NodeJS.Timeout
-    const fetchAndKeepFetching = async () => {
-      try {
-        const data = await fetchData()
-        setData(data)
-      } finally {
-        handle = setTimeout(fetchAndKeepFetching, 10_000)
-      }
-    }
-    fetchAndKeepFetching()
-    return () => clearTimeout(handle)
-  }, [setData])
+    setData({...DEFAULT_CONTEXT, ...vault?.data, ...status?.data})
+  }, [status, vault, setData])
+
 
   return <dataContext.Provider value={data}>{children}</dataContext.Provider>
 }

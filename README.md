@@ -15,6 +15,7 @@ make dev
 
 `graphql explorer ` - http://localhost:3000/api/gql
 
+
 ## requirements
 - node, yarn, make, tmux, docker, docker compose
 - ♥ for zoo animals
@@ -46,8 +47,8 @@ make dev
 **down** - `yarn workspace db migrate down [-c count|...]`
 
 
-### how to baseline the production db in-flight
-We started using db-migrate after the db was already in production. But db-migrate doesn't provide support retro-fitting a production database with migrations. To get around this, we:
+### how to baseline a production db in-flight
+We started using db-migrate after the db was already in production. But db-migrate doesn't provide support retro-fitting a production database with migrations. So here's what we did:
 
 - create a baseline migration that is only applied via `migrate up` in dev, `20231222031425-baseline`
 
@@ -109,10 +110,13 @@ timescale has to be manually installed on top of postgres in the render environm
 - logout, remove your ip from the Access Control panel
 
 
-### timescale cheats
+### timescale
 `hypertable size` - `SELECT hypertable_size('table name');`
 
 
 ### viem, https://viem.sh
 Kong uses viem to interface evms. Because viem is new and changing often, all of kong's package.json files are hardcoded with the same viem version. To upgrade viem, manually update all package/package.json files then run `yarn` from root.
 
+
+### the abomination 
+An abomination stalks the shadows of this project anon. An immense SQL query that must be refactored! It's a monster. It's a beast. It's a nightmare. It's a work in progress. It's a work of art. It's a work of fiction. It's a work of non-fiction. It's a work of non-fictional fiction. It's a work of fictional non-fiction. It's your quest. Your journey. Your epic. Will you prevail? Will you transcend?

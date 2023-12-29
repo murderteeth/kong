@@ -30,6 +30,7 @@
     "react-dom": "18.2.0",
     "react-responsive": "^9.0.2",
     "react-timeago": "^7.1.0",
+    "swr": "^2.2.4",
     "tailwind-scrollbar": "^3.0.5",
     "viem": "1.16.5"
   },

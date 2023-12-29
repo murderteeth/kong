@@ -25,8 +25,8 @@ type Vault {
   assetDescription: String
   assetPriceUsd: Float
   assetPriceSource: String
-  withdrawalQueue: [Strategy]
   defaultQueue: [Vault]
+  withdrawalQueue: [Strategy]
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
   apyNet: Float
@@ -38,8 +38,8 @@ type Vault {
   managementFee: Float
   performanceFee: Float
   governance: String
-  activationBlockTime: String
-  activationBlockNumber: String
-  asOfBlockNumber: String
+  activationBlockTime: BigInt
+  activationBlockNumber: BigInt
+  asOfBlockNumber: BigInt
 }
 `

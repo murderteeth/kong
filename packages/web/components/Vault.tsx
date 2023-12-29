@@ -48,7 +48,17 @@ export default function Vault() {
     <div className="flex items-center justify-between">
       <div className="text-sm">{'Withdrawal Queue'}</div>
     </div>
-    {vault.withdrawalQueue.map((strategy, index) => 
+    {vault.defaultQueue.length > 0 && vault.defaultQueue.map((strategy, index) => 
+      <div key={index} className="flex items-center justify-between">
+        <div className="text-sm">{strategy.name}</div>
+        <Frosty _key={`vault-tvl-${fPercent(strategy.apyNet)}`}
+          className={'text-sm'}>
+          {`APY ${fPercent(strategy.apyNet)}`}
+        </Frosty>
+      </div>
+    )}
+
+    {vault.withdrawalQueue.length > 0 && vault.withdrawalQueue.map((strategy, index) => 
       <div key={index} className="flex items-center justify-between">
         <div className="text-sm">{strategy.name}</div>
         <Frosty _key={`vault-tvl-${fPercent(strategy.netApr)}`}

@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+const bigIntStringNSchema = z.string().transform((str) => {
+  if (str.endsWith('n')) return BigInt(str.slice(0, -1))
+  return BigInt(str)
+})
+
 const LatestBlockSchema = z.object({
   chainId: z.number(),
   blockNumber: z.bigint({ coerce: true }),
@@ -10,10 +15,16 @@ const TVLSparklineSchema = z.object({
   value: z.number()
 })
 
-const WithdrawalQueueSchema = z.object({
+const QueueSchema_v2 = z.object({
   name: z.string(),
   address: z.string(),
   netApr: z.number()
+})
+
+const QueueSchema_v3 = z.object({
+  name: z.string(),
+  address: z.string(),
+  apyNet: z.number()
 })
 
 const APYSparklineSchema = z.object({
@@ -33,7 +44,8 @@ const VaultSchema = z.object({
   tvlSparkline: z.array(TVLSparklineSchema).default([]),
   apyNet: z.number().nullable().optional(),
   apySparkline: z.array(APYSparklineSchema).default([]),
-  withdrawalQueue: z.array(WithdrawalQueueSchema).default([])
+  defaultQueue: z.array(QueueSchema_v3).default([]),
+  withdrawalQueue: z.array(QueueSchema_v2).default([])
 })
 
 const TVLSchema = z.object({
@@ -42,13 +54,13 @@ const TVLSchema = z.object({
   low: z.number(),
   close: z.number(),
   period: z.string(),
-  time: z.number()
+  time: z.bigint().or(bigIntStringNSchema)
 })
 
 const APYSchema = z.object({
   average: z.number(),
   period: z.string(),
-  time: z.number()
+  time: z.bigint().or(bigIntStringNSchema)
 })
 
 const TransferSchema = z.object({
