@@ -40,26 +40,34 @@ export async function getLatestBlock(chainId: number) {
   return (result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function getBlockPointer(chainId: number, address: `0x${string}`) {
+export async function getAddressPointer(chainId: number, address: string) {
+  return await getBlockPointer(`${chainId}/${address}`)
+}
+
+export async function getBlockPointer(pointer: string) {
   const result = await db.query(`
     SELECT block_number
     FROM block_pointer
-    WHERE chain_id = $1 AND address = $2
-  `, [chainId, address])
+    WHERE pointer = $1
+  `, [pointer])
   return BigInt(result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function setBlockPointer(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  await db.query(`
-    INSERT INTO public.block_pointer (chain_id, address, block_number)
-    VALUES ($1, $2, $3)
-    ON CONFLICT (chain_id, address)
-    DO UPDATE SET
-      block_number = EXCLUDED.block_number;
-  `, [chainId, address, blockNumber])
+export async function setAddressPointer(chainId: number, address: string, blockNumber: bigint) {
+  await setBlockPointer(`${chainId}/${address}`, blockNumber)
 }
 
-export async function getVaultBlockPointers(chainId: number) {
+export async function setBlockPointer(pointer: string, blockNumber: bigint) {
+  await db.query(`
+    INSERT INTO public.block_pointer (pointer, block_number)
+    VALUES ($1, $2)
+    ON CONFLICT (pointer)
+    DO UPDATE SET
+      block_number = EXCLUDED.block_number;
+  `, [pointer, blockNumber])
+}
+
+export async function getVaultPointers(chainId: number) {
   const result = await db.query(`
     SELECT 
       v.address, 
@@ -68,12 +76,12 @@ export async function getVaultBlockPointers(chainId: number) {
       COALESCE(p.block_number, 0) AS "blockNumber"
     FROM vault v
     LEFT JOIN block_pointer p
-    ON v.chain_id = p.chain_id AND v.address = p.address
+    ON v.chain_id = split_part(p.address, '/', 1) AND v.address = split_part(p.address, '/', 2)
     WHERE v.chain_id = $1;
   `, [chainId])
   return result.rows.map(r => ({
-    address: r.address,
-    apiVersion: r.apiVersion,
+    address: r.address as string,
+    apiVersion: r.apiVersion as string,
     activationBlockNumber: BigInt(r.activationBlockNumber),
     blockNumber: BigInt(r.blockNumber)
   }))

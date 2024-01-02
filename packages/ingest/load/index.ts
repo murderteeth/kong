@@ -1,8 +1,9 @@
-import { mq, types } from 'lib'
+import { mq, strings, types } from 'lib'
 import db, { toUpsertSql } from '../db'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
+import { PoolClient } from 'pg'
 
 export default class Load implements Processor {
   worker?: Worker
@@ -108,48 +109,102 @@ export default class Load implements Processor {
   }
 }
 
-async function upsert(data: any, table: string, pk: string, where?: string) {
-  await db.query(
+export async function upsertAsOfBlock(data: any, table: string, pk: string[]) {
+  if(data.chainId == null) throw new Error('!data.chainId')
+  if(data.asOfBlockNumber == null) throw new Error('!data.asOfBlockNumber')
+  const asOfBlockNumber = BigInt(data.asOfBlockNumber)
+  delete data.asOfBlockNumber
+
+  const tablePk = pk.map(n => data[strings.snakeToCamel(n)]).join('/')
+  const pointerKey = (field: string) => `${table}/${tablePk}/${field}`
+  const fields = Object.keys(data).filter(k => !pk.includes(strings.camelToSnake(k)))
+
+  const client = await db.connect()
+  await client.query('BEGIN')
+
+  try {
+    const pointers = (await client.query(
+      `SELECT pointer as "key", block_number as "blockNumber" from block_pointer WHERE pointer = ANY($1)`, 
+      [fields.map(f => pointerKey(f))]
+    )).rows
+  
+    const pkfields = pk.reduce((fields, field) => ({ ...fields, [strings.snakeToCamel(field)]: data[strings.snakeToCamel(field)] }), {})
+    const freshValues: any = {}
+  
+    for(const field of fields) {
+      const pointer = pointers.find(p => String(p.key) === String(pointerKey(field)))
+      if(pointer && pointer.blockNumber > asOfBlockNumber) continue
+      freshValues[strings.snakeToCamel(field)] = data[field]
+    }
+  
+    if(Object.keys(freshValues).length === 0) return
+  
+    const update = { ...pkfields, ...freshValues }
+  
+    await client.query(
+      toUpsertSql(table, pk.join(', '), update),
+      Object.values(update)
+    )
+  
+    const pointerUpdates = Object.keys(freshValues).map((f: any) => ({
+      pointer: pointerKey(f),
+      blockNumber: asOfBlockNumber
+    }))
+
+    await upsertBatch(pointerUpdates, 'block_pointer', 'pointer', undefined, client)
+    await client.query('COMMIT')
+
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+export async function upsert(data: any, table: string, pk: string, where?: string, _client?: PoolClient) {
+  await (_client ?? db).query(
     toUpsertSql(table, pk, data, where),
     Object.values(data)
   )
 }
 
-async function upsertBatch(batch: any[], table: string, pk: string, where?: string) {
-  const client = await db.connect()
+export async function upsertBatch(batch: any[], table: string, pk: string, where?: string, _client?: PoolClient) {
+  const client = _client ?? await db.connect()
   try {
-    await client.query('BEGIN')
+    if(!_client) await client.query('BEGIN')
     for(const object of batch) {
       await client.query(
         toUpsertSql(table, pk, object, where),
         Object.values(object)
       )
     }
-    await client.query('COMMIT')
+    if(!_client) await client.query('COMMIT')
   } catch (error) {
-    await client.query('ROLLBACK')
+    if(!_client) await client.query('ROLLBACK')
     throw error
   } finally {
-    client.release()
+    if(!_client) client.release()
   }
 }
 
-async function replaceWithBatch(batch: any[], table: string, pk: string, where: string) {
-  const client = await db.connect()
+export async function replaceWithBatch(batch: any[], table: string, pk: string, where: string, _client?: PoolClient) {
+  const client = _client ?? await db.connect()
   try {
-    await client.query('BEGIN')
-    await client.query(`DELETE FROM ${table} WHERE ${where};`)
+    if(!_client) await client.query('BEGIN')
+    if(!_client) await client.query(`DELETE FROM ${table} WHERE ${where};`)
     for(const object of batch) {
       await client.query(
         toUpsertSql(table, pk, object),
         Object.values(object)
       )
     }
-    await client.query('COMMIT')
+    if(!_client) await client.query('COMMIT')
   } catch (error) {
-    await client.query('ROLLBACK')
+    if(!_client) await client.query('ROLLBACK')
     throw error
   } finally {
-    client.release()
+    if(!_client) client.release()
   }
 }

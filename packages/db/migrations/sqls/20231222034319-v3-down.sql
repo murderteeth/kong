@@ -17,3 +17,11 @@ ALTER TABLE harvest DROP COLUMN performance_fees;
 ALTER TABLE harvest DROP COLUMN performance_fees_usd;
 
 DROP TABLE vault_debt;
+
+ALTER TABLE block_pointer DROP CONSTRAINT block_pointer_pkey;
+ALTER TABLE block_pointer ADD COLUMN chain_id int4;
+UPDATE block_pointer SET chain_id = split_part(pointer, '/', 1)::int;
+UPDATE block_pointer SET pointer = split_part(pointer, '/', 2);
+ALTER TABLE block_pointer RENAME COLUMN pointer TO address;
+ALTER TABLE block_pointer ALTER COLUMN chain_id SET NOT NULL;
+ALTER TABLE block_pointer ADD CONSTRAINT block_pointer_pkey PRIMARY KEY (chain_id, address);

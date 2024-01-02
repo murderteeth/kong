@@ -29,3 +29,9 @@ CREATE TABLE vault_debt (
 	block_time timestamptz NOT NULL,
 	CONSTRAINT vault_debt_pkey PRIMARY KEY (chain_id, lender, borrower)
 );
+
+ALTER TABLE block_pointer DROP CONSTRAINT block_pointer_pkey;
+UPDATE block_pointer SET address = chain_id::text || '/' || address;
+ALTER TABLE block_pointer RENAME COLUMN address TO pointer;
+ALTER TABLE block_pointer DROP COLUMN chain_id;
+ALTER TABLE block_pointer ADD CONSTRAINT block_pointer_pkey PRIMARY KEY (pointer);

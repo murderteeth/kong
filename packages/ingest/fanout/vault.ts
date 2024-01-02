@@ -2,7 +2,7 @@ import { setTimeout } from 'timers/promises'
 import { chains, dates, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { getLatestBlock, getVaultBlockPointers, setBlockPointer } from '../db'
+import { getLatestBlock, getVaultPointers, setAddressPointer } from '../db'
 import { parseAbi } from 'viem'
 import { max } from 'lib/math'
 import { estimateHeight } from 'lib/blocks'
@@ -22,7 +22,7 @@ export default class VaultFanout implements Processor {
   async fanout() {
     for(const chain of chains) {
       const default_start_block = await estimateHeight(chain.id, dates.DEFAULT_START())
-      const pointers = await getVaultBlockPointers(chain.id)
+      const pointers = await getVaultPointers(chain.id)
       for(const pointer of pointers) {
         const from = max(pointer.blockNumber, pointer.activationBlockNumber, default_start_block)
         const to = await getLatestBlock(chain.id)
@@ -45,7 +45,7 @@ export default class VaultFanout implements Processor {
 
         await this.fanoutExtract(chain.id, pointer.address, events, from, to)
 
-        await setBlockPointer(chain.id, pointer.address, to)       
+        await setAddressPointer(chain.id, pointer.address, to)       
       }
     }
   }

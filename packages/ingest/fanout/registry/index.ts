@@ -3,7 +3,7 @@ import { contracts } from './registries'
 import { chains, math, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { getBlockPointer, getLatestBlock, setBlockPointer } from '../../db'
+import { getAddressPointer, getLatestBlock, setAddressPointer } from '../../db'
 import { rpcs } from '../../rpcs'
 import { parseAbi } from 'viem'
 
@@ -23,7 +23,7 @@ export default class RegistryFanout implements Processor {
       for(const registry of contracts.filter(c => c.chainId === chain.id)) {
         switch(registry.version) {
         case 2:
-          const blockPointer = await getBlockPointer(chain.id, registry.address)
+          const blockPointer = await getAddressPointer(chain.id, registry.address)
           const from = math.max(blockPointer, registry.incept)
           const to = await getLatestBlock(chain.id)
 
@@ -33,7 +33,7 @@ export default class RegistryFanout implements Processor {
           registry.events, 
           from, to)
 
-          await setBlockPointer(chain.id, registry.address, to)
+          await setAddressPointer(chain.id, registry.address, to)
           break
 
         case 3:

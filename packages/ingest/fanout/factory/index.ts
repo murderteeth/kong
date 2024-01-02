@@ -3,7 +3,7 @@ import { contracts } from './factories'
 import { chains, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { getBlockPointer, getLatestBlock, setBlockPointer } from '../../db'
+import { getAddressPointer, getLatestBlock, setAddressPointer } from '../../db'
 import { max } from 'lib/math'
 
 export default class FactoryFanout implements Processor {
@@ -20,7 +20,7 @@ export default class FactoryFanout implements Processor {
   async fanout() {
     for(const chain of chains) {
       for(const factory of contracts.filter(c => c.chainId === chain.id)) {
-        const blockPointer = await getBlockPointer(factory.chainId, factory.address)
+        const blockPointer = await getAddressPointer(factory.chainId, factory.address)
         const from = max(blockPointer, factory.incept)
         const to = await getLatestBlock(chain.id)
         console.log('🪭', 'fanout', factory.chainId, factory.address, from, to)
@@ -40,7 +40,7 @@ export default class FactoryFanout implements Processor {
           await setTimeout(throttle)
         }
 
-        await setBlockPointer(factory.chainId, factory.address, to)
+        await setAddressPointer(factory.chainId, factory.address, to)
       }
     }
   }
