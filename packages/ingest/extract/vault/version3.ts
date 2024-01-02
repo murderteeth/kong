@@ -4,6 +4,8 @@ import { parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { firstRow } from '../../db'
+import { getBlock } from 'lib/blocks'
+import { div } from 'lib/math'
 
 export class VaultExtractor__v3 implements Processor {
   queues: { [name: string]: Queue } = {}
@@ -23,6 +25,7 @@ export class VaultExtractor__v3 implements Processor {
     const fees = await extractFeesBps({...vault, ...fields} as types.Vault)
     const asset = await getAsset(vault) ?? await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
     const defaultQueue = await extractDefaultQueue({...vault, ...registration})
+    const debts = await extractDebts({...vault, ...registration}, defaultQueue)
 
     const update = types.VaultSchema.safeParse({
       ...vault,
@@ -33,7 +36,7 @@ export class VaultExtractor__v3 implements Processor {
       asOfBlockNumber
     })
 
-    if(!update.success) throw new Error(update.error.errors.join(', '))
+    if(!update.success) throw new Error(`${update.error.message}\n${update.error.flatten().toString()}`)
 
     await this.queues[mq.q.load].add(mq.job.load.erc20, {
       chainId: vault.chainId,
@@ -60,6 +63,8 @@ export class VaultExtractor__v3 implements Processor {
         queueIndex, strategyAddress, asOfBlockNumber
       })) as types.WithdrawalQueueItem[]
     })
+
+    await this.queues[mq.q.load].add(mq.job.load.vaultDebt, { batch: debts })
   }
 }
 
@@ -244,4 +249,70 @@ export async function extractDefaultQueue(vault: types.Vault, blockNumber?: bigi
     functionName: 'get_default_queue',
     blockNumber
   })
+}
+
+export async function extractDebts(vault: types.Vault, queue: readonly `0x${string}`[], blockNumber?: bigint) {
+  if(queue.length === 0) return []
+
+  const callTotalDebt = {
+    address: vault.address, abi: parseAbi(['function totalDebt() view returns (uint256)']), functionName: 'totalDebt'
+  }
+
+  const strategiesAbi = parseAbi(['function strategies(address) returns (uint256, uint256, uint256, uint256)'])
+
+  const callStrategies = queue.map((strategyAddress) => ({
+    address: vault.address, abi: strategiesAbi, functionName: 'strategies', 
+    args: [ strategyAddress ]
+  }))
+
+  const multicallResults = await rpcs.next(vault.chainId, blockNumber).multicall({ contracts: [ callTotalDebt, ...callStrategies ], blockNumber })
+
+  if(multicallResults.some(result => result.status !== 'success')) throw new Error('!multicallResults.success')
+
+  const block = await getBlock(vault.chainId, blockNumber)
+  const totalDebt = multicallResults[0].result as bigint || 0n
+
+  const results: types.VaultDebt[] = []
+  for(const [index, multicallResult] of multicallResults.slice(1).entries()) {
+    const result = multicallResult.result as [bigint, bigint, bigint, bigint]
+
+    let targetDebtRatio: number | undefined = undefined
+    let maxDebtRatio: number | undefined = undefined
+
+    if(vault.debtManager) {
+      const debtManagerMulticallResults = await rpcs.next(vault.chainId, blockNumber).multicall({ contracts: [
+        {
+          address: vault.debtManager, 
+          abi: parseAbi(['function getStrategyTargetRatio(address) view returns (uint256)']), 
+          functionName: 'getStrategyTargetRatio',
+          args: [ queue[index] ]
+        }, {
+          address: vault.debtManager, 
+          abi: parseAbi(['function getStrategyMaxRatio(address) view returns (uint256)']), 
+          functionName: 'getStrategyMaxRatio',
+          args: [ queue[index] ]
+        }
+      ], blockNumber })
+
+      if(debtManagerMulticallResults.some(result => result.status !== 'success')) throw new Error('!debtManagerMulticallResults.success')
+
+      targetDebtRatio = Number(debtManagerMulticallResults[0].result) as number
+      maxDebtRatio = Number(debtManagerMulticallResults[1].result) as number
+    }
+
+    results.push({
+      chainId: vault.chainId,
+      lender: vault.address,
+      borrower: queue[index],
+      maxDebt: result[3],
+      currentDebt: result[2],
+      currentDebtRatio: div(result[2], totalDebt),
+      targetDebtRatio,
+      maxDebtRatio,
+      blockNumber: block.number,
+      blockTime: block.timestamp
+    })
+  }
+
+  return results
 }

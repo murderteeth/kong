@@ -37,12 +37,12 @@ const VaultSchema = z.object({
   address: z.string(),
   name: z.string(),
   apiVersion: z.string(),
-  apetaxType: z.string().nullable().optional(),
-  apetaxStatus: z.string().nullable().optional(),
+  apetaxType: z.string().nullish(),
+  apetaxStatus: z.string().nullish(),
   registryStatus: z.string(),
-  tvlUsd: z.number().nullable().optional(),
+  tvlUsd: z.number().nullish(),
   tvlSparkline: z.array(TVLSparklineSchema).default([]),
-  apyNet: z.number().nullable().optional(),
+  apyNet: z.number().nullish(),
   apySparkline: z.array(APYSparklineSchema).default([]),
   defaultQueue: z.array(QueueSchema_v3).default([]),
   withdrawalQueue: z.array(QueueSchema_v2).default([])
@@ -148,7 +148,7 @@ type Monitor = z.infer<typeof MonitorSchema>
 
 export const DataContextSchema = z.object({
   latestBlocks: z.array(LatestBlockSchema),
-  vault: VaultSchema.nullable().optional(),
+  vault: VaultSchema.nullish(),
   tvls: z.array(TVLSchema).default([]),
   apys: z.array(APYSchema).default([]),
   transfers: z.array(TransferSchema).default([]),

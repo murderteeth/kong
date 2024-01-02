@@ -27,6 +27,11 @@ export default class Loader implements Processor {
       'WHERE EXCLUDED.as_of_block_number IS NULL OR withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
     ),
 
+    [mq.job.load.vaultDebt]: async data => 
+    await upsertBatch(data.batch, 'vault_debt', 'chain_id, lender, borrower', 
+      'WHERE vault_debt.block_number < EXCLUDED.block_number'
+    ),
+
     [mq.job.load.strategy]: async data => {
     await upsert(data, 'strategy', 'chain_id, address',
       'WHERE EXCLUDED.as_of_block_number IS NULL OR strategy.as_of_block_number < EXCLUDED.as_of_block_number'

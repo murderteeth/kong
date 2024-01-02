@@ -17,6 +17,11 @@ crons:
     job: registry
     schedule: "0-59/15 * * * *"
 
+  - name: IndexFactories
+    queue: fanout
+    job: factory
+    schedule: "1-59/15 * * * *"
+
   - name: IndexVaults
     queue: fanout
     job: vault

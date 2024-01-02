@@ -2,6 +2,7 @@ import { Processor } from 'lib/processor'
 import { rpcs } from '../../rpcs'
 import { RegistryHandler } from './handlers/registry'
 import { VaultHandler } from './handlers/vault'
+import { DebtManagerFactoryHandler } from './handlers/debtManagerFactory'
 
 export interface Handler extends Processor {
   handle: (chainId: number, address: `0x${string}`, logs: any[]) => Promise<void>
@@ -10,7 +11,8 @@ export interface Handler extends Processor {
 export class EvmLogsExtractor implements Processor {
   handlers = {
     registry: new RegistryHandler(),
-    vault: new VaultHandler()
+    vault: new VaultHandler(),
+    debtManagerFactory: new DebtManagerFactoryHandler()
   } as { [key: string]: Handler }
 
   async up() {

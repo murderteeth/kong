@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { polygon } from 'viem/chains'
 import { addresses } from '../../test.fixture'
-import { extractAsset, extractDefaultQueue, extractFeesBps, extractFields, extractRegistration, getAsset, getRegistration } from './version3'
+import { extractAsset, extractDebts, extractDefaultQueue, extractFeesBps, extractFields, extractRegistration, getAsset, getRegistration } from './version3'
 import { types } from 'lib'
 import db, { toUpsertSql } from '../../db'
 
@@ -118,5 +118,62 @@ describe('vault v3', function() {
 
     const queue = await extractDefaultQueue(vault, block)
     expect(queue).to.have.all.members([])
+  })
+
+  it('extracts debts with debtManager', async function() {
+    const vault = {
+      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      debtManager: addresses.v3.yvusdca_debtManager,
+      type: 'vault'
+    } as types.Vault
+
+    const queue = await extractDefaultQueue(vault, 51825988n)
+    const debts = await extractDebts(vault, queue, 51825988n)
+
+    expect(debts[0].maxDebt).to.equal(1000000000000n)
+    expect(debts[0].currentDebt).to.equal(117615395339n)
+    expect(debts[0].currentDebtRatio).to.equal(0.5215222005613652)
+    expect(debts[0].targetDebtRatio).to.equal(5000)
+    expect(debts[0].maxDebtRatio).to.equal(6000)
+    
+    expect(debts[1].maxDebt).to.equal(1000000000000n)
+    expect(debts[1].currentDebt).to.equal(107907880971n)
+    expect(debts[1].currentDebtRatio).to.equal(0.4784777994386348)
+    expect(debts[1].targetDebtRatio).to.equal(5000)
+    expect(debts[1].maxDebtRatio).to.equal(6000)
+
+    expect(debts[2].maxDebt).to.equal(1000000000000n)
+    expect(debts[2].currentDebt).to.equal(0n)
+    expect(debts[2].currentDebtRatio).to.equal(0)
+    expect(debts[2].targetDebtRatio).to.equal(0)
+    expect(debts[2].maxDebtRatio).to.equal(0)
+  })
+
+  it('extracts only current debts without debtManager', async function() {
+    const vault = {
+      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      type: 'vault'
+    } as types.Vault
+
+    const queue = await extractDefaultQueue(vault, 51825988n)
+    const debts = await extractDebts(vault, queue, 51825988n)
+
+    expect(debts[0].maxDebt).to.equal(1000000000000n)
+    expect(debts[0].currentDebt).to.equal(117615395339n)
+    expect(debts[0].currentDebtRatio).to.equal(0.5215222005613652)
+    expect(debts[0].targetDebtRatio).to.equal(undefined)
+    expect(debts[0].maxDebtRatio).to.equal(undefined)
+
+    expect(debts[1].maxDebt).to.equal(1000000000000n)
+    expect(debts[1].currentDebt).to.equal(107907880971n)
+    expect(debts[1].currentDebtRatio).to.equal(0.4784777994386348)
+    expect(debts[1].targetDebtRatio).to.equal(undefined)
+    expect(debts[1].maxDebtRatio).to.equal(undefined)
+   
+    expect(debts[2].maxDebt).to.equal(1000000000000n)
+    expect(debts[2].currentDebt).to.equal(0n)
+    expect(debts[2].currentDebtRatio).to.equal(0)
+    expect(debts[2].targetDebtRatio).to.equal(undefined)
+    expect(debts[2].maxDebtRatio).to.equal(undefined)
   })
 })

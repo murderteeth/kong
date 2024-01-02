@@ -5,13 +5,13 @@ export async function getBlockTime(chainId: number, blockNumber: bigint) {
   return (await getBlock(chainId, blockNumber)).timestamp
 }
 
-export async function getBlock(chainId: number, blockNumber: bigint) {
+export async function getBlock(chainId: number, blockNumber?: bigint) {
   return cache.wrap(`getBlock:${chainId}:${blockNumber}`, async () => {
     return await __getBlock(chainId, blockNumber)
   }, 10_000)
 }
 
-async function __getBlock(chainId: number, blockNumber: bigint) {
+async function __getBlock(chainId: number, blockNumber?: bigint) {
   return rpcs.next(chainId).getBlock({ blockNumber })
 }
 

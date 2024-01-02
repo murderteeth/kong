@@ -31,20 +31,20 @@ export class HarvestExtractor implements Processor {
     const { price } = await fetchErc20PriceUsd(harvest.chainId, asset.address, BigInt(harvest.blockNumber))
     const profitUsd = price * Number(BigInt(harvest.profit) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
     const lossUsd = price * Number(BigInt(harvest.loss) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
-    
-    const totalProfitUsd = harvest.totalProfit === undefined 
+
+    const totalProfitUsd = harvest.totalProfit == null
     ? undefined 
     : price * Number(BigInt(harvest.totalProfit) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
-    
-    const totalLossUsd = harvest.totalLoss === undefined 
+
+    const totalLossUsd = harvest.totalLoss == null 
     ? undefined 
     : price * Number(BigInt(harvest.totalLoss) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
 
-    const protocolFeesUsd = harvest.protocolFees === undefined 
+    const protocolFeesUsd = harvest.protocolFees == null
     ? undefined 
     : price * Number(BigInt(harvest.protocolFees) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
 
-    const performanceFeesUsd = harvest.performanceFees === undefined 
+    const performanceFeesUsd = harvest.performanceFees == null
     ? undefined 
     : price * Number(BigInt(harvest.performanceFees) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
 

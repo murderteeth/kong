@@ -18,6 +18,10 @@ async function action() {
           name: mq.q.fanout,
           job: mq.job.fanout.registry
         }},
+        { title: 'index factory events', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.factory
+        }},
         { title: 'index vault events', value: {
           name: mq.q.fanout,
           job: mq.job.fanout.vault
