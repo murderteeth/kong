@@ -4,7 +4,7 @@ import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
 
-export default class Loader implements Processor {
+export default class Load implements Processor {
   worker?: Worker
   queue?: Queue
 
