@@ -9,7 +9,7 @@ describe('vault', function() {
 
   it('extracts api version', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n
+      chainId: polygon.id, address: addresses.v3.yvusdca
     } as types.Vault
 
     const apiVersion = await extractApiVersion(vault, 51413288n)

@@ -29,7 +29,7 @@ export class VaultExtractor__v2 implements Processor {
       ...fields,
       ...asset,
       ...activation,
-      asOfBlockNumber
+      __as_of_block: asOfBlockNumber
     } as types.Vault
   
     await this.queues[mq.q.load].add(

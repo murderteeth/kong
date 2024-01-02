@@ -11,7 +11,7 @@ describe('vault v3', function() {
 
   it('extracts registrations', async function() {
     const vault = {
-      chainId: polygon.id, registryAddress: addresses.v3.registry, address: addresses.v3.yvusdca, asOfBlockNumber: 0n
+      chainId: polygon.id, registryAddress: addresses.v3.registry, address: addresses.v3.yvusdca
     } as types.Vault
 
     const registration = await extractRegistration(vault, block)
@@ -22,7 +22,7 @@ describe('vault v3', function() {
 
   it('gets registrations from db', async function() {
     const vault = {
-      chainId: polygon.id, registryAddress: addresses.v3.registry, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      chainId: polygon.id, registryAddress: addresses.v3.registry, address: addresses.v3.yvusdca,
       type: 'vault', activationBlockNumber: 49181585n, activationBlockTime: 1698338748n
     } as types.Vault
     await db.query(toUpsertSql('vault', 'chain_id, address', vault), Object.values(vault))
@@ -35,7 +35,7 @@ describe('vault v3', function() {
 
   it('extracts fields', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n
+      chainId: polygon.id, address: addresses.v3.yvusdca
     } as types.Vault
 
     const fields = await extractFields(vault, block)
@@ -59,7 +59,7 @@ describe('vault v3', function() {
 
   it('extracts vault fees', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      chainId: polygon.id, address: addresses.v3.yvusdca,
       accountant: '0x54483f1592ab0aDea2757Ae0d62e6393361d4CEe'
     } as types.Vault
 
@@ -70,7 +70,7 @@ describe('vault v3', function() {
 
   it('extracts tokenized strategy fees', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.compoundV3UsdcLender, asOfBlockNumber: 0n
+      chainId: polygon.id, address: addresses.v3.compoundV3UsdcLender
     } as types.Vault
 
     const fees = await extractFeesBps(vault, block)
@@ -86,7 +86,7 @@ describe('vault v3', function() {
 
   it('gets asset from db', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      chainId: polygon.id, address: addresses.v3.yvusdca,
       assetName: 'USD Coin (PoS)', assetSymbol: 'USDC'
     } as types.Vault
     await db.query(toUpsertSql('vault', 'chain_id, address', vault), Object.values(vault))
@@ -98,7 +98,7 @@ describe('vault v3', function() {
 
   it('extracts default queue', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      chainId: polygon.id, address: addresses.v3.yvusdca,
       type: 'vault'
     } as types.Vault
 
@@ -112,7 +112,7 @@ describe('vault v3', function() {
 
   it('extracts no queue', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.compoundV3UsdcLender, asOfBlockNumber: 0n,
+      chainId: polygon.id, address: addresses.v3.compoundV3UsdcLender,
       type: 'strategy'
     } as types.Vault
 
@@ -122,7 +122,7 @@ describe('vault v3', function() {
 
   it('extracts debts with debtManager', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      chainId: polygon.id, address: addresses.v3.yvusdca,
       debtManager: addresses.v3.yvusdca_debtManager,
       type: 'vault'
     } as types.Vault
@@ -151,7 +151,7 @@ describe('vault v3', function() {
 
   it('extracts only current debts without debtManager', async function() {
     const vault = {
-      chainId: polygon.id, address: addresses.v3.yvusdca, asOfBlockNumber: 0n,
+      chainId: polygon.id, address: addresses.v3.yvusdca,
       type: 'vault'
     } as types.Vault
 

@@ -47,7 +47,7 @@ export class ApetaxExtractor implements Processor {
         apetaxStatus: vault.VAULT_STATUS,
         address: vault.VAULT_ADDR,
         assetAddress: vault.WANT_ADDR,
-        asOfBlockNumber: latestBlock
+        __as_of_block: latestBlock
       } as types.Vault, {
         jobId: `${vault.CHAIN_ID}-${latestBlock}-${vault.VAULT_ADDR}`
       })

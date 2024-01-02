@@ -33,7 +33,7 @@ export class VaultExtractor__v3 implements Processor {
       ...fields,
       ...fees,
       ...asset,
-      asOfBlockNumber
+      __as_of_block: asOfBlockNumber
     })
 
     if(!update.success) throw new Error(`${update.error.message}\n${update.error.flatten().toString()}`)

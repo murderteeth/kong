@@ -69,14 +69,14 @@ export async function setBlockPointer(pointer: string, blockNumber: bigint) {
 
 export async function getVaultPointers(chainId: number) {
   const result = await db.query(`
-    SELECT 
-      v.address, 
+    SELECT
+      v.address,
       v.api_version as "apiVersion",
       COALESCE(v.activation_block_number, 0) AS "activationBlockNumber",
       COALESCE(p.block_number, 0) AS "blockNumber"
     FROM vault v
     LEFT JOIN block_pointer p
-    ON v.chain_id = split_part(p.address, '/', 1) AND v.address = split_part(p.address, '/', 2)
+    ON p.pointer = v.chain_id::text || '/' || v.address
     WHERE v.chain_id = $1;
   `, [chainId])
   return result.rows.map(r => ({

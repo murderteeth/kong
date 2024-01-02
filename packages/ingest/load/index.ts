@@ -19,9 +19,7 @@ export default class Load implements Processor {
     await upsert(data, 'erc20', 'chain_id, address'),
 
     [mq.job.load.vault]: async data => 
-    await upsert(data, 'vault', 'chain_id, address', 
-      'WHERE EXCLUDED.as_of_block_number IS NULL OR vault.as_of_block_number < EXCLUDED.as_of_block_number'
-    ),
+    await upsertAsOfBlock(data, 'vault', ['chain_id', 'address']),
 
     [mq.job.load.withdrawalQueue]: async data => 
     await upsertBatch(data.batch, 'withdrawal_queue', 'chain_id, vault_address, queue_index', 
@@ -111,9 +109,9 @@ export default class Load implements Processor {
 
 export async function upsertAsOfBlock(data: any, table: string, pk: string[]) {
   if(data.chainId == null) throw new Error('!data.chainId')
-  if(data.asOfBlockNumber == null) throw new Error('!data.asOfBlockNumber')
-  const asOfBlockNumber = BigInt(data.asOfBlockNumber)
-  delete data.asOfBlockNumber
+  if(data.__as_of_block == null) throw new Error('!data.__as_of_block')
+  const asOfBlockNumber = BigInt(data.__as_of_block)
+  delete data.__as_of_block
 
   const tablePk = pk.map(n => data[strings.snakeToCamel(n)]).join('/')
   const pointerKey = (field: string) => `${table}/${tablePk}/${field}`

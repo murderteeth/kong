@@ -104,7 +104,6 @@ export async function getVaults(where: string, values: any[]) {
         'netApy', s.apy_net,
         'activationBlockTime', FLOOR(EXTRACT(EPOCH FROM s.activation_block_time)),
         'activationBlockNumber', s.activation_block_number,
-        'asOfBlockNumber', s.as_of_block_number,
         'queueIndex', wq.queue_index
       ) ORDER BY wq.chain_id, wq.vault_address, wq.queue_index ASC
       ) AS results
@@ -192,7 +191,6 @@ export async function getVaults(where: string, values: any[]) {
     v.governance,
     v.activation_block_time as "activationBlockTime",
     v.activation_block_number as "activationBlockNumber",
-    v.as_of_block_number as "asOfBlockNumber",
     COALESCE(default_queue_agg.results, '[]'::json) AS "defaultQueue",
     COALESCE(withdrawal_queue_agg.results, '[]'::json) AS "withdrawalQueue",
     COALESCE(tvl_agg.results, '[]'::json) AS "tvlSparkline",

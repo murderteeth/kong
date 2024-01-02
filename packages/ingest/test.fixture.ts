@@ -54,8 +54,7 @@ export const yvusdtDb = {
       chainId: 1, type: 'vault',
       address: addresses.v2.yvusdt,
       assetAddress: addresses.v2.usdt,
-      decimals: 6,
-      asOfBlockNumber: 0n
+      decimals: 6
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', vault), 
@@ -117,8 +116,7 @@ export const yvwethDb = {
       chainId: 1, type: 'vault',
       address: addresses.v2.yvweth,
       assetAddress: addresses.v2.weth,
-      decimals: 18,
-      asOfBlockNumber: 0n
+      decimals: 18
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', vault), 
@@ -192,8 +190,7 @@ export const yvusdcaDb = {
       chainId: 137, type: 'vault',
       address: addresses.v3.yvusdca,
       assetAddress: addresses.v3.usdc,
-      decimals: 6,
-      asOfBlockNumber: 0n
+      decimals: 6
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', vault), 
@@ -204,8 +201,7 @@ export const yvusdcaDb = {
       chainId: 137, type: 'vault',
       address: addresses.v3.compoundV3UsdcLender,
       assetAddress: addresses.v3.usdc,
-      decimals: 6,
-      asOfBlockNumber: 0n
+      decimals: 6
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', compoundV3UsdcLender), 
@@ -224,8 +220,7 @@ export const yvusdcaDb = {
       chainId: 137, type: 'vault',
       address: addresses.v3.aaveV3UsdcLender,
       assetAddress: addresses.v3.usdc,
-      decimals: 6,
-      asOfBlockNumber: 0n
+      decimals: 6
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', aaveV3UsdcLender), 
@@ -244,8 +239,7 @@ export const yvusdcaDb = {
       chainId: 137, type: 'vault',
       address: addresses.v3.stargateUsdcStaker,
       assetAddress: addresses.v3.usdc,
-      decimals: 6,
-      asOfBlockNumber: 0n
+      decimals: 6
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', stargateUsdcStaker), 

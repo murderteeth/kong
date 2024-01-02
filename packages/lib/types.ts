@@ -82,7 +82,7 @@ export const VaultSchema = z.object({
   isShutdown: z.boolean().nullish(),
   activationBlockTime: z.bigint().nullish(),
   activationBlockNumber: z.bigint().nullish(),
-  asOfBlockNumber: z.bigint()
+  __as_of_block: z.bigint().nullish()
 })
 
 export type Vault = z.infer<typeof VaultSchema>

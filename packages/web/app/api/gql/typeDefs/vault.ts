@@ -40,6 +40,5 @@ type Vault {
   governance: String
   activationBlockTime: BigInt
   activationBlockNumber: BigInt
-  asOfBlockNumber: BigInt
 }
 `

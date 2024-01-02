@@ -22,7 +22,7 @@ export class DebtManagerFactoryHandler implements Handler {
         type: 'vault',
         address: log.args.vault.toString(),
         debtManager: log.args.allocator.toString(),
-        asOfBlockNumber: log.blockNumber.toString()
+        __as_of_block: log.blockNumber.toString()
       } as types.Vault
 
       await this.queues[mq.q.load].add(mq.job.load.vault, vault)
