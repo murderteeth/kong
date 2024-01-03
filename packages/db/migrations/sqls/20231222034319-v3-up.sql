@@ -38,11 +38,34 @@ ALTER TABLE block_pointer ADD CONSTRAINT block_pointer_pkey PRIMARY KEY (pointer
 
 DROP VIEW vault_gql;
 DROP VIEW strategy_gql;
+DROP VIEW harvest_gql;
 
 ALTER TABLE vault DROP COLUMN as_of_block_number;
 ALTER TABLE strategy DROP COLUMN as_of_block_number;
 ALTER TABLE withdrawal_queue DROP COLUMN as_of_block_number;
 ALTER TABLE strategy_lender_status DROP COLUMN as_of_block_number;
+
+ALTER TABLE latest_block ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
+ALTER TABLE block_pointer ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
+ALTER TABLE vault ALTER COLUMN activation_block_number TYPE numeric USING activation_block_number::numeric;
+ALTER TABLE strategy ALTER COLUMN activation_block_number TYPE numeric USING activation_block_number::numeric;
+ALTER TABLE tvl ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
+ALTER TABLE transfer DROP CONSTRAINT transfer_pkey;
+ALTER TABLE transfer ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
+ALTER TABLE transfer ADD CONSTRAINT transfer_pkey PRIMARY KEY (chain_id, block_number, block_index);
+
+ALTER TABLE harvest DROP CONSTRAINT harvest_pkey;
+DROP INDEX harvest_idx_address_blocknumber;
+DROP INDEX harvest_idx_chainid_address_blocknumber;
+ALTER TABLE harvest ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
+ALTER TABLE harvest ADD CONSTRAINT harvest_pkey PRIMARY KEY (chain_id, block_number, block_index, address);
+CREATE INDEX harvest_idx_address_blocknumber ON harvest (address, block_number);
+CREATE INDEX harvest_idx_chainid_address_blocknumber ON harvest (chain_id, address, block_number);
+ALTER TABLE apr ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
+ALTER TABLE apy ALTER COLUMN weekly_block_number TYPE numeric USING weekly_block_number::numeric;
+ALTER TABLE apy ALTER COLUMN monthly_block_number TYPE numeric USING monthly_block_number::numeric;
+ALTER TABLE apy ALTER COLUMN inception_block_number TYPE numeric USING inception_block_number::numeric;
+ALTER TABLE apy ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
 
 CREATE VIEW vault_gql AS
 SELECT 
@@ -95,6 +118,23 @@ LEFT JOIN LATERAL (
 		net
 	FROM apr
 	WHERE s.chain_id = apr.chain_id AND s.address = apr.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) a ON TRUE;
+
+CREATE VIEW harvest_gql AS
+SELECT 
+	h.*,
+	a.gross AS apr_gross,
+	a.net AS apr_net
+FROM harvest h
+LEFT JOIN LATERAL (
+	SELECT gross, net
+	FROM apr
+	WHERE 
+		h.chain_id = apr.chain_id 
+		AND h.address = apr.address 
+		AND h.block_number = apr.block_number
 	ORDER BY block_time DESC
 	LIMIT 1
 ) a ON TRUE;

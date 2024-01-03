@@ -29,7 +29,7 @@ describe('vault v3', function() {
 
     const registration = await getRegistration(vault)
     expect(registration?.type).to.equal('vault')
-    expect(registration?.activationBlockNumber).to.equal(49181585n)
+    expect(registration?.activationBlockNumber).to.equal(49181585)
     expect(registration?.activationBlockTime).to.equal(1698338748n)
   })
 

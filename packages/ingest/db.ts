@@ -4,9 +4,6 @@ import { Pool, PoolClient, types as pgTypes } from 'pg'
 // Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
 
-// Convert bigint (OID 20) to BigInt
-pgTypes.setTypeParser(20, BigInt)
-
 // Convert timestamptz (OID 1184) to seconds
 pgTypes.setTypeParser(1184, (stringValue) => {
   return BigInt(Math.floor(Date.parse(stringValue) / 1000))
