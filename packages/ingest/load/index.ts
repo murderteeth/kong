@@ -26,10 +26,7 @@ export default class Load implements Processor {
 
     [mq.job.load.withdrawalQueue]: async data => await upsertWithdrawalQueue(data),
 
-    [mq.job.load.vaultDebt]: async data => 
-    await upsertBatch(data.batch, 'vault_debt', 'chain_id, lender, borrower', 
-      'WHERE vault_debt.block_number < EXCLUDED.block_number'
-    ),
+    [mq.job.load.vaultDebt]: async data => await upsertVaultDebt(data),
 
     [mq.job.load.strategyLenderStatus]: async data => await upsertStrategyLenderStatus(data),
 
@@ -258,6 +255,46 @@ async function upsertStrategyLenderStatus(data: any) {
         'chain_id, strategy_address, address', 
         `chain_id = $1 AND strategy_address = $2`,
         [chainId, strategyAddress],
+        client
+      )
+      await setBlockPointer(pointerKey, asOfBlockNumber, client)
+    }
+    await client.query('COMMIT')
+
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+async function upsertVaultDebt(data: any) {
+  if(data.batch == null) throw new Error('!data.batch')
+  if(data.batch.length === 0) return
+
+  if(data.__chain_id == null) throw new Error('!data.__chain_id')
+  if(data.__vault_address == null) throw new Error('!data.__vault_address')
+  if(data.__as_of_block == null) throw new Error('!data.__as_of_block')
+
+  const chainId = data.__chain_id as number
+  const vaultAddress = data.__vault_address as `0x${string}`
+  const pointerKey = `${chainId}/${vaultAddress}/vault_debt`
+  const asOfBlockNumber = BigInt(data.__as_of_block)
+
+  const client = await db.connect()
+  await client.query('BEGIN')
+
+  try {
+    const pointer = await getBlockPointer(pointerKey, client)
+    if(pointer < asOfBlockNumber) {
+      await replaceWithBatch(
+        data.batch,
+        'vault_debt', 
+        'chain_id, lender, borrower', 
+        `chain_id = $1 AND lender = $2`,
+        [chainId, vaultAddress],
         client
       )
       await setBlockPointer(pointerKey, asOfBlockNumber, client)

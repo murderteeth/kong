@@ -20,12 +20,12 @@ export class VaultExtractor__v3 implements Processor {
   }
 
   async extract(vault: types.Vault, asOfBlockNumber: bigint) {
-    const registration = await getRegistration(vault) ?? await extractRegistration(vault)
-    const fields = await extractFields(vault)
-    const fees = await extractFeesBps({...vault, ...fields} as types.Vault)
-    const asset = await getAsset(vault) ?? await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`)
-    const defaultQueue = await extractDefaultQueue({...vault, ...registration})
-    const debts = await extractDebts({...vault, ...registration}, defaultQueue)
+    const registration = await getRegistration(vault) ?? await extractRegistration(vault, asOfBlockNumber)
+    const fields = await extractFields(vault, asOfBlockNumber)
+    const fees = await extractFeesBps({...vault, ...fields} as types.Vault, asOfBlockNumber)
+    const asset = await getAsset(vault) ?? await extractAsset(vault.chainId, fields.assetAddress as `0x${string}`, asOfBlockNumber)
+    const defaultQueue = await extractDefaultQueue({...vault, ...registration}, asOfBlockNumber)
+    const debts = await extractDebts({...vault, ...registration}, defaultQueue, asOfBlockNumber)
 
     const update = types.VaultSchema.safeParse({
       ...vault,
@@ -67,7 +67,12 @@ export class VaultExtractor__v3 implements Processor {
       __as_of_block: asOfBlockNumber
     })
 
-    await this.queues[mq.q.load].add(mq.job.load.vaultDebt, { batch: debts })
+    await this.queues[mq.q.load].add(mq.job.load.vaultDebt, { 
+      batch: debts,
+      __chain_id: vault.chainId,
+      __vault_address: vault.address,
+      __as_of_block: asOfBlockNumber
+    })
   }
 }
 
@@ -254,6 +259,14 @@ export async function extractDefaultQueue(vault: types.Vault, blockNumber?: bigi
   })
 }
 
+export async function getDebtManager(vault: types.Vault) {
+  return (await firstRow(
+    `SELECT debt_manager as "debtManager"
+    FROM vault WHERE chain_id = $1 AND address = $2`,
+    [vault.chainId, vault.address]
+  ))?.debtManager ?? undefined
+}
+
 export async function extractDebts(vault: types.Vault, queue: readonly `0x${string}`[], blockNumber?: bigint) {
   if(queue.length === 0) return []
 
@@ -282,15 +295,16 @@ export async function extractDebts(vault: types.Vault, queue: readonly `0x${stri
     let targetDebtRatio: number | undefined = undefined
     let maxDebtRatio: number | undefined = undefined
 
-    if(vault.debtManager) {
+    const debtManager = vault.debtManager ?? await getDebtManager(vault)
+    if(debtManager) {
       const debtManagerMulticallResults = await rpcs.next(vault.chainId, blockNumber).multicall({ contracts: [
         {
-          address: vault.debtManager, 
+          address: debtManager, 
           abi: parseAbi(['function getStrategyTargetRatio(address) view returns (uint256)']), 
           functionName: 'getStrategyTargetRatio',
           args: [ queue[index] ]
         }, {
-          address: vault.debtManager, 
+          address: debtManager, 
           abi: parseAbi(['function getStrategyMaxRatio(address) view returns (uint256)']), 
           functionName: 'getStrategyMaxRatio',
           args: [ queue[index] ]
