@@ -60,8 +60,11 @@ export class VaultExtractor__v3 implements Processor {
       { batch: defaultQueue.map((strategyAddress, queueIndex) => ({
         chainId: vault.chainId,
         vaultAddress: vault.address,
-        queueIndex, strategyAddress, asOfBlockNumber
-      })) as types.WithdrawalQueueItem[]
+        queueIndex, strategyAddress
+      })) as types.WithdrawalQueueItem[],
+      __chain_id: vault.chainId,
+      __vault_address: vault.address,
+      __as_of_block: asOfBlockNumber
     })
 
     await this.queues[mq.q.load].add(mq.job.load.vaultDebt, { batch: debts })

@@ -171,6 +171,5 @@ export default function DataProvider({children}: {children: ReactNode}) {
     setData({...DEFAULT_CONTEXT, ...vault?.data, ...status?.data})
   }, [status, vault, setData])
 
-
   return <dataContext.Provider value={data}>{children}</dataContext.Provider>
 }

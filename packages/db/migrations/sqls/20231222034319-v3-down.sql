@@ -28,6 +28,7 @@ ALTER TABLE block_pointer ADD CONSTRAINT block_pointer_pkey PRIMARY KEY (chain_i
 
 ALTER TABLE vault ADD COLUMN as_of_block_number int8 NOT NULL;
 ALTER TABLE strategy ADD COLUMN as_of_block_number int8 NOT NULL;
+ALTER TABLE withdrawal_queue ADD COLUMN as_of_block_number int8 NOT NULL;
 
 DROP VIEW vault_gql;
 CREATE VIEW vault_gql AS

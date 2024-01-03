@@ -48,11 +48,6 @@ function TransferComponent({ transfer }: { transfer: Transfer }) {
 
 export default function Deposits({ className }: { className?: string }) {
   const { transfers } = useData()
-
-  if (transfers.length === 0) return null
-
-  useEffect(() => console.log('transfers', transfers), [transfers])
-
   return <Panel className={`flex flex-col ${className}`}>
     <div className="font-bold text-lg">Deposits x Withdrawals</div>
     <div className={`grow pr-1 flex flex-col gap-2

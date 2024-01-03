@@ -57,12 +57,17 @@ export class VaultExtractor__v2 implements Processor {
     )
   
     await this.queues[mq.q.load].add(
-      mq.job.load.withdrawalQueue, { batch: withdrawalQueue.map((strategyAddress, queueIndex) => ({
-        chainId: vault.chainId,
-        vaultAddress: vault.address,
-        queueIndex, strategyAddress, asOfBlockNumber
-    })) as types.WithdrawalQueueItem[] })
-  
+      mq.job.load.withdrawalQueue, { 
+        batch: withdrawalQueue.map((strategyAddress, queueIndex) => ({
+          chainId: vault.chainId,
+          vaultAddress: vault.address,
+          queueIndex, strategyAddress 
+        })) as types.WithdrawalQueueItem[] ,
+        __chain_id: vault.chainId,
+        __vault_address: vault.address,
+        __as_of_block: asOfBlockNumber,
+      })
+
     for(const strategy of withdrawalQueue) {
       await this.queues[mq.q.extract].add(
         mq.job.extract.strategy, {

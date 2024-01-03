@@ -1,5 +1,5 @@
 import { strings, types } from 'lib'
-import { Pool, types as pgTypes } from 'pg'
+import { Pool, PoolClient, types as pgTypes } from 'pg'
 
 // Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
@@ -26,8 +26,8 @@ const db = new Pool({
 
 export default db
 
-export async function firstRow(query: string, params: any[] = [], ) {
-  const result = await db.query(query, params)
+export async function firstRow(query: string, params: any[] = [], client?: PoolClient) {
+  const result = await (client ?? db).query(query, params)
   return result.rows[0]
 }
 
@@ -40,12 +40,12 @@ export async function getLatestBlock(chainId: number) {
   return (result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function getAddressPointer(chainId: number, address: string) {
-  return await getBlockPointer(`${chainId}/${address}`)
+export async function getAddressPointer(chainId: number, address: string, client?: PoolClient) {
+  return await getBlockPointer(`${chainId}/${address}`, client)
 }
 
-export async function getBlockPointer(pointer: string) {
-  const result = await db.query(`
+export async function getBlockPointer(pointer: string, client?: PoolClient) {
+  const result = await (client ?? db).query(`
     SELECT block_number
     FROM block_pointer
     WHERE pointer = $1
@@ -53,12 +53,12 @@ export async function getBlockPointer(pointer: string) {
   return BigInt(result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function setAddressPointer(chainId: number, address: string, blockNumber: bigint) {
-  await setBlockPointer(`${chainId}/${address}`, blockNumber)
+export async function setAddressPointer(chainId: number, address: string, blockNumber: bigint, client?: PoolClient) {
+  await setBlockPointer(`${chainId}/${address}`, blockNumber, client)
 }
 
-export async function setBlockPointer(pointer: string, blockNumber: bigint) {
-  await db.query(`
+export async function setBlockPointer(pointer: string, blockNumber: bigint, client?: PoolClient) {
+  await (client ?? db).query(`
     INSERT INTO public.block_pointer (pointer, block_number)
     VALUES ($1, $2)
     ON CONFLICT (pointer)

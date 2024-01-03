@@ -132,7 +132,7 @@ export interface WithdrawalQueueItem {
   vaultAddress: `0x${string}`
   queueIndex: number
   strategyAddress?: `0x${string}`
-  asOfBlockNumber: bigint
+  __as_of_block?: bigint
 }
 
 export interface ERC20 {

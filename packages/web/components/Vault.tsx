@@ -23,10 +23,10 @@ export default function Vault() {
         <Minibars series={vault.apySparkline.map(s => s.value)} className="h-5" />
       </div>
       <div className="flex items-center gap-3">
-        <Frosty _key={`vault-tvl-${fPercent(vault.apyNet)}`}
+        <Frosty _key={`vault-tvl-${fPercent(vault.apyNet ?? 0)}`}
           disabled={!Number.isFinite(vault.tvlUsd)}
           className={'text-2xl'}>
-          {fPercent(vault.apyNet)}
+          {fPercent(vault.apyNet ?? 0)}
         </Frosty>
       </div>
     </div>

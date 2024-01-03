@@ -22,14 +22,14 @@ export class StrategyExtractor implements Processor {
 
   async extract(data: any) {
     const strategy = data as types.Strategy
-    const asOfBlockNumber = await rpcs.next(strategy.chainId).getBlockNumber()
+    const asOfBlockNumber = BigInt(data.__as_of_block ?? await rpcs.next(strategy.chainId).getBlockNumber())
 
     if(!multicall3.supportsBlock(strategy.chainId, asOfBlockNumber)) {
       console.warn('🚨', 'block not supported', strategy.chainId, asOfBlockNumber)
       return
     }
 
-    const fields = await this.extractFields(strategy.chainId, strategy.vaultAddress, strategy.address)
+    const fields = await this.extractFields(strategy.chainId, strategy.vaultAddress, strategy.address, asOfBlockNumber)
     const activationBlockNumber = await estimateHeight(strategy.chainId, BigInt(fields.activationBlockTime || 0))
 
     const totalDebtUsd = await this.computeTotalDebtUsd(
@@ -76,7 +76,7 @@ export class StrategyExtractor implements Processor {
     return price * Number(scaleDown(totalDebt, decimals))
   }
 
-  private async extractFields(chainId: number, vault: `0x${string}`, strategy: `0x${string}`) {
+  private async extractFields(chainId: number, vault: `0x${string}`, strategy: `0x${string}`, blockNumber: bigint) {
     const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
       {
         address: strategy, functionName: 'name',
@@ -122,7 +122,7 @@ export class StrategyExtractor implements Processor {
         address: strategy, functionName: 'tradeFactory',
         abi: parseAbi(['function tradeFactory() returns (address)'])
       }
-    ]})
+    ], blockNumber })
 
     const result = {
       name: multicallResult[0].result,

@@ -1,5 +1,5 @@
 import { mq, strings, types } from 'lib'
-import db, { toUpsertSql } from '../db'
+import db, { getBlockPointer, setBlockPointer, toUpsertSql } from '../db'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
@@ -24,10 +24,7 @@ export default class Load implements Processor {
     [mq.job.load.strategy]: async data =>
     await upsertAsOfBlock(data, 'strategy', ['chain_id', 'address']),
 
-    [mq.job.load.withdrawalQueue]: async data => 
-    await upsertBatch(data.batch, 'withdrawal_queue', 'chain_id, vault_address, queue_index', 
-      'WHERE EXCLUDED.as_of_block_number IS NULL OR withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
-    ),
+    [mq.job.load.withdrawalQueue]: async data => await upsertWithdrawalQueue(data),
 
     [mq.job.load.vaultDebt]: async data => 
     await upsertBatch(data.batch, 'vault_debt', 'chain_id, lender, borrower', 
@@ -42,7 +39,8 @@ export default class Load implements Processor {
         data.batch,
         'strategy_lender_status', 
         'chain_id, strategy_address, address', 
-        `chain_id = ${data.batch[0].chainId} AND strategy_address = '${data.batch[0].strategyAddress}'`
+        `chain_id = $1 AND strategy_address = $2`,
+        [data.batch[0].chainId, data.batch[0].strategyAddress]
       )
     },
 
@@ -185,11 +183,11 @@ export async function upsertBatch(batch: any[], table: string, pk: string, where
   }
 }
 
-export async function replaceWithBatch(batch: any[], table: string, pk: string, where: string, _client?: PoolClient) {
+export async function replaceWithBatch(batch: any[], table: string, pk: string, where: string, whereValues: any[], _client?: PoolClient) {
   const client = _client ?? await db.connect()
   try {
     if(!_client) await client.query('BEGIN')
-    if(!_client) await client.query(`DELETE FROM ${table} WHERE ${where};`)
+    if(!_client) await client.query(`DELETE FROM ${table} WHERE ${where};`, whereValues)
     for(const object of batch) {
       await client.query(
         toUpsertSql(table, pk, object),
@@ -202,5 +200,41 @@ export async function replaceWithBatch(batch: any[], table: string, pk: string, 
     throw error
   } finally {
     if(!_client) client.release()
+  }
+}
+
+async function upsertWithdrawalQueue(data: any) {
+  if(data.__chain_id == null) throw new Error('!data.__chain_id')
+  if(data.__vault_address == null) throw new Error('!data.__vault_address')
+  if(data.__as_of_block == null) throw new Error('!data.__as_of_block')
+
+  const chainId = data.__chain_id as number
+  const vaultAddress = data.__vault_address as `0x${string}`
+  const pointerKey = `${chainId}/${vaultAddress}/withdrawal_queue`
+  const asOfBlockNumber = BigInt(data.__as_of_block)
+
+  const client = await db.connect()
+  await client.query('BEGIN')
+
+  try {
+    const pointer = await getBlockPointer(pointerKey, client)
+    if(pointer < asOfBlockNumber) {
+      await replaceWithBatch(
+        data.batch, 
+        'withdrawal_queue', 
+        'chain_id, vault_address, queue_index', 
+        `chain_id = $1 AND vault_address = $2`,
+        [chainId, vaultAddress],
+        client)
+      await setBlockPointer(pointerKey, asOfBlockNumber, client)
+    }
+    await client.query('COMMIT')
+
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
   }
 }
