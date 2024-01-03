@@ -10,7 +10,7 @@ import { VaultExtractor__v2 } from './version2'
 export class VaultExtractor implements Processor {
   extractors = [
     { version: '3.0.0', extractor: new VaultExtractor__v3() },
-    { version: '2.0.0', extractor: new VaultExtractor__v2() }
+    { version: '0.2.0', extractor: new VaultExtractor__v2() }
   ]
 
   async up() {
@@ -32,12 +32,16 @@ export class VaultExtractor implements Processor {
 
     vault.apiVersion = await getApiVersion(vault) ?? await extractApiVersion(vault)
 
+    let extracted = false
     for(const extractor of this.extractors) {
       if(compare(vault.apiVersion, extractor.version, '>=')) {
         await extractor.extractor.extract(vault, asOfBlockNumber)
+        extracted = true
         break
       }
     }
+
+    if(!extracted) throw new Error(`api version ${vault.apiVersion} couldn't be extracted`)
   }
 }
 

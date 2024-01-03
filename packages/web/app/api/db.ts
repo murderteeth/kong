@@ -79,7 +79,6 @@ export async function getVaults(where: string, values: any[]) {
         'riskGroup', s.risk_group,
         'activationBlockTime', FLOOR(EXTRACT(EPOCH FROM s.activation_block_time)),
         'activationBlockNumber', s.activation_block_number,
-        'asOfBlockNumber', s.as_of_block_number,
         'queueIndex', wq.queue_index
       ) ORDER BY wq.chain_id, wq.vault_address, wq.queue_index ASC
       ) AS results

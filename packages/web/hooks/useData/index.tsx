@@ -135,38 +135,6 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
   }
 }`
 
-async function fetchData() {
-  const statusResponsePromise = fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      query: STATUS_QUERY
-    })
-  })
-
-  const vaultResponsePromise = fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      query: VAULT_QUERY,
-      variables: { chainId: 137, address: '0xA013Fbd4b711f9ded6fB09C1c0d358E2FbC2EAA0' }
-    })
-  })
-
-  const [statusResponse, vaultResponse] = await Promise.all([statusResponsePromise, vaultResponsePromise])
-
-  if (!statusResponse.ok) throw new Error(`HTTP error! status: ${statusResponse.status}`)
-  if (!vaultResponse.ok) throw new Error(`HTTP error! status: ${vaultResponse.status}`)
-
-  const status = (await statusResponse.json()).data
-  const vault = (await vaultResponse.json()).data
-
-  return DataContextSchema.parse({
-    ...status,
-    ...vault
-  }) as DataContext
-}
-
 export const dataContext = createContext<DataContext>(DEFAULT_CONTEXT)
 
 export const useData = () => useContext(dataContext)
@@ -193,7 +161,7 @@ export default function DataProvider({children}: {children: ReactNode}) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         query: VAULT_QUERY,
-        variables: { chainId: 137, address: '0xA013Fbd4b711f9ded6fB09C1c0d358E2FbC2EAA0' }
+        variables: { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c' }
       })
     }).then(res => res.json()),
     { refreshInterval: 10_000 }

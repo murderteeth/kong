@@ -37,8 +37,10 @@ ALTER TABLE block_pointer DROP COLUMN chain_id;
 ALTER TABLE block_pointer ADD CONSTRAINT block_pointer_pkey PRIMARY KEY (pointer);
 
 DROP VIEW vault_gql;
+DROP VIEW strategy_gql;
 
 ALTER TABLE vault DROP COLUMN as_of_block_number;
+ALTER TABLE strategy DROP COLUMN as_of_block_number;
 
 CREATE VIEW vault_gql AS
 SELECT 
@@ -75,6 +77,22 @@ LEFT JOIN LATERAL (
 		gross_apr
 	FROM apy
 	WHERE v.chain_id = apy.chain_id AND v.address = apy.address
+	ORDER BY block_time DESC
+	LIMIT 1
+) a ON TRUE;
+
+CREATE VIEW strategy_gql AS
+SELECT 
+	s.*,
+	a.gross AS gross_apr,
+	a.net AS net_apr
+FROM strategy s
+LEFT JOIN LATERAL (
+	SELECT 
+		gross,
+		net
+	FROM apr
+	WHERE s.chain_id = apr.chain_id AND s.address = apr.address
 	ORDER BY block_time DESC
 	LIMIT 1
 ) a ON TRUE;

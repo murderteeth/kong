@@ -64,8 +64,7 @@ export const yvusdtDb = {
     const strategy = {
       chainId: 1,
       address: addresses.v2.strategyLenderYieldOptimiser,
-      vaultAddress: vault.address,
-      asOfBlockNumber: 0n
+      vaultAddress: vault.address
     } as types.Strategy
     await db.query(
       toUpsertSql('strategy', 'chain_id, address', strategy),
@@ -126,8 +125,7 @@ export const yvwethDb = {
     const oldStrategy = {
       chainId: 1,
       address: addresses.v2.genericLevCompFarmWeth,
-      vaultAddress: vault.address,
-      asOfBlockNumber: 0n
+      vaultAddress: vault.address
     } as types.Strategy
     await db.query(
       toUpsertSql('strategy', 'chain_id, address', oldStrategy),
@@ -137,8 +135,7 @@ export const yvwethDb = {
     const strategy = {
       chainId: 1,
       address: addresses.v2.strategystEthAccumulator_v2,
-      vaultAddress: vault.address,
-      asOfBlockNumber: 0n
+      vaultAddress: vault.address
     } as types.Strategy
     await db.query(
       toUpsertSql('strategy', 'chain_id, address', strategy),

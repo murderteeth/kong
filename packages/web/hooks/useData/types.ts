@@ -69,9 +69,11 @@ const TransferSchema = z.object({
   sender: z.string(),
   receiver: z.string(),
   amountUsd: z.number(),
-  blockTime: z.string(),
+  blockTime: z.bigint().or(bigIntStringNSchema),
   transactionHash: z.string()
 })
+
+export type Transfer = z.infer<typeof TransferSchema>
 
 const HarvestSchema = z.object({
   chainId: z.number(),

@@ -70,7 +70,7 @@ export class VaultExtractor__v2 implements Processor {
           address: strategy,
           vaultAddress: vault.address,
           withdrawalQueueIndex: withdrawalQueue.indexOf(strategy),
-          asOfBlockNumber
+          __as_of_block: asOfBlockNumber
       } as types.Strategy)
     }
   }

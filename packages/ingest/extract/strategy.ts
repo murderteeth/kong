@@ -44,7 +44,7 @@ export class StrategyExtractor implements Processor {
       ...fields,
       totalDebtUsd,
       activationBlockNumber,
-      asOfBlockNumber
+      __as_of_block: asOfBlockNumber
     } as types.Strategy
 
     await this.queue?.add(

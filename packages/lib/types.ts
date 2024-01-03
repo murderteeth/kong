@@ -114,7 +114,7 @@ export interface Strategy {
   tradeFactory?: `0x${string}`,
   activationBlockTime?: bigint,
   activationBlockNumber?: bigint,
-  asOfBlockNumber: bigint
+  __as_of_block?: bigint
 }
 
 export interface StrategyLenderStatus {

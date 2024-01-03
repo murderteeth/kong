@@ -39,6 +39,5 @@ type Strategy {
   riskGroup: String
   activationBlockTime: String
   activationBlockNumber: String
-  asOfBlockNumber: String
 }
 `

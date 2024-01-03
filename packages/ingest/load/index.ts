@@ -21,6 +21,9 @@ export default class Load implements Processor {
     [mq.job.load.vault]: async data => 
     await upsertAsOfBlock(data, 'vault', ['chain_id', 'address']),
 
+    [mq.job.load.strategy]: async data =>
+    await upsertAsOfBlock(data, 'strategy', ['chain_id', 'address']),
+
     [mq.job.load.withdrawalQueue]: async data => 
     await upsertBatch(data.batch, 'withdrawal_queue', 'chain_id, vault_address, queue_index', 
       'WHERE EXCLUDED.as_of_block_number IS NULL OR withdrawal_queue.as_of_block_number < EXCLUDED.as_of_block_number'
@@ -30,11 +33,6 @@ export default class Load implements Processor {
     await upsertBatch(data.batch, 'vault_debt', 'chain_id, lender, borrower', 
       'WHERE vault_debt.block_number < EXCLUDED.block_number'
     ),
-
-    [mq.job.load.strategy]: async data => {
-    await upsert(data, 'strategy', 'chain_id, address',
-      'WHERE EXCLUDED.as_of_block_number IS NULL OR strategy.as_of_block_number < EXCLUDED.as_of_block_number'
-    )},
 
     [mq.job.load.strategyLenderStatus]: async data => {
       if(data.batch.length === 0) return

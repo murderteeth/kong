@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Panel from './Panel'
-import { Transfer, useData } from '@/hooks/useData'
+import { useData } from '@/hooks/useData'
 import { zeroAddress } from 'viem'
 import { fEvmAddress, fUSD } from '@/util/format'
 import ReactTimeago from 'react-timeago'
+import { Transfer } from '@/hooks/useData/types'
 
 function TransferComponent({ transfer }: { transfer: Transfer }) {
+  if(!transfer) return null
   const isDeposit = useMemo(() => transfer.sender === zeroAddress, [transfer])
   const label = useMemo(() => isDeposit ? '[+] deposit' : '[-] withdrawal', [isDeposit])
   const address = useMemo(() => isDeposit ? transfer.receiver : transfer.sender, [isDeposit, transfer])
@@ -46,6 +48,10 @@ function TransferComponent({ transfer }: { transfer: Transfer }) {
 
 export default function Deposits({ className }: { className?: string }) {
   const { transfers } = useData()
+
+  if (transfers.length === 0) return null
+
+  useEffect(() => console.log('transfers', transfers), [transfers])
 
   return <Panel className={`flex flex-col ${className}`}>
     <div className="font-bold text-lg">Deposits x Withdrawals</div>
