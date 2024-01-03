@@ -31,18 +31,7 @@ export default class Load implements Processor {
       'WHERE vault_debt.block_number < EXCLUDED.block_number'
     ),
 
-    [mq.job.load.strategyLenderStatus]: async data => {
-      if(data.batch.length === 0) return
-      if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.chainId))).size > 1) throw new Error('chain ids > 1')
-      if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.strategyAddress))).size > 1) throw new Error('strategy addresses > 1')
-      await replaceWithBatch(
-        data.batch,
-        'strategy_lender_status', 
-        'chain_id, strategy_address, address', 
-        `chain_id = $1 AND strategy_address = $2`,
-        [data.batch[0].chainId, data.batch[0].strategyAddress]
-      )
-    },
+    [mq.job.load.strategyLenderStatus]: async data => await upsertStrategyLenderStatus(data),
 
     [mq.job.load.harvest]: async data => 
     await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index, address'),
@@ -204,6 +193,9 @@ export async function replaceWithBatch(batch: any[], table: string, pk: string, 
 }
 
 async function upsertWithdrawalQueue(data: any) {
+  if(data.batch == null) throw new Error('!data.batch')
+  if(data.batch.length === 0) return
+
   if(data.__chain_id == null) throw new Error('!data.__chain_id')
   if(data.__vault_address == null) throw new Error('!data.__vault_address')
   if(data.__as_of_block == null) throw new Error('!data.__as_of_block')
@@ -226,6 +218,48 @@ async function upsertWithdrawalQueue(data: any) {
         `chain_id = $1 AND vault_address = $2`,
         [chainId, vaultAddress],
         client)
+      await setBlockPointer(pointerKey, asOfBlockNumber, client)
+    }
+    await client.query('COMMIT')
+
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+async function upsertStrategyLenderStatus(data: any) {
+  if(data.batch == null) throw new Error('!data.batch')
+  if(data.batch.length === 0) return
+  if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.chainId))).size > 1) throw new Error('chain ids > 1')
+  if((new Set(data.batch.map((d: types.StrategyLenderStatus) => d.strategyAddress))).size > 1) throw new Error('strategy addresses > 1')
+
+  if(data.__chain_id == null) throw new Error('!data.__chain_id')
+  if(data.__strategy_address == null) throw new Error('!data.__strategy_address')
+  if(data.__as_of_block == null) throw new Error('!data.__as_of_block')
+
+  const chainId = data.__chain_id as number
+  const strategyAddress = data.__strategy_address as `0x${string}`
+  const pointerKey = `${chainId}/${strategyAddress}/strategy_lender_status`
+  const asOfBlockNumber = BigInt(data.__as_of_block)
+
+  const client = await db.connect()
+  await client.query('BEGIN')
+
+  try {
+    const pointer = await getBlockPointer(pointerKey, client)
+    if(pointer < asOfBlockNumber) {
+      await replaceWithBatch(
+        data.batch,
+        'strategy_lender_status', 
+        'chain_id, strategy_address, address', 
+        `chain_id = $1 AND strategy_address = $2`,
+        [chainId, strategyAddress],
+        client
+      )
       await setBlockPointer(pointerKey, asOfBlockNumber, client)
     }
     await client.query('COMMIT')

@@ -13,8 +13,7 @@ describe('strategy', function() {
       name: 'GenericCompV3',
       assets: 1125403759558n,
       rate: 63939160081334480n,
-      address: '0x2eD5eAf929Fee1F5F9B32d83dB8ed06b52692A74',
-      asOfBlockNumber: 18530014n
+      address: '0x2eD5eAf929Fee1F5F9B32d83dB8ed06b52692A74'
     })
   })
 

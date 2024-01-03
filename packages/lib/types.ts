@@ -124,7 +124,7 @@ export interface StrategyLenderStatus {
   assets: bigint
   rate: number
   address: `0x${string}`
-  asOfBlockNumber: bigint
+  __as_of_block: bigint
 }
 
 export interface WithdrawalQueueItem {

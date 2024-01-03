@@ -42,6 +42,7 @@ DROP VIEW strategy_gql;
 ALTER TABLE vault DROP COLUMN as_of_block_number;
 ALTER TABLE strategy DROP COLUMN as_of_block_number;
 ALTER TABLE withdrawal_queue DROP COLUMN as_of_block_number;
+ALTER TABLE strategy_lender_status DROP COLUMN as_of_block_number;
 
 CREATE VIEW vault_gql AS
 SELECT 

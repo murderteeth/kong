@@ -54,7 +54,12 @@ export class StrategyExtractor implements Processor {
     const lenderStatuses = await extractLenderStatuses(strategy.chainId, strategy.address, asOfBlockNumber)
     if(lenderStatuses.length > 0) {
       await this.queue?.add(
-        mq.job.load.strategyLenderStatus, { batch: lenderStatuses }
+        mq.job.load.strategyLenderStatus, {
+          batch: lenderStatuses,
+          __chain_id: strategy.chainId,
+          __strategy_address: strategy.address,
+          __as_of_block: asOfBlockNumber
+        }
       )
     }
   }
@@ -178,8 +183,7 @@ export async function extractLenderStatuses(chainId: number, address: `0x${strin
       name: status.name,
       assets: status.assets,
       rate: status.rate,
-      address: status.add,
-      asOfBlockNumber: blockNumber
+      address: status.add
     }))
   } catch(error) {
     if(error instanceof ContractFunctionExecutionError) return []
