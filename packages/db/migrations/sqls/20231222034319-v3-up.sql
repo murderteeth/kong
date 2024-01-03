@@ -1,3 +1,7 @@
+DROP VIEW vault_gql;
+DROP VIEW strategy_gql;
+DROP VIEW harvest_gql;
+
 ALTER TABLE vault ADD COLUMN emergency_shutdown boolean NULL;
 
 ALTER TABLE vault ADD COLUMN profit_max_unlock_time numeric NULL;
@@ -35,10 +39,6 @@ UPDATE block_pointer SET address = chain_id::text || '/' || address;
 ALTER TABLE block_pointer RENAME COLUMN address TO pointer;
 ALTER TABLE block_pointer DROP COLUMN chain_id;
 ALTER TABLE block_pointer ADD CONSTRAINT block_pointer_pkey PRIMARY KEY (pointer);
-
-DROP VIEW vault_gql;
-DROP VIEW strategy_gql;
-DROP VIEW harvest_gql;
 
 ALTER TABLE vault DROP COLUMN as_of_block_number;
 ALTER TABLE strategy DROP COLUMN as_of_block_number;

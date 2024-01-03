@@ -1,3 +1,7 @@
+DROP VIEW vault_gql;
+DROP VIEW strategy_gql;
+DROP VIEW harvest_gql;
+
 ALTER TABLE vault DROP COLUMN emergency_shutdown;
 
 ALTER TABLE vault DROP COLUMN profit_max_unlock_time;
@@ -11,8 +15,8 @@ ALTER TABLE vault DROP COLUMN role_manager;
 ALTER TABLE vault DROP COLUMN debt_manager;
 ALTER TABLE vault DROP COLUMN is_shutdown;
 
-ALTER TABLE harvest DROP COLUMN protocol_fee;
-ALTER TABLE harvest DROP COLUMN protocol_fee_usd;
+ALTER TABLE harvest DROP COLUMN protocol_fees;
+ALTER TABLE harvest DROP COLUMN protocol_fees_usd;
 ALTER TABLE harvest DROP COLUMN performance_fees;
 ALTER TABLE harvest DROP COLUMN performance_fees_usd;
 
@@ -52,7 +56,6 @@ ALTER TABLE apy ALTER COLUMN monthly_block_number TYPE int8 USING monthly_block_
 ALTER TABLE apy ALTER COLUMN inception_block_number TYPE int8 USING inception_block_number::int8;
 ALTER TABLE apy ALTER COLUMN block_number TYPE int8 USING block_number::int8;
 
-DROP VIEW vault_gql;
 CREATE VIEW vault_gql AS
 SELECT 
 	v.*,
@@ -92,7 +95,6 @@ LEFT JOIN LATERAL (
 	LIMIT 1
 ) a ON TRUE;
 
-DROP VIEW strategy_gql;
 CREATE VIEW strategy_gql AS
 SELECT 
 	s.*,
@@ -109,7 +111,6 @@ LEFT JOIN LATERAL (
 	LIMIT 1
 ) a ON TRUE;
 
-DROP VIEW harvest_gql;
 CREATE VIEW harvest_gql AS
 SELECT 
 	h.*,
