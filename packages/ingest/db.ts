@@ -23,9 +23,19 @@ const db = new Pool({
 
 export default db
 
+export async function some(query: string, params: any[] = [], client?: PoolClient) {
+  const result = await (client ?? db).query(query, params)
+  return result.rows.length > 0
+}
+
 export async function firstRow(query: string, params: any[] = [], client?: PoolClient) {
   const result = await (client ?? db).query(query, params)
   return result.rows[0]
+}
+
+export async function firstValue<T>(query: string, params: any[] = [], client?: PoolClient): Promise<T | undefined> {
+  const result = await (client ?? db).query(query, params)
+  return result.rows[0] ? result.rows[0][Object.keys(result.rows[0])[0]] as T : undefined
 }
 
 export async function getLatestBlock(chainId: number) {
