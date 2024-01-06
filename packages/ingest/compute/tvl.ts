@@ -28,7 +28,7 @@ export class TvlComputer implements Processor {
     let number: bigint = 0n
     let timestamp: bigint = 0n
     let latest: boolean = false
-    if(time > BigInt(Math.floor(new Date().getTime() / 1000))) {
+    if(time >= BigInt(Math.floor(new Date().getTime() / 1000))) {
       ({ number, timestamp, latest } = {...await rpcs.next(chainId).getBlock(), latest: true})
     } else {
       const estimate = await estimateHeight(chainId, time);

@@ -40,7 +40,7 @@ export default class Load implements Processor {
     await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
 
     [mq.job.load.tvl]: async (data: types.TVL) => {
-      await upsert(data, 'tvl', 'chain_id, address, block_time'),
+      await upsert(data, 'tvl', 'chain_id, address, block_time', 'WHERE tvl.price_usd > 0'),
       await this.queue?.add(mq.job.load.sparkline.tvl, { 
         chainId: data.chainId, address: data.address 
       })
