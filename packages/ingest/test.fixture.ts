@@ -54,6 +54,7 @@ export const yvusdtDb = {
       chainId: 1, type: 'vault',
       address: addresses.v2.yvusdt,
       assetAddress: addresses.v2.usdt,
+      apiVersion: '0.4.3',
       decimals: 6
     } as types.Vault
     await db.query(
@@ -64,7 +65,8 @@ export const yvusdtDb = {
     const strategy = {
       chainId: 1,
       address: addresses.v2.strategyLenderYieldOptimiser,
-      vaultAddress: vault.address
+      vaultAddress: vault.address,
+      apiVersion: '0.4.3',
     } as types.Strategy
     await db.query(
       toUpsertSql('strategy', 'chain_id, address', strategy),
@@ -115,6 +117,7 @@ export const yvwethDb = {
       chainId: 1, type: 'vault',
       address: addresses.v2.yvweth,
       assetAddress: addresses.v2.weth,
+      apiVersion: '0.4.2',
       decimals: 18
     } as types.Vault
     await db.query(
@@ -125,7 +128,8 @@ export const yvwethDb = {
     const oldStrategy = {
       chainId: 1,
       address: addresses.v2.genericLevCompFarmWeth,
-      vaultAddress: vault.address
+      vaultAddress: vault.address,
+      apiVersion: '0.4.2'
     } as types.Strategy
     await db.query(
       toUpsertSql('strategy', 'chain_id, address', oldStrategy),
@@ -135,7 +139,8 @@ export const yvwethDb = {
     const strategy = {
       chainId: 1,
       address: addresses.v2.strategystEthAccumulator_v2,
-      vaultAddress: vault.address
+      vaultAddress: vault.address,
+      apiVersion: '0.4.2'
     } as types.Strategy
     await db.query(
       toUpsertSql('strategy', 'chain_id, address', strategy),
@@ -187,7 +192,9 @@ export const yvusdcaDb = {
       chainId: 137, type: 'vault',
       address: addresses.v3.yvusdca,
       assetAddress: addresses.v3.usdc,
-      decimals: 6
+      apiVersion: '3.0.1',
+      decimals: 6,
+      activationBlockNumber: 49181585n,
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', vault), 
@@ -195,9 +202,10 @@ export const yvusdcaDb = {
     )
 
     const compoundV3UsdcLender = {
-      chainId: 137, type: 'vault',
+      chainId: 137, type: 'strategy',
       address: addresses.v3.compoundV3UsdcLender,
       assetAddress: addresses.v3.usdc,
+      apiVersion: '3.0.1',
       decimals: 6
     } as types.Vault
     await db.query(
@@ -209,15 +217,16 @@ export const yvusdcaDb = {
       chainId: 137,
       vaultAddress: addresses.v3.yvusdca,
       queueIndex: 0,
-      strategyAddress: addresses.v3.compoundV3UsdcLender,
-      asOfBlockNumber: 0n
-    }), [137, addresses.v3.yvusdca, 0, addresses.v3.compoundV3UsdcLender, 0n])
+      strategyAddress: addresses.v3.compoundV3UsdcLender
+    }), [137, addresses.v3.yvusdca, 0, addresses.v3.compoundV3UsdcLender])
 
     const aaveV3UsdcLender = {
-      chainId: 137, type: 'vault',
+      chainId: 137, type: 'strategy',
       address: addresses.v3.aaveV3UsdcLender,
       assetAddress: addresses.v3.usdc,
-      decimals: 6
+      apiVersion: '3.0.1',
+      decimals: 6,
+      activationBlockNumber: 49181585n
     } as types.Vault
     await db.query(
       toUpsertSql('vault', 'chain_id, address', aaveV3UsdcLender), 
@@ -228,14 +237,14 @@ export const yvusdcaDb = {
       chainId: 137,
       vaultAddress: addresses.v3.yvusdca,
       queueIndex: 1,
-      strategyAddress: addresses.v3.aaveV3UsdcLender,
-      asOfBlockNumber: 0n
-    }), [137, addresses.v3.yvusdca, 0, addresses.v3.aaveV3UsdcLender, 0n])
+      strategyAddress: addresses.v3.aaveV3UsdcLender
+    }), [137, addresses.v3.yvusdca, 0, addresses.v3.aaveV3UsdcLender])
 
     const stargateUsdcStaker = {
-      chainId: 137, type: 'vault',
+      chainId: 137, type: 'strategy',
       address: addresses.v3.stargateUsdcStaker,
       assetAddress: addresses.v3.usdc,
+      apiVersion: '3.0.1',
       decimals: 6
     } as types.Vault
     await db.query(
@@ -247,9 +256,8 @@ export const yvusdcaDb = {
       chainId: 137,
       vaultAddress: addresses.v3.yvusdca,
       queueIndex: 1,
-      strategyAddress: addresses.v3.stargateUsdcStaker,
-      asOfBlockNumber: 0n
-    }), [137, addresses.v3.yvusdca, 0, addresses.v3.stargateUsdcStaker, 0n])
+      strategyAddress: addresses.v3.stargateUsdcStaker
+    }), [137, addresses.v3.yvusdca, 0, addresses.v3.stargateUsdcStaker])
   },
 
   down: async () => {

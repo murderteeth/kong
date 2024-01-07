@@ -66,6 +66,10 @@ ALTER TABLE apy ALTER COLUMN weekly_block_number TYPE numeric USING weekly_block
 ALTER TABLE apy ALTER COLUMN monthly_block_number TYPE numeric USING monthly_block_number::numeric;
 ALTER TABLE apy ALTER COLUMN inception_block_number TYPE numeric USING inception_block_number::numeric;
 ALTER TABLE apy ALTER COLUMN block_number TYPE numeric USING block_number::numeric;
+ALTER TABLE apy ALTER COLUMN weekly_net DROP NOT NULL;
+ALTER TABLE apy ALTER COLUMN weekly_price_per_share DROP NOT NULL;
+ALTER TABLE apy ALTER COLUMN monthly_net DROP NOT NULL;
+ALTER TABLE apy ALTER COLUMN monthly_price_per_share DROP NOT NULL;
 
 CREATE VIEW vault_gql AS
 SELECT 

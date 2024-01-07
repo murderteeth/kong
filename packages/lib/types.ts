@@ -18,24 +18,26 @@ export interface APR {
   blockTime: bigint
 }
 
-export interface APY {
-  chainId: number
-  address: `0x${string}`
-  weeklyNet: number,
-  weeklyPricePerShare: bigint,
-  weeklyBlockNumber: bigint,
-  monthlyNet: number,
-  monthlyPricePerShare: bigint,
-  monthlyBlockNumber: bigint,
-  inceptionNet: number,
-  inceptionPricePerShare: bigint,
-  inceptionBlockNumber: bigint
-  net: number
-  grossApr: number
-  pricePerShare: bigint
-  blockNumber: bigint
-  blockTime: bigint
-}
+export const APYSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  weeklyNet: z.number().nullish(),
+  weeklyPricePerShare: z.bigint({ coerce: true }).nullish(),
+  weeklyBlockNumber: z.bigint({ coerce: true }),
+  monthlyNet: z.number().nullish(),
+  monthlyPricePerShare: z.bigint({ coerce: true }).nullish(),
+  monthlyBlockNumber: z.bigint({ coerce: true }),
+  inceptionNet: z.number(),
+  inceptionPricePerShare: z.bigint({ coerce: true }),
+  inceptionBlockNumber: z.bigint({ coerce: true }),
+  net: z.number(),
+  grossApr: z.number(),
+  pricePerShare: z.bigint({ coerce: true }),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true })
+})
+
+export type APY = z.infer<typeof APYSchema>
 
 export interface TVL {
   chainId: number

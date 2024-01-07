@@ -1,5 +1,5 @@
 import { math, mq, multicall3, types } from 'lib'
-import db from '../db'
+import db, { firstRow, getApiVersion } from '../db'
 import { rpcs } from '../rpcs'
 import { ReadContractParameters, parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
@@ -9,6 +9,7 @@ import { extractFeesBps, extractWithdrawalQueue } from '../extract/vault/version
 import { mainnet } from 'viem/chains'
 import { compare } from 'compare-versions'
 import { endOfDay } from 'lib/dates'
+import { extractDefaultQueue } from '../extract/vault/version3'
 
 export class ApyComputer implements Processor {
   queue: Queue | undefined
@@ -24,40 +25,59 @@ export class ApyComputer implements Processor {
   async compute({ chainId, address, time }
     : { chainId: number, address: `0x${string}`, time: bigint }) 
   {
-    let number: bigint = 0n
+    let blockNumber: bigint = 0n
     if(time > BigInt((new Date()).getTime() * 1000)) {
-      number = await rpcs.next(chainId).getBlockNumber()
+      blockNumber = await rpcs.next(chainId).getBlockNumber()
     } else {
-      number = await estimateHeight(chainId, time)
+      blockNumber = await estimateHeight(chainId, time)
     }
 
-    if(!multicall3.supportsBlock(chainId, BigInt(number))) {
-      console.warn('🚨', 'block not supported', chainId, number)
+    if(!multicall3.supportsBlock(chainId, BigInt(blockNumber))) {
+      console.warn('🚨', 'block not supported', chainId, blockNumber)
       return
     }
 
-    const apy = await _compute(chainId, address, number)
+    const apy = await _compute(chainId, address, blockNumber)
     if(apy === null) return
 
     const artificialBlockTime = endOfDay(time)
     apy.blockTime = artificialBlockTime
 
     await this.queue?.add(mq.job.load.apy, apy, {
-      jobId: `${chainId}-${number}-${address}-apy`
+      jobId: `${chainId}-${blockNumber}-${address}-apy`
     })
   }
 }
 
 export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const [inception, harvest2] = await getFirstTwoHarvestBlocks(chainId, address)
-  if(!(inception && harvest2)) {
-    console.warn('🚨', 'harvests < 2', chainId, address)
+  const { apiVersion, type, activationBlockNumber } = await firstRow(`
+    SELECT api_version as "apiVersion", type, activation_block_number as "activationBlockNumber" FROM vault WHERE chain_id = $1 AND address = $2;`,
+    [chainId, address]
+  )
+
+  if(!apiVersion) {
+    console.warn('🚨', '!apiVersion', chainId, address)
     return null
   }
 
-  if(inception > blockNumber) {
-    console.warn('🚨', 'inception > blockNumber', chainId, address)
-    return null
+  let inceptionBlockNumber = 0n
+
+  if(type === 'strategy' || compare(apiVersion, '3.0.0', '<')) {
+    const [first, second] = await getFirstTwoHarvestBlocks(chainId, address)
+
+    if(!(first && second)) {
+      console.warn('🚨', 'harvests < 2', chainId, address)
+      return null
+    }
+  
+    if(first > blockNumber) {
+      console.warn('🚨', 'first > blockNumber', chainId, address)
+      return null
+    }
+
+    inceptionBlockNumber = first
+  } else {
+    inceptionBlockNumber = BigInt(activationBlockNumber)
   }
 
   const block = await getBlock(chainId, blockNumber)
@@ -65,15 +85,15 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
   const result = {
     chainId,
     address,
-    weeklyNet: 0,
-    weeklyPricePerShare: 0n,
+    weeklyNet: undefined,
+    weeklyPricePerShare: undefined,
     weeklyBlockNumber: 0n,
-    monthlyNet: 0,
-    monthlyPricePerShare: 0n,
+    monthlyNet: undefined,
+    monthlyPricePerShare: undefined,
     monthlyBlockNumber: 0n,
     inceptionNet: 0,
     inceptionPricePerShare: 0n,
-    inceptionBlockNumber: inception,
+    inceptionBlockNumber,
     net: 0,
     grossApr: 0,
     pricePerShare: 0n,
@@ -95,37 +115,39 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
 
   if (result.pricePerShare === result.inceptionPricePerShare) return result
 
-  result.weeklyPricePerShare = await rpcs.next(chainId, result.weeklyBlockNumber).readContract({...ppsParameters, blockNumber: result.weeklyBlockNumber}) as bigint
-  result.monthlyPricePerShare = await rpcs.next(chainId, result.monthlyBlockNumber).readContract({...ppsParameters, blockNumber: result.monthlyBlockNumber}) as bigint
+  result.weeklyPricePerShare = result.weeklyBlockNumber < result.inceptionBlockNumber ? undefined : await rpcs.next(chainId, result.weeklyBlockNumber).readContract({...ppsParameters, blockNumber: result.weeklyBlockNumber}) as bigint
+  result.monthlyPricePerShare = result.monthlyBlockNumber < result.inceptionBlockNumber ? undefined : await rpcs.next(chainId, result.monthlyBlockNumber).readContract({...ppsParameters, blockNumber: result.monthlyBlockNumber}) as bigint
 
   const blocksPerDay = (blockNumber - result.weeklyBlockNumber) / 7n
 
-  result.weeklyNet = compoundAndAnnualizeDelta(
+  result.weeklyNet = result.weeklyPricePerShare === undefined ? undefined : compoundAndAnnualizeDelta(
     { block: result.weeklyBlockNumber, pps: result.weeklyPricePerShare }, 
     { block: blockNumber, pps: result.pricePerShare }, blocksPerDay
   )
 
-  result.monthlyNet = compoundAndAnnualizeDelta(
-    { block: result.monthlyBlockNumber, pps: result.monthlyPricePerShare }, 
+  result.monthlyNet = result.monthlyPricePerShare === undefined ? undefined : compoundAndAnnualizeDelta(
+    { block: result.monthlyBlockNumber, pps: result.monthlyPricePerShare },
     { block: blockNumber, pps: result.pricePerShare }, blocksPerDay
   )
 
   result.inceptionNet = compoundAndAnnualizeDelta(
-    { block: result.inceptionBlockNumber, pps: result.inceptionPricePerShare }, 
+    { block: result.inceptionBlockNumber, pps: result.inceptionPricePerShare },
     { block: blockNumber, pps: result.pricePerShare }, blocksPerDay
   )
 
-  const candidates = []
+  const candidates: (number | undefined)[] = []
 	if(chainId !== mainnet.id) {
 		candidates.push(result.weeklyNet, result.monthlyNet, result.inceptionNet)
 	} else {
 		candidates.push(result.monthlyNet, result.weeklyNet, result.inceptionNet)
 	}
 
-	result.net = candidates.find(apy => apy > 0) || 0
+  result.net = candidates.find(apy => apy !== undefined) ?? (() => { throw new Error('!candidates') })()
 
   const annualCompoundingPeriods = 52
-  const fees = await getFees(chainId, address, blockNumber)
+  const fees = compare(apiVersion, '3.0.0', '>=')
+  ? await extractFees__v3(chainId, address, blockNumber)
+  : await extractFees__v2(chainId, address, blockNumber)
 
   const netApr = result.net > 0
   ? annualCompoundingPeriods * Math.pow(result.net + 1, 1 / annualCompoundingPeriods) - annualCompoundingPeriods
@@ -136,8 +158,7 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
   : netApr / (1 - fees.performance) + fees.management
 
   if(result.net < 0) {
-    const version = await getVaultVersion(chainId, address)
-    if(compare(version, '0.3.5', '>=')) {
+    if(compare(apiVersion, '0.3.5', '>=')) {
       result.net = 0
     }
   }
@@ -155,14 +176,25 @@ function compoundAndAnnualizeDelta(
   return Math.pow(1 + delta, 365.2425 / period) - 1
 }
 
+export async function hasAtLeastTwoHarvests(chainId: number, address: `0x${string}`) {
+  const firstTwo = await getFirstTwoHarvestBlocks(chainId, address)
+  return firstTwo.length === 2
+}
+
 async function getFirstTwoHarvestBlocks(chainId: number, vault: `0x${string}`) {
   const result = await db.query(`
     SELECT h.block_number as "blockNumber"
     FROM harvest h
-    JOIN strategy s 
+    LEFT JOIN vault v 
+      ON v.chain_id = h.chain_id 
+      AND v.address = h.address
+    LEFT JOIN strategy s 
       ON s.chain_id = h.chain_id 
       AND s.address = h.address
-    WHERE h.chain_id = $1 AND s.vault_address = $2
+    WHERE h.chain_id = $1 AND (
+      v.address = $2
+      OR s.vault_address = $2
+    )
     ORDER BY h.block_number ASC
     LIMIT 2;
   `, [chainId, vault])
@@ -170,7 +202,7 @@ async function getFirstTwoHarvestBlocks(chainId: number, vault: `0x${string}`) {
   return result.rows.map(r => BigInt(r.blockNumber))
 }
 
-async function getFees(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+export async function extractFees__v2(chainId: number, address: `0x${string}`, blockNumber: bigint) {
   const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
 
   const strategiesMulticall = await rpcs.next(chainId, blockNumber).multicall({ contracts: strategies.map(s => ({
@@ -188,6 +220,110 @@ async function getFees(chainId: number, address: `0x${string}`, blockNumber: big
   return {
     performance: math.div(strategistFeesBps + vaultFeesBps.performance, 10_000n),
     management: math.div(vaultFeesBps.management, 10_000n)
+  }
+}
+
+async function extractAccountant(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  try {
+    return await rpcs.next(chainId, blockNumber).readContract({
+      address, 
+      abi: parseAbi(['function accountant() view returns (address)']),
+      functionName: 'accountant'
+    })
+  } catch(error) {
+    return undefined
+  }  
+}
+
+export async function extractFees__v3(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  const accountant = await extractAccountant(chainId, address, blockNumber)
+  if(!accountant) {
+    try {
+      const performanceFeeBps = await rpcs.next(chainId, blockNumber).readContract({
+        address, 
+        abi: parseAbi(['function performanceFee() view returns (uint16)']),
+        functionName: 'performanceFee'    
+      })
+      return {
+        performance: performanceFeeBps / 10_000,
+        management: 0
+      }
+    } catch(error) {
+      console.warn('🚨', '!accountant && !performanceFees')
+      return {
+        performance: 0,
+        management: 0
+      }
+    }
+  }
+
+  const strategies = await extractDefaultQueue({ chainId, address }, blockNumber)
+  if(strategies.length === 0) return {
+    performance: 0,
+    management: 0
+  }
+
+  const strategyMulticalls = strategies.map(s => [
+    {
+      address,
+      abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)']),
+      functionName: 'strategies',
+      args: [s as string]
+    },
+    {
+      address: accountant,
+      abi: parseAbi(['function useCustomConfig(address, address) view returns (bool)']),
+      functionName: 'useCustomConfig',
+      args: [address, s as string]
+    },
+    {
+      address: accountant,
+      abi: parseAbi(['function customConfig(address, address) view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
+      functionName: 'customConfig',
+      args: [address, s as string]
+    }
+  ]).flat()
+
+  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
+    {
+      address: accountant,
+      abi: parseAbi(['function defaultConfig() view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
+      functionName: 'defaultConfig'
+    },
+    {
+      address,
+      abi: parseAbi(['function totalDebt() view returns (uint256)']),
+      functionName: 'totalDebt'
+    },
+    ...strategyMulticalls
+  ], blockNumber})
+
+  const defaultConfigResult = multicallResult[0]
+  const defaultManagementFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as number[])[0] : 0
+  const defaultPerformanceFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as number[])[1] : 0
+  const totalDebt = multicallResult[1].result as bigint
+  const feesBps = { performance: 0, management: 0 }
+  for(let i = 0; i < strategies.length; i++) {
+    const vaultParameters = multicallResult[i * 3 + 2 + 0]
+    const [ activation, lastReport, currentDebt, maxDebt ] = vaultParameters.result as bigint[]
+    const debtRatio = math.div(currentDebt, totalDebt)
+
+    const useCustomConfigResult = multicallResult[i * 3 + 2 + 1]
+    const useCustomConfig = useCustomConfigResult.result as boolean
+    if(useCustomConfig) {
+      const customConfigResult = multicallResult[i * 3 + 2 + 2]
+      const [ managementFee, performanceFee, refundRatio, maxFee, maxGain, maxLoss ] = customConfigResult.result as number []
+      feesBps.performance += debtRatio * performanceFee
+      feesBps.management += debtRatio * managementFee
+    } else {
+      feesBps.performance += debtRatio * defaultPerformanceFee
+      feesBps.management += debtRatio * defaultManagementFee
+    }
+  }
+
+  return {
+    performance: feesBps.performance / 10_000,
+    management: feesBps.management / 10_000
   }
 }
 

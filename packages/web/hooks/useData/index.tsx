@@ -161,7 +161,7 @@ export default function DataProvider({children}: {children: ReactNode}) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         query: VAULT_QUERY,
-        variables: { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c' }
+        variables: { chainId: 137, address: '0xA013Fbd4b711f9ded6fB09C1c0d358E2FbC2EAA0' }
       })
     }).then(res => res.json()),
     { refreshInterval: 10_000 }
