@@ -59,6 +59,8 @@ ALTER TABLE apy ALTER COLUMN weekly_net SET NOT NULL;
 ALTER TABLE apy ALTER COLUMN weekly_price_per_share SET NOT NULL;
 ALTER TABLE apy ALTER COLUMN monthly_net SET NOT NULL;
 ALTER TABLE apy ALTER COLUMN monthly_price_per_share SET NOT NULL;
+ALTER TABLE apy DROP COLUMN locked_profit;
+
 
 CREATE VIEW vault_gql AS
 SELECT 

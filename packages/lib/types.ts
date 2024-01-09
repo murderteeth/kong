@@ -33,6 +33,7 @@ export const APYSchema = z.object({
   net: z.number(),
   grossApr: z.number(),
   pricePerShare: z.bigint({ coerce: true }),
+  lockedProfit: z.bigint({ coerce: true }).nullish(),
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true })
 })

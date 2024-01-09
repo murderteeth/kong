@@ -163,6 +163,10 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
     }
   }
 
+  result.lockedProfit = compare(apiVersion, '3.0.0', '>=')
+  ? await extractLockedProfit__v3(chainId, address, blockNumber)
+  : await extractLockedProfit__v2(chainId, address, blockNumber)
+
   return result
 }
 
@@ -233,6 +237,63 @@ async function extractAccountant(chainId: number, address: `0x${string}`, blockN
   } catch(error) {
     return undefined
   }  
+}
+
+export async function extractLockedProfit__v2(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  const DEGRADATION_COEFFICIENT = 10n ** 18n
+  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
+    {
+      address, functionName: 'lastReport',
+      abi: parseAbi(['function lastReport() returns (uint256)'])
+    },
+    {
+      address, functionName: 'lockedProfit',
+      abi: parseAbi(['function lockedProfit() returns (uint256)'])
+    },
+    {
+      address, functionName: 'lockedProfitDegradation',
+      abi: parseAbi(['function lockedProfitDegradation() returns (uint256)'])
+    }
+  ], blockNumber })
+
+  if(multicallResult.some(r => r.status === 'failure')) {
+    console.warn('🚨', 'extractLockedProfit__v2', 'multicall fail', chainId, address, blockNumber)
+    return undefined
+  }
+
+  const lastReport = multicallResult[0].result as bigint
+  const lockedProfit = multicallResult[1].result as bigint
+  const lockedProfitDegradation = multicallResult[2].result as bigint
+
+  const lockedFundsRatio = (blockNumber - lastReport) * lockedProfitDegradation
+  if(lockedFundsRatio < DEGRADATION_COEFFICIENT) {
+    return lockedProfit - BigInt(Math.floor(math.div(lockedFundsRatio * lockedProfit, DEGRADATION_COEFFICIENT)))
+  } else {
+    return 0n
+  }
+}
+
+export async function extractLockedProfit__v3(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+  try {
+    const shares = await rpcs.next(chainId, blockNumber).readContract({
+      address,
+      abi: parseAbi(['function balanceOf(address) view returns (uint256)']),
+      functionName: 'balanceOf',
+      args: [ address ],
+      blockNumber
+    })
+    return await rpcs.next(chainId, blockNumber).readContract({
+      address,
+      abi: parseAbi(['function convertToAssets(uint256) view returns (uint256)']),
+      functionName: 'convertToAssets',
+      args: [ shares ],
+      blockNumber
+    })
+  } catch(error) {
+    console.warn('🚨', 'extractLockedProfit__v3', 'readContract fail', chainId, address, blockNumber)
+    console.warn(error)
+    return undefined
+  }
 }
 
 export async function extractFees__v3(chainId: number, address: `0x${string}`, blockNumber: bigint) {
@@ -325,14 +386,4 @@ export async function extractFees__v3(chainId: number, address: `0x${string}`, b
     performance: feesBps.performance / 10_000,
     management: feesBps.management / 10_000
   }
-}
-
-async function getVaultVersion(chainId: number, address: `0x${string}`) {
-  const result = await db.query(`
-    SELECT api_version as "apiVersion"
-    FROM vault
-    WHERE chain_id = $1 AND address = $2
-  `, [chainId, address])
-
-  return result.rows[0].apiVersion as string
 }
