@@ -26,16 +26,15 @@ export class TvlComputer implements Processor {
     : { chainId: number, address: `0x${string}`, time: bigint })
   {
     let number: bigint = 0n
-    let timestamp: bigint = 0n
     let latest: boolean = false
     if(time >= BigInt(Math.floor(new Date().getTime() / 1000))) {
-      ({ number, timestamp, latest } = {...await rpcs.next(chainId).getBlock(), latest: true})
+      ({ number, latest } = {...await rpcs.next(chainId).getBlock(), latest: true})
     } else {
       const estimate = await estimateHeight(chainId, time);
-      ({ number, timestamp } = await getBlock(chainId, estimate))
+      ({ number } = await getBlock(chainId, estimate))
     }
 
-    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, timestamp, latest)
+    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, number, latest)
     const artificialBlockTime = endOfDay(time)
 
     await this.queue?.add(mq.job.load.tvl, {
@@ -50,8 +49,7 @@ export class TvlComputer implements Processor {
   }
 }
 
-export async function _compute(chainId: number, address: `0x${string}`, time: bigint, latest = false) {
-  const blockNumber = await estimateHeight(chainId, time)
+export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint, latest = false) {
   const { assetAddress, decimals } = await getAsset(chainId, address)
   const { price, source } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber, latest)
 

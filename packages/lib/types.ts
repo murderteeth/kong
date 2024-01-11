@@ -81,6 +81,8 @@ export const VaultSchema = z.object({
   accountant: zaddress.nullish(),
   roleManager: zaddress.nullish(),
   debtManager: zaddress.nullish(),
+  keeper: zaddress.nullish(),
+  doHealthCheck: z.boolean().nullish(),
   emergencyShutdown: z.boolean().nullish(),
   isShutdown: z.boolean().nullish(),
   activationBlockTime: z.bigint({ coerce: true }).nullish(),

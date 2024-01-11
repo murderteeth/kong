@@ -14,6 +14,8 @@ ALTER TABLE vault ADD COLUMN accountant text NULL;
 ALTER TABLE vault ADD COLUMN role_manager text NULL;
 ALTER TABLE vault ADD COLUMN debt_manager text NULL;
 ALTER TABLE vault ADD COLUMN is_shutdown boolean NULL;
+ALTER TABLE vault ADD COLUMN keeper text NULL;
+ALTER TABLE vault ADD COLUMN do_health_check boolean NULL;
 
 ALTER TABLE harvest ADD COLUMN protocol_fees numeric NULL;
 ALTER TABLE harvest ADD COLUMN protocol_fees_usd numeric NULL;

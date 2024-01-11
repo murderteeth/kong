@@ -14,6 +14,8 @@ ALTER TABLE vault DROP COLUMN accountant;
 ALTER TABLE vault DROP COLUMN role_manager;
 ALTER TABLE vault DROP COLUMN debt_manager;
 ALTER TABLE vault DROP COLUMN is_shutdown;
+ALTER TABLE vault DROP COLUMN keeper;
+ALTER TABLE vault DROP COLUMN do_health_check;
 
 ALTER TABLE harvest DROP COLUMN protocol_fees;
 ALTER TABLE harvest DROP COLUMN protocol_fees_usd;

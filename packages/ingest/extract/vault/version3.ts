@@ -166,7 +166,15 @@ export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
     {
       address: vault.address, functionName: 'isShutdown',
       abi: parseAbi(['function isShutdown() returns (bool)'])
-    }
+    },
+    {
+      address: vault.address, functionName: 'keeper',
+      abi: parseAbi(['function keeper() returns (address)'])
+    },
+    {
+      address: vault.address, functionName: 'doHealthCheck',
+      abi: parseAbi(['function doHealthCheck() returns (bool)'])
+    },
   ], blockNumber })
 
   return {
@@ -185,7 +193,9 @@ export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
     depositLimit: multicallResult[12].result,
     accountant: multicallResult[13].result,
     roleManager: multicallResult[14].result,
-    isShutdown: multicallResult[15].result
+    isShutdown: multicallResult[15].result,
+    keeper: multicallResult[16].result,
+    doHealthCheck: multicallResult[17].result
   } as types.Vault
 }
 
@@ -323,7 +333,7 @@ export async function extractDebts(vault: types.Vault, queue: readonly `0x${stri
       borrower: queue[index],
       maxDebt: result[3],
       currentDebt: result[2],
-      currentDebtRatio: div(result[2], totalDebt),
+      currentDebtRatio: Math.floor(div(result[2], totalDebt) * 10_000),
       targetDebtRatio,
       maxDebtRatio,
       blockNumber: block.number,

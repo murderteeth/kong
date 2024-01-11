@@ -18,6 +18,8 @@ type Vault {
   availableDepositLimit: BigInt
   lockedProfitDegradation: BigInt
   totalDebt: String
+  currentDebt: String
+  currentDebtRatio: Float
   debtRatio: Int
   assetAddress: String
   assetSymbol: String
@@ -38,6 +40,9 @@ type Vault {
   managementFee: Float
   performanceFee: Float
   governance: String
+  latestReportBlockTime: BigInt
+  keeper: String
+  doHealthCheck: Boolean
   activationBlockTime: BigInt
   activationBlockNumber: BigInt
 }

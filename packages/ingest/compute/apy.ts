@@ -214,6 +214,7 @@ export async function extractFees__v2(chainId: number, address: `0x${string}`, b
   })), blockNumber})
 
   const strategistFeesBps = strategiesMulticall.map(strategy => {
+    if(strategy.status === 'failure') return 0n
     const fees = (strategy.result as bigint [])[0]
     const debtRatio = (strategy.result as bigint [])[2]
     return (fees * debtRatio) || 0n

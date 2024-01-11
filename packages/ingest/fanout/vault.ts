@@ -32,7 +32,6 @@ export default class VaultFanout implements Processor {
           address: pointer.address
         })
 
-        console.log('pointer.apiVersion', pointer.apiVersion)
         const events = compare(pointer.apiVersion, '3.0.0', '>=') 
         ? parseAbi([
           `event Reported(uint256 profit, uint256 loss, uint256 protocolFees, uint256 performanceFees)`,

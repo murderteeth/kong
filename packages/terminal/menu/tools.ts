@@ -45,7 +45,7 @@ async function action() {
             type: 'text',
             name: 'address',
             message: 'vault',
-            initial: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c',
+            initial: '0x27B5739e22ad9033bcBf192059122d163b60349D',
             validate: (value) => value.startsWith('0x') ? true : 'must start with 0x'
           }
         ])

@@ -32,6 +32,11 @@ export class HarvestAprComputer implements Processor {
     if(!(latest && previous)) return
 
     const handler = await getHandler(chainId, address)
+    if(!handler) {
+      console.warn('🚨', 'no handler', chainId, address)
+      return
+    }
+
     const apr = await handler.compute(latest, previous)
 
     const block = await getBlock(chainId, apr.blockNumber)
@@ -53,7 +58,7 @@ export async function getHandler(chainId: number, address: `0x${string}`) {
     return { name: 'v2', compute: compute__v2 }
   } else {
     const apiVersion = await firstValue<string>('SELECT api_version as "apiVersion" FROM vault WHERE chain_id = $1 AND address = $2', [chainId, address])
-    if(apiVersion == null) throw new Error(`missing strategy ${chainId}/${address}`)
+    if(apiVersion == null) return undefined
     if(compare(apiVersion, '3.0.0', '>=')) {
       return { name: 'v3', compute: compute__v3 }
     } else {
