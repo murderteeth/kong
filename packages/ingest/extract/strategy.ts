@@ -22,14 +22,14 @@ export class StrategyExtractor implements Processor {
 
   async extract(data: any) {
     const strategy = data as types.Strategy
-    const asOfBlockNumber = await rpcs.next(strategy.chainId).getBlockNumber()
+    const asOfBlockNumber = BigInt(data.__as_of_block ?? await rpcs.next(strategy.chainId).getBlockNumber())
 
     if(!multicall3.supportsBlock(strategy.chainId, asOfBlockNumber)) {
       console.warn('🚨', 'block not supported', strategy.chainId, asOfBlockNumber)
       return
     }
 
-    const fields = await this.extractFields(strategy.chainId, strategy.vaultAddress, strategy.address)
+    const fields = await this.extractFields(strategy.chainId, strategy.vaultAddress, strategy.address, asOfBlockNumber)
     const activationBlockNumber = await estimateHeight(strategy.chainId, BigInt(fields.activationBlockTime || 0))
 
     const totalDebtUsd = await this.computeTotalDebtUsd(
@@ -44,7 +44,7 @@ export class StrategyExtractor implements Processor {
       ...fields,
       totalDebtUsd,
       activationBlockNumber,
-      asOfBlockNumber
+      __as_of_block: asOfBlockNumber
     } as types.Strategy
 
     await this.queue?.add(
@@ -54,7 +54,12 @@ export class StrategyExtractor implements Processor {
     const lenderStatuses = await extractLenderStatuses(strategy.chainId, strategy.address, asOfBlockNumber)
     if(lenderStatuses.length > 0) {
       await this.queue?.add(
-        mq.job.load.strategyLenderStatus, { batch: lenderStatuses }
+        mq.job.load.strategyLenderStatus, {
+          batch: lenderStatuses,
+          __chain_id: strategy.chainId,
+          __strategy_address: strategy.address,
+          __as_of_block: asOfBlockNumber
+        }
       )
     }
   }
@@ -70,13 +75,13 @@ export class StrategyExtractor implements Processor {
     const { price } = await fetchErc20PriceUsd(strategy.chainId, assetAddress, asOfBlockNumber)
     const decimals = await rpcs.next(strategy.chainId).readContract({
       address: assetAddress,
-      functionName: 'decimals' as never,
+      functionName: 'decimals',
       abi: parseAbi(['function decimals() view returns (uint8)']),
     }) as number
     return price * Number(scaleDown(totalDebt, decimals))
   }
 
-  private async extractFields(chainId: number, vault: `0x${string}`, strategy: `0x${string}`) {
+  private async extractFields(chainId: number, vault: `0x${string}`, strategy: `0x${string}`, blockNumber: bigint) {
     const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
       {
         address: strategy, functionName: 'name',
@@ -122,7 +127,7 @@ export class StrategyExtractor implements Processor {
         address: strategy, functionName: 'tradeFactory',
         abi: parseAbi(['function tradeFactory() returns (address)'])
       }
-    ]})
+    ], blockNumber })
 
     const result = {
       name: multicallResult[0].result,
@@ -178,8 +183,7 @@ export async function extractLenderStatuses(chainId: number, address: `0x${strin
       name: status.name,
       assets: status.assets,
       rate: status.rate,
-      address: status.add,
-      asOfBlockNumber: blockNumber
+      address: status.add
     }))
   } catch(error) {
     if(error instanceof ContractFunctionExecutionError) return []

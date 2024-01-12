@@ -14,7 +14,7 @@ export class RegistryHandler implements Handler {
   }
 
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
-    const newVaultEvents = ['NewExperimentalVault', 'NewVault', 'NewEndorsedVault']
+    const newVaultEvents = ['NewExperimentalVault', 'NewVault']
 
     for(const log of logs) {
       if(newVaultEvents.includes(log.eventName)) {
@@ -28,7 +28,7 @@ export class RegistryHandler implements Handler {
           registryAddress: address,
           apiVersion: log.args.api_version?.toString() || log.args.apiVersion?.toString(),
           assetAddress: log.args.token.toString(),
-          asOfBlockNumber: log.blockNumber.toString()
+          __as_of_block: log.blockNumber.toString()
         } as types.Vault
 
         await this.queues[mq.q.extract].add(mq.job.extract.vault, vault, {

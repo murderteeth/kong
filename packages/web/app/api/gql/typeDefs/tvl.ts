@@ -5,7 +5,7 @@ type Tvl {
   chainId: Int!
   address: String!
   period: String!
-  time: String!
+  time: BigInt!
   open: Float!
   high: Float!
   low: Float!

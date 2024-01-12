@@ -5,7 +5,7 @@ type Apy {
   chainId: Int!
   address: String!
   period: String!
-  time: String!
+  time: BigInt!
   average: Float!
 }
 `

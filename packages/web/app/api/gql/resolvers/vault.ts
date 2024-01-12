@@ -1,6 +1,6 @@
 import { getVaults } from '../../db'
 
-export default async (_: any, args: { chainId: number, address: string }) => {
+const vault = async (_: any, args: { chainId: number, address: string }) => {
   const { chainId, address } = args
   try {
     const result = await getVaults(
@@ -13,3 +13,5 @@ export default async (_: any, args: { chainId: number, address: string }) => {
     throw new Error('!vault')
   }
 }
+
+export default vault

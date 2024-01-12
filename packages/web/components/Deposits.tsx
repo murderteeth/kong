@@ -2,10 +2,11 @@
 
 import React, { useMemo } from 'react'
 import Panel from './Panel'
-import { Transfer, useData } from '@/hooks/useData'
+import { useData } from '@/hooks/useData'
 import { zeroAddress } from 'viem'
 import { fEvmAddress, fUSD } from '@/util/format'
 import ReactTimeago from 'react-timeago'
+import { Transfer } from '@/hooks/useData/types'
 
 function TransferComponent({ transfer }: { transfer: Transfer }) {
   const isDeposit = useMemo(() => transfer.sender === zeroAddress, [transfer])
@@ -46,7 +47,6 @@ function TransferComponent({ transfer }: { transfer: Transfer }) {
 
 export default function Deposits({ className }: { className?: string }) {
   const { transfers } = useData()
-
   return <Panel className={`flex flex-col ${className}`}>
     <div className="font-bold text-lg">Deposits x Withdrawals</div>
     <div className={`grow pr-1 flex flex-col gap-2
@@ -55,7 +55,7 @@ export default function Deposits({ className }: { className?: string }) {
       sm:hover:scrollbar-thumb-yellow-400 
       sm:scrollbar-track-green-950`}>
       {transfers.map((transfer, index) => 
-        <TransferComponent key={index} transfer={transfer} />
+        transfer ? <TransferComponent key={index} transfer={transfer} /> : <></>
       )}
     </div>
   </Panel>

@@ -11,6 +11,7 @@ export const q = {
 export const job = {
   fanout: {
     registry: 'registry',
+    factory: 'factory',
     vault: 'vault',
     strategy: 'strategy',
     tvl: 'tvl',
@@ -42,6 +43,7 @@ export const job = {
     erc20: 'erc20',
     transfer: 'transfer',
     vault: 'vault',
+    vaultDebt: 'vault-debt',
     withdrawalQueue: 'withdrawal-queue',
     strategy: 'strategy',
     strategyLenderStatus: 'strategy-lender-status',

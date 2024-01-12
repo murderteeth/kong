@@ -1,3 +1,7 @@
+import { z } from 'zod'
+
+export const zaddress = z.custom<`0x${string}`>((val: any) => /^0x/.test(val))
+export const zvaultType = z.enum(['vault', 'strategy'])
 
 export interface LatestBlock {
   chainId: number
@@ -14,24 +18,27 @@ export interface APR {
   blockTime: bigint
 }
 
-export interface APY {
-  chainId: number
-  address: `0x${string}`
-  weeklyNet: number,
-  weeklyPricePerShare: bigint,
-  weeklyBlockNumber: bigint,
-  monthlyNet: number,
-  monthlyPricePerShare: bigint,
-  monthlyBlockNumber: bigint,
-  inceptionNet: number,
-  inceptionPricePerShare: bigint,
-  inceptionBlockNumber: bigint
-  net: number
-  grossApr: number
-  pricePerShare: bigint
-  blockNumber: bigint
-  blockTime: bigint
-}
+export const APYSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  weeklyNet: z.number().nullish(),
+  weeklyPricePerShare: z.bigint({ coerce: true }).nullish(),
+  weeklyBlockNumber: z.bigint({ coerce: true }),
+  monthlyNet: z.number().nullish(),
+  monthlyPricePerShare: z.bigint({ coerce: true }).nullish(),
+  monthlyBlockNumber: z.bigint({ coerce: true }),
+  inceptionNet: z.number(),
+  inceptionPricePerShare: z.bigint({ coerce: true }),
+  inceptionBlockNumber: z.bigint({ coerce: true }),
+  net: z.number(),
+  grossApr: z.number(),
+  pricePerShare: z.bigint({ coerce: true }),
+  lockedProfit: z.bigint({ coerce: true }).nullish(),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true })
+})
+
+export type APY = z.infer<typeof APYSchema>
 
 export interface TVL {
   chainId: number
@@ -41,34 +48,49 @@ export interface TVL {
   blockTime: bigint
 }
 
-export interface Vault {
-  chainId: number
-  address: `0x${string}`
-  type?: 'vault' | 'strategy'
-  apiVersion?: string
-  apetaxType?: string
-  apetaxStatus?: string
-  registryStatus?: string
-  registryAddress?: `0x${string}`
-  symbol?: string,
-  name?: string,
-  decimals?: number,
-  assetAddress?: `0x${string}`
-  assetName?: string,
-  assetSymbol?: string,
-  totalAssets?: bigint,
-  totalDebt?: bigint,
-  debtRatio?: number,
-  availableDepositLimit?: bigint,
-  depositLimit?: bigint,
-  governance?: `0x${string}`,
-  performanceFee?: number,
-  managementFee?: number,
-  lockedProfitDegradation?: bigint,
-  activationBlockTime?: bigint,
-  activationBlockNumber?: bigint,
-  asOfBlockNumber: bigint
-}
+export const VaultSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  type: zvaultType.nullish(),
+  apiVersion: z.string().nullish(),
+  apetaxType: z.string().nullish(),
+  apetaxStatus: z.string().nullish(),
+  registryStatus: z.string().nullish(),
+  registryAddress: zaddress.nullish(),
+  symbol: z.string().nullish(),
+  name: z.string().nullish(),
+  decimals: z.number().nullish(),
+  assetAddress: zaddress.nullish(),
+  assetName: z.string().nullish(),
+  assetSymbol: z.string().nullish(),
+  totalAssets: z.bigint({ coerce: true }).nullish(),
+  totalDebt: z.bigint({ coerce: true }).nullish(),
+  totalIdle: z.bigint({ coerce: true }).nullish(),
+  minimumTotalIdle: z.bigint({ coerce: true }).nullish(),
+  debtRatio: z.number().nullish(),
+  availableDepositLimit: z.bigint({ coerce: true }).nullish(),
+  depositLimit: z.bigint({ coerce: true }).nullish(),
+  governance: zaddress.nullish(),
+  performanceFee: z.number().nullish(),
+  managementFee: z.number().nullish(),
+  lockedProfitDegradation: z.bigint({ coerce: true }).nullish(),
+  profitMaxUnlockTime: z.bigint({ coerce: true }).nullish(),
+  profitUnlockingRate: z.bigint({ coerce: true }).nullish(),
+  fullProfitUnlockDate: z.bigint({ coerce: true }).nullish(),
+  lastProfitUpdate: z.bigint({ coerce: true }).nullish(),
+  accountant: zaddress.nullish(),
+  roleManager: zaddress.nullish(),
+  debtManager: zaddress.nullish(),
+  keeper: zaddress.nullish(),
+  doHealthCheck: z.boolean().nullish(),
+  emergencyShutdown: z.boolean().nullish(),
+  isShutdown: z.boolean().nullish(),
+  activationBlockTime: z.bigint({ coerce: true }).nullish(),
+  activationBlockNumber: z.bigint({ coerce: true }).nullish(),
+  __as_of_block: z.bigint({ coerce: true }).nullish()
+})
+
+export type Vault = z.infer<typeof VaultSchema>
 
 export interface Strategy {
   chainId: number
@@ -97,7 +119,7 @@ export interface Strategy {
   tradeFactory?: `0x${string}`,
   activationBlockTime?: bigint,
   activationBlockNumber?: bigint,
-  asOfBlockNumber: bigint
+  __as_of_block?: bigint
 }
 
 export interface StrategyLenderStatus {
@@ -107,7 +129,7 @@ export interface StrategyLenderStatus {
   assets: bigint
   rate: number
   address: `0x${string}`
-  asOfBlockNumber: bigint
+  __as_of_block: bigint
 }
 
 export interface WithdrawalQueueItem {
@@ -115,7 +137,7 @@ export interface WithdrawalQueueItem {
   vaultAddress: `0x${string}`
   queueIndex: number
   strategyAddress?: `0x${string}`
-  asOfBlockNumber: bigint
+  __as_of_block?: bigint
 }
 
 export interface ERC20 {
@@ -150,23 +172,29 @@ export interface RiskGroup {
   strategies: `0x${string}` []
 }
 
-export interface Harvest {
-  chainId: number
-  address: `0x${string}`
-  profit: bigint
-  profitUsd?: number
-  loss: bigint
-  lossUsd?: number
-  totalProfit: bigint
-  totalProfitUsd?: number
-  totalLoss: bigint
-  totalLossUsd?: number
-  totalDebt?: bigint
-  blockNumber: bigint
-  blockIndex: number
-  blockTime: bigint
-  transactionHash: `0x${string}`
-}
+export const HarvestSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  profit: z.bigint({ coerce: true }),
+  profitUsd: z.number({ coerce: true }).nullish(),
+  loss: z.bigint({ coerce: true }),
+  lossUsd: z.number({ coerce: true }).nullish(),
+  totalProfit: z.bigint({ coerce: true }).nullish(),
+  totalProfitUsd: z.number({ coerce: true }).nullish(),
+  totalLoss: z.bigint({ coerce: true }).nullish(),
+  totalLossUsd: z.number({ coerce: true }).nullish(),
+  totalDebt: z.bigint({ coerce: true }).nullish(),
+  protocolFees: z.bigint({ coerce: true }).nullish(),
+  protocolFeesUsd: z.number({ coerce: true }).nullish(),
+  performanceFees: z.bigint({ coerce: true }).nullish(),
+  performanceFeesUsd: z.number({ coerce: true }).nullish(),
+  blockNumber: z.bigint({ coerce: true }),
+  blockIndex: z.number({ coerce: true }),
+  blockTime: z.bigint({ coerce: true }).nullish(),
+  transactionHash: zaddress
+})
+
+export type Harvest = z.infer<typeof HarvestSchema>
 
 export interface SparklinePoint {
   chainId: number
@@ -175,3 +203,18 @@ export interface SparklinePoint {
   value: number
   time: string
 }
+
+export const VaultDebtSchema = z.object({
+  chainId: z.number(),
+  lender: zaddress,
+  borrower: zaddress,
+  maxDebt: z.bigint({ coerce: true }),
+  currentDebt: z.bigint({ coerce: true }),
+  currentDebtRatio: z.number({ coerce: true }),
+  targetDebtRatio: z.number({ coerce: true }).nullish(),
+  maxDebtRatio: z.number({ coerce: true }).nullish(),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true })
+})
+
+export type VaultDebt = z.infer<typeof VaultDebtSchema>

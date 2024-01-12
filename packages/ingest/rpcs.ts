@@ -1,6 +1,6 @@
 import { rpcs as _rpcs } from 'lib/rpcs'
 
-const FULL_NODE_DEPTH = BigInt(process.env.FULL_NODE_DEPTH || 1000)
+const FULL_NODE_DEPTH = BigInt(process.env.FULL_NODE_DEPTH || 400)
 
 export const latestBlocks : {
   [chainId: number]: { blockNumber: bigint, blockTime: bigint }

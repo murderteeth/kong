@@ -1,7 +1,7 @@
-import DataProvider from '@/hooks/useData'
 import './globals.css'
 import type { Metadata } from 'next'
 import { JetBrains_Mono } from 'next/font/google'
+import Wrapper from '@/components/Wrapper'
 
 const font = JetBrains_Mono({ subsets: ['latin'] })
 
@@ -18,9 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={font.className}>
-        <DataProvider>
+        <Wrapper>
           {children}
-        </DataProvider>
+        </Wrapper>
       </body>
     </html>
   )

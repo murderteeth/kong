@@ -31,8 +31,22 @@ export class HarvestExtractor implements Processor {
     const { price } = await fetchErc20PriceUsd(harvest.chainId, asset.address, BigInt(harvest.blockNumber))
     const profitUsd = price * Number(BigInt(harvest.profit) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
     const lossUsd = price * Number(BigInt(harvest.loss) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
-    const totalProfitUsd = price * Number(BigInt(harvest.totalProfit) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
-    const totalLossUsd = price * Number(BigInt(harvest.totalLoss) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
+
+    const totalProfitUsd = harvest.totalProfit == null
+    ? undefined 
+    : price * Number(BigInt(harvest.totalProfit) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
+
+    const totalLossUsd = harvest.totalLoss == null 
+    ? undefined 
+    : price * Number(BigInt(harvest.totalLoss) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
+
+    const protocolFeesUsd = harvest.protocolFees == null
+    ? undefined 
+    : price * Number(BigInt(harvest.protocolFees) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
+
+    const performanceFeesUsd = harvest.performanceFees == null
+    ? undefined 
+    : price * Number(BigInt(harvest.performanceFees) * 10_000n / BigInt(10 ** Number(asset.decimals))) / 10_000
 
     harvest = {
       ...harvest,
@@ -40,6 +54,8 @@ export class HarvestExtractor implements Processor {
       lossUsd,
       totalProfitUsd,
       totalLossUsd,
+      protocolFeesUsd,
+      performanceFeesUsd,
       blockTime: block.timestamp
     }
 
@@ -73,16 +89,16 @@ export async function getAsset(chainId: number, address: `0x${string}`) {
 
   const want = await rpcs.next(chainId).readContract({
     address, 
-    functionName: 'want' as never,
-    abi: parseAbi(['function want() returns (address)'])
+    functionName: 'want',
+    abi: parseAbi(['function want() view returns (address)'])
   }) as `0x${string}`
 
   if(want) {
     const decimals = await rpcs.next(chainId).readContract({
       address: want,
-      functionName: 'decimals' as never,
-      abi: parseAbi(['function decimals() returns (uint256)'])
-    }) as number
+      functionName: 'decimals',
+      abi: parseAbi(['function decimals() view returns (uint256)'])
+    }) as bigint
     return {
       address: want,
       decimals: Number(decimals),

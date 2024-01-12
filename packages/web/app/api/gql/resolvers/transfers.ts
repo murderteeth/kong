@@ -1,6 +1,6 @@
 import db from '../../db'
 
-export default async (_: any, args: { chainId: number, address: string }) => {
+const transfers = async (_: any, args: { chainId: number, address: string }) => {
   const { chainId, address } = args
   try {
     const result = await db.query(`
@@ -33,3 +33,5 @@ LIMIT 100;
     throw new Error('!transfers')
   }
 }
+
+export default transfers

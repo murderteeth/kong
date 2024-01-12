@@ -1,5 +1,6 @@
 .env
 .local/
+config/*.local.yaml
 node_modules/
 build/
 .venv

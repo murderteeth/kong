@@ -58,14 +58,6 @@ export class WaveyDbExtract implements Processor {
           chain_id = $1;
       `, [chain.id])
 
-      // const prices = result.rows.map(row => ({
-      //   chainId: row.chain_id,
-      //   blockNumber: row.block,
-      //   blockTime: row.timestamp,
-      //   address: getAddress(row.want_token),
-      //   priceUsd: row.want_price_at_block
-      // }))
-
       const harvests = result.rows.map(row => ({
         chainId: row.chain_id,
         address: getAddress(row.strategy_address),

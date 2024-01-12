@@ -1,6 +1,6 @@
 import db from '../../db'
 
-export default async () => {
+const riskGoups = async () => {
   const query = `
     SELECT 
       chain_id as "chainId", 
@@ -20,3 +20,5 @@ export default async () => {
     throw new Error('!riskGroups')
   }
 }
+
+export default riskGoups

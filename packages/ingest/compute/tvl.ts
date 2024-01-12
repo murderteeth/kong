@@ -6,7 +6,7 @@ import { estimateHeight, getBlock } from 'lib/blocks'
 import db from '../db'
 import { parseAbi } from 'viem'
 import { fetchErc20PriceUsd } from 'lib/prices'
-import { extractWithdrawalQueue } from '../extract/vault'
+import { extractWithdrawalQueue } from '../extract/vault/version2'
 import { scaleDown } from 'lib/math'
 import { endOfDay } from 'lib/dates'
 import { extractDelegatedAssets } from '../extract/strategy'
@@ -26,16 +26,15 @@ export class TvlComputer implements Processor {
     : { chainId: number, address: `0x${string}`, time: bigint })
   {
     let number: bigint = 0n
-    let timestamp: bigint = 0n
     let latest: boolean = false
-    if(time > BigInt(Math.floor(new Date().getTime() / 1000))) {
-      ({ number, timestamp, latest } = {...await rpcs.next(chainId).getBlock(), latest: true})
+    if(time >= BigInt(Math.floor(new Date().getTime() / 1000))) {
+      ({ number, latest } = {...await rpcs.next(chainId).getBlock(), latest: true})
     } else {
       const estimate = await estimateHeight(chainId, time);
-      ({ number, timestamp } = await getBlock(chainId, estimate))
+      ({ number } = await getBlock(chainId, estimate))
     }
 
-    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, timestamp, latest)
+    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, number, latest)
     const artificialBlockTime = endOfDay(time)
 
     await this.queue?.add(mq.job.load.tvl, {
@@ -50,14 +49,13 @@ export class TvlComputer implements Processor {
   }
 }
 
-export async function _compute(chainId: number, address: `0x${string}`, time: bigint, latest = false) {
-  const blockNumber = await estimateHeight(chainId, time)
+export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint, latest = false) {
   const { assetAddress, decimals } = await getAsset(chainId, address)
   const { price, source } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber, latest)
 
   const totalAssets = await rpcs.next(chainId, blockNumber).readContract({
     address,
-    functionName: 'totalAssets' as never,
+    functionName: 'totalAssets',
     abi: parseAbi(['function totalAssets() view returns (uint256)']),
     blockNumber
   }) as bigint

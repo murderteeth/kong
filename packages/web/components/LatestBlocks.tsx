@@ -9,7 +9,7 @@ import { useData } from '@/hooks/useData'
 export default function LatestBlocks() {
   const data = useData()
   const latestBlock = useCallback((chainId: number) => {
-    return data.latestBlocks.find(block => block.chainId === chainId)?.blockNumber || '--------'
+    return data.latestBlocks.find(block => block.chainId === chainId)?.blockNumber.toString() || '--------'
   }, [data])
   return <Panel className={'w-full flex flex-col items-start'}>
     <div className="font-bold text-lg">Latest Blocks</div>

@@ -8,14 +8,14 @@ type Harvest {
   profitUsd: Float!
   loss: BigInt!
   lossUsd: Float!
-  totalProfit: BigInt!
-  totalProfitUsd: Float!
-  totalLoss: BigInt!
-  totalLossUsd: Float!
+  totalProfit: BigInt
+  totalProfitUsd: Float
+  totalLoss: BigInt
+  totalLossUsd: Float
   totalDebt: BigInt!
   blockNumber: Int!
   blockIndex: Int!
-  blockTime: String!
+  blockTime: BigInt!
   transactionHash: String!
   aprGross: Float
   aprNet: Float

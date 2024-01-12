@@ -4,6 +4,7 @@ export default gql`
 type Vault {
   chainId: Int!
   address: String!
+  type: String!
   apiVersion: String!
   apetaxType: String
   apetaxStatus: String
@@ -17,13 +18,17 @@ type Vault {
   availableDepositLimit: BigInt
   lockedProfitDegradation: BigInt
   totalDebt: String
+  currentDebt: String
+  currentDebtRatio: Float
   debtRatio: Int
+  totalIdle: BigInt
   assetAddress: String
   assetSymbol: String
   assetName: String
   assetDescription: String
   assetPriceUsd: Float
   assetPriceSource: String
+  defaultQueue: [Vault]
   withdrawalQueue: [Strategy]
   tvlUsd: Float
   tvlSparkline: [SparklineItem]
@@ -36,8 +41,10 @@ type Vault {
   managementFee: Float
   performanceFee: Float
   governance: String
-  activationBlockTime: String
-  activationBlockNumber: String
-  asOfBlockNumber: String
+  latestReportBlockTime: BigInt
+  keeper: String
+  doHealthCheck: Boolean
+  activationBlockTime: BigInt
+  activationBlockNumber: BigInt
 }
 `

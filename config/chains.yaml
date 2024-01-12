@@ -5,5 +5,5 @@ chains: [
   'polygon',
   'fantom',
   'base',
-  'arbitrum'
+  'arbitrum',
 ]

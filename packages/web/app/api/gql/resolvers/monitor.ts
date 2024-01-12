@@ -1,6 +1,6 @@
 import db from '../../db'
 
-export default async () => {
+const monitor = async () => {
   try {
     const query = 'SELECT latest FROM monitor;'
     const [singleton] = (await db.query(query)).rows
@@ -10,3 +10,5 @@ export default async () => {
     throw new Error('Failed to run monitor')
   }
 }
+
+export default monitor

@@ -1,4 +1,9 @@
-import { Pool } from 'pg'
+import { Pool, types as pgTypes } from 'pg'
+
+// Convert timestamptz (OID 1184) to seconds
+pgTypes.setTypeParser(1184, (stringValue) => {
+  return BigInt(Math.floor(Date.parse(stringValue) / 1000))
+})
 
 const db = new Pool({
   host: process.env.POSTGRES_HOST || 'localhost',
@@ -15,7 +20,7 @@ const db = new Pool({
 export default db
 
 export async function getVaults(where: string, values: any[]) {
-  const result = await db.query(`
+  const query = `
   WITH strategy_lender_status_agg AS (
     SELECT
       s.chain_id,
@@ -74,7 +79,6 @@ export async function getVaults(where: string, values: any[]) {
         'riskGroup', s.risk_group,
         'activationBlockTime', FLOOR(EXTRACT(EPOCH FROM s.activation_block_time)),
         'activationBlockNumber', s.activation_block_number,
-        'asOfBlockNumber', s.as_of_block_number,
         'queueIndex', wq.queue_index
       ) ORDER BY wq.chain_id, wq.vault_address, wq.queue_index ASC
       ) AS results
@@ -82,6 +86,49 @@ export async function getVaults(where: string, values: any[]) {
     JOIN withdrawal_queue wq ON v.chain_id = wq.chain_id AND v.address = wq.vault_address
     JOIN strategy_gql s ON wq.chain_id = s.chain_id AND wq.strategy_address = s.address
     LEFT JOIN strategy_lender_status_agg ls ON wq.chain_id = ls.chain_id AND wq.strategy_address = ls.strategy_address
+    ${where}
+    GROUP BY v.chain_id, v.address
+  ),
+
+  latest_harvest_time_agg AS (
+    SELECT
+      chain_id,
+      address,
+      MAX(block_time) AS block_time
+    FROM harvest v
+    ${where}
+    GROUP BY chain_id, address
+  ),
+
+  default_queue_agg AS (
+    SELECT
+      v.chain_id,
+      v.address,
+      json_agg(json_build_object(
+        'chainId', s.chain_id,
+        'address', s.address,
+        'name', s.name,
+        'apiVersion', s.api_version,
+        'vaultAddress', v.address,
+        'netApy', s.apy_net,
+        'activationBlockTime', FLOOR(EXTRACT(EPOCH FROM s.activation_block_time)),
+        'activationBlockNumber', s.activation_block_number,
+        'latestReportBlockTime', FLOOR(EXTRACT(EPOCH FROM lht.block_time)),
+        'keeper', s.keeper,
+        'doHealthCheck', s.do_health_check,
+        'debtRatio', debt.target_debt_ratio,
+        'currentDebt', debt.current_debt::text,
+        'currentDebtRatio', debt.current_debt_ratio,
+        'totalAssets', s.total_assets::text,
+        'totalIdle', s.total_idle::text,
+        'queueIndex', wq.queue_index
+      ) ORDER BY wq.chain_id, wq.vault_address, wq.queue_index ASC
+      ) AS results
+    FROM vault v
+    JOIN withdrawal_queue wq ON v.chain_id = wq.chain_id AND v.address = wq.vault_address
+    JOIN vault_gql s ON wq.chain_id = s.chain_id AND wq.strategy_address = s.address
+    LEFT JOIN latest_harvest_time_agg lht ON wq.chain_id = lht.chain_id AND wq.strategy_address = lht.address
+    LEFT JOIN vault_debt debt ON wq.chain_id = debt.chain_id AND wq.vault_address = debt.lender AND wq.strategy_address = debt.borrower
     ${where}
     GROUP BY v.chain_id, v.address
   ),
@@ -95,7 +142,7 @@ export async function getVaults(where: string, values: any[]) {
         'address', s.address,
         'type', s.type,
         'value', s.value,
-        'time', s.time
+        'time', FLOOR(EXTRACT(EPOCH FROM s.time))
       ) ORDER BY s.time ASC
       ) AS results
     FROM vault v
@@ -116,7 +163,7 @@ export async function getVaults(where: string, values: any[]) {
         'address', s.address,
         'type', s.type,
         'value', s.value,
-        'time', s.time
+        'time', FLOOR(EXTRACT(EPOCH FROM s.time))
       ) ORDER BY s.time ASC
       ) AS results
     FROM vault v
@@ -131,6 +178,7 @@ export async function getVaults(where: string, values: any[]) {
   SELECT
     v.chain_id as "chainId",
     v.address, 
+    v.type,
     v.api_version as "apiVersion",
     v.apetax_type as "apetaxType",
     v.apetax_status as "apetaxStatus",
@@ -140,6 +188,7 @@ export async function getVaults(where: string, values: any[]) {
     v.name, 
     v.decimals, 
     v.total_assets as "totalAssets", 
+    v.total_idle as "totalIdle",
     v.deposit_limit as "depositLimit",
     v.available_deposit_limit as "availableDepositLimit",
     v.locked_profit_degradation as "lockedProfitDegradation",
@@ -160,14 +209,19 @@ export async function getVaults(where: string, values: any[]) {
     v.management_fee as "managementFee",
     v.performance_fee as "performanceFee",
     v.governance,
+    v.keeper,
+    v.do_health_check as "doHealthCheck",
     v.activation_block_time as "activationBlockTime",
     v.activation_block_number as "activationBlockNumber",
-    v.as_of_block_number as "asOfBlockNumber",
-    withdrawal_queue_agg.results AS "withdrawalQueue",
+    COALESCE(default_queue_agg.results, '[]'::json) AS "defaultQueue",
+    COALESCE(withdrawal_queue_agg.results, '[]'::json) AS "withdrawalQueue",
     COALESCE(tvl_agg.results, '[]'::json) AS "tvlSparkline",
     COALESCE(apy_agg.results, '[]'::json) AS "apySparkline"
   FROM vault_gql v
-  JOIN withdrawal_queue_agg 
+  LEFT JOIN default_queue_agg 
+    ON v.chain_id = default_queue_agg.chain_id 
+    AND v.address = default_queue_agg.address
+  LEFT JOIN withdrawal_queue_agg 
     ON v.chain_id = withdrawal_queue_agg.chain_id 
     AND v.address = withdrawal_queue_agg.address
   LEFT JOIN tvl_agg
@@ -177,7 +231,7 @@ export async function getVaults(where: string, values: any[]) {
     ON v.chain_id = apy_agg.chain_id 
     AND v.address = apy_agg.address
   ${where};
-  `, values)
-
+  `
+  const result = await db.query(query, values)
   return result.rows
 }

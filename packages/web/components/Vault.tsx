@@ -23,10 +23,10 @@ export default function Vault() {
         <Minibars series={vault.apySparkline.map(s => s.value)} className="h-5" />
       </div>
       <div className="flex items-center gap-3">
-        <Frosty _key={`vault-tvl-${fPercent(vault.apyNet)}`}
+        <Frosty _key={`vault-tvl-${fPercent(vault.apyNet ?? 0)}`}
           disabled={!Number.isFinite(vault.tvlUsd)}
           className={'text-2xl'}>
-          {fPercent(vault.apyNet)}
+          {fPercent(vault.apyNet ?? 0)}
         </Frosty>
       </div>
     </div>
@@ -37,10 +37,10 @@ export default function Vault() {
         <Minibars series={vault.tvlSparkline.map(s => s.value)} className="h-5" />
       </div>
       <div className="flex items-center gap-3">
-        <Frosty _key={`vault-tvl-${fUSD(vault.tvlUsd)}`}
+        <Frosty _key={`vault-tvl-${fUSD(vault.tvlUsd || 0)}`}
           disabled={!Number.isFinite(vault.tvlUsd)}
           className={'text-2xl'}>
-          {fUSD(vault.tvlUsd, { fixed: 2 })}
+          {fUSD(vault.tvlUsd || 0, { fixed: 2 })}
         </Frosty>
       </div>
     </div>
@@ -48,7 +48,17 @@ export default function Vault() {
     <div className="flex items-center justify-between">
       <div className="text-sm">{'Withdrawal Queue'}</div>
     </div>
-    {vault.withdrawalQueue.map((strategy, index) => 
+    {vault.defaultQueue.length > 0 && vault.defaultQueue.map((strategy, index) => 
+      <div key={index} className="flex items-center justify-between">
+        <div className="text-sm">{strategy.name}</div>
+        <Frosty _key={`vault-tvl-${fPercent(strategy.apyNet)}`}
+          className={'text-sm'}>
+          {`APY ${fPercent(strategy.apyNet)}`}
+        </Frosty>
+      </div>
+    )}
+
+    {vault.withdrawalQueue.length > 0 && vault.withdrawalQueue.map((strategy, index) => 
       <div key={index} className="flex items-center justify-between">
         <div className="text-sm">{strategy.name}</div>
         <Frosty _key={`vault-tvl-${fPercent(strategy.netApr)}`}

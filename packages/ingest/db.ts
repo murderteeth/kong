@@ -1,10 +1,13 @@
 import { strings, types } from 'lib'
-import { Pool, types as pgTypes } from 'pg'
+import { Pool, PoolClient, types as pgTypes } from 'pg'
 
-// tell pg to parse numeric as float
-// otherwise it returns numerics as strings
-// 1700 is pg's oid for NUMERIC
+// Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
+
+// Convert timestamptz (OID 1184) to seconds
+pgTypes.setTypeParser(1184, (stringValue) => {
+  return BigInt(Math.floor(Date.parse(stringValue) / 1000))
+})
 
 const db = new Pool({
   host: process.env.POSTGRES_HOST || 'localhost',
@@ -20,6 +23,21 @@ const db = new Pool({
 
 export default db
 
+export async function some(query: string, params: any[] = [], client?: PoolClient) {
+  const result = await (client ?? db).query(query, params)
+  return result.rows.length > 0
+}
+
+export async function firstRow(query: string, params: any[] = [], client?: PoolClient) {
+  const result = await (client ?? db).query(query, params)
+  return result.rows[0]
+}
+
+export async function firstValue<T>(query: string, params: any[] = [], client?: PoolClient): Promise<T | undefined> {
+  const result = await (client ?? db).query(query, params)
+  return result.rows[0] ? result.rows[0][Object.keys(result.rows[0])[0]] as T : undefined
+}
+
 export async function getLatestBlock(chainId: number) {
   const result = await db.query(`
     SELECT block_number
@@ -29,38 +47,48 @@ export async function getLatestBlock(chainId: number) {
   return (result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function getBlockPointer(chainId: number, address: `0x${string}`) {
-  const result = await db.query(`
+export async function getAddressPointer(chainId: number, address: string, client?: PoolClient) {
+  return await getBlockPointer(`${chainId}/${address}`, client)
+}
+
+export async function getBlockPointer(pointer: string, client?: PoolClient) {
+  const result = await (client ?? db).query(`
     SELECT block_number
     FROM block_pointer
-    WHERE chain_id = $1 AND address = $2
-  `, [chainId, address])
+    WHERE pointer = $1
+  `, [pointer])
   return BigInt(result.rows[0]?.block_number || 0) as bigint
 }
 
-export async function setBlockPointer(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  await db.query(`
-    INSERT INTO public.block_pointer (chain_id, address, block_number)
-    VALUES ($1, $2, $3)
-    ON CONFLICT (chain_id, address)
-    DO UPDATE SET
-      block_number = EXCLUDED.block_number;
-  `, [chainId, address, blockNumber])
+export async function setAddressPointer(chainId: number, address: string, blockNumber: bigint, client?: PoolClient) {
+  await setBlockPointer(`${chainId}/${address}`, blockNumber, client)
 }
 
-export async function getVaultBlockPointers(chainId: number) {
+export async function setBlockPointer(pointer: string, blockNumber: bigint, client?: PoolClient) {
+  await (client ?? db).query(`
+    INSERT INTO public.block_pointer (pointer, block_number)
+    VALUES ($1, $2)
+    ON CONFLICT (pointer)
+    DO UPDATE SET
+      block_number = EXCLUDED.block_number;
+  `, [pointer, blockNumber])
+}
+
+export async function getVaultPointers(chainId: number) {
   const result = await db.query(`
-    SELECT 
-      v.address, 
+    SELECT
+      v.address,
+      v.api_version as "apiVersion",
       COALESCE(v.activation_block_number, 0) AS "activationBlockNumber",
       COALESCE(p.block_number, 0) AS "blockNumber"
     FROM vault v
     LEFT JOIN block_pointer p
-    ON v.chain_id = p.chain_id AND v.address = p.address
+    ON p.pointer = v.chain_id::text || '/' || v.address
     WHERE v.chain_id = $1;
   `, [chainId])
   return result.rows.map(r => ({
-    address: r.address,
+    address: r.address as string,
+    apiVersion: r.apiVersion as string,
     activationBlockNumber: BigInt(r.activationBlockNumber),
     blockNumber: BigInt(r.blockNumber)
   }))
@@ -84,6 +112,15 @@ export async function getErc20(chainId: number, address: string) {
   }
 }
 
+export async function getApiVersion(vault: types.Vault) {
+  const result = await firstRow(`
+    SELECT api_version as "apiVersion" FROM vault WHERE chain_id = $1 AND address = $2
+    UNION SELECT api_version as "apiVersion" FROM strategy WHERE chain_id = $1 AND address = $2;`,
+    [vault.chainId, vault.address]
+  )
+  return result?.apiVersion as string | undefined
+}
+
 export async function getSparkline(chainId: number, address: string, type: string) {
   const result = await db.query(`
     SELECT
@@ -97,6 +134,8 @@ export async function getSparkline(chainId: number, address: string, type: strin
 }
 
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {
+  const timestampConversionExceptions = [ 'profit_max_unlock_time' ]
+
   const fields = Object.keys(data).map(key => 
     strings.camelToSnake(key)
   ) as string[]
@@ -104,7 +143,7 @@ export function toUpsertSql(table: string, pk: string, data: any, where?: string
   const columns = fields.join(', ')
 
   const values = fields.map((field, index) => 
-    (field.endsWith('timestamp') || field.endsWith('time')) 
+    (field.endsWith('timestamp') || field.endsWith('time') && !timestampConversionExceptions.includes(field)) 
     ? `to_timestamp($${index + 1}::double precision)`
     : `$${index + 1}`
   ).join(', ')

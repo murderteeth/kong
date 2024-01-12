@@ -65,7 +65,7 @@ async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNum
   try {
     const priceUSDC = await rpcs.next(chainId).readContract({
       address: lens[chainId as keyof typeof lens],
-      functionName: 'getPriceUsdcRecommended' as never,
+      functionName: 'getPriceUsdcRecommended',
       args: [ token ],
       abi: parseAbi(['function getPriceUsdcRecommended(address tokenAddress) view returns (uint256)']),
       blockNumber

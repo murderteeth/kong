@@ -2,10 +2,11 @@ import { setTimeout } from 'timers/promises'
 import { chains, dates, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { getLatestBlock, getVaultBlockPointers, setBlockPointer } from '../db'
+import { getLatestBlock, getVaultPointers, setAddressPointer } from '../db'
 import { parseAbi } from 'viem'
 import { max } from 'lib/math'
 import { estimateHeight } from 'lib/blocks'
+import { compare } from 'compare-versions'
 
 export default class VaultFanout implements Processor {
   queues: { [key: string]: Queue } = {}
@@ -21,7 +22,7 @@ export default class VaultFanout implements Processor {
   async fanout() {
     for(const chain of chains) {
       const default_start_block = await estimateHeight(chain.id, dates.DEFAULT_START())
-      const pointers = await getVaultBlockPointers(chain.id)
+      const pointers = await getVaultPointers(chain.id)
       for(const pointer of pointers) {
         const from = max(pointer.blockNumber, pointer.activationBlockNumber, default_start_block)
         const to = await getLatestBlock(chain.id)
@@ -31,16 +32,19 @@ export default class VaultFanout implements Processor {
           address: pointer.address
         })
 
-        await this.fanoutExtract(
-        chain.id,
-        pointer.address,
-        parseAbi([
+        const events = compare(pointer.apiVersion, '3.0.0', '>=') 
+        ? parseAbi([
+          `event Reported(uint256 profit, uint256 loss, uint256 protocolFees, uint256 performanceFees)`,
+          `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
+        ])
+        : parseAbi([
           `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 debtPaid, uint256 totalGain, uint256 totalLoss, uint256 totalDebt, uint256 debtAdded, uint256 debtRatio)`,
           `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
-        ]),
-        from, to)
+        ])
 
-        await setBlockPointer(chain.id, pointer.address, to)       
+        await this.fanoutExtract(chain.id, pointer.address, events, from, to)
+
+        await setAddressPointer(chain.id, pointer.address, to)       
       }
     }
   }

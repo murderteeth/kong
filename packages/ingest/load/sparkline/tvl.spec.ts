@@ -7,7 +7,7 @@ import { types } from 'lib'
 
 describe('loader sparkline tvl', function() {
   before(async function() { 
-    this.data = { chainId: mainnet.id, address: addresses.yvweth }
+    this.data = { chainId: mainnet.id, address: addresses.v2.yvweth }
   })
 
   afterEach(async function() {
@@ -26,7 +26,7 @@ describe('loader sparkline tvl', function() {
   it('loads partial sparklines', withYvWethDb(async function(this: Mocha.Context) {
     const tvl = {
       chainId: mainnet.id,
-      address: addresses.yvweth,
+      address: addresses.v2.yvweth,
       tvlUsd: 100,
       blockNumber: 1n,
       blockTime: 1n
@@ -46,7 +46,7 @@ describe('loader sparkline tvl', function() {
   it('loads sparkline', withYvWethDb(async function(this: Mocha.Context) {
     const tvl = {
       chainId: mainnet.id,
-      address: addresses.yvweth,
+      address: addresses.v2.yvweth,
       tvlUsd: 100,
       blockNumber: 1n,
       blockTime: 1n

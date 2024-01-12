@@ -9,7 +9,7 @@ import transfers from './transfers'
 import monitor from './monitor'
 import riskGroups from './riskGroups'
 
-export default {
+const resolvers = {
   Query: {
     bananas,
     latestBlocks,
@@ -23,3 +23,5 @@ export default {
     riskGroups
   }
 }
+
+export default resolvers
