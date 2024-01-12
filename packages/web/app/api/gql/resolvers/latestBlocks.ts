@@ -1,6 +1,6 @@
 import db from '../../db'
 
-export default async (_: any, args: { chainId?: number }) => {
+const latestBlocks = async (_: any, args: { chainId?: number }) => {
   const { chainId } = args
   const query = `
     SELECT 
@@ -21,3 +21,5 @@ export default async (_: any, args: { chainId?: number }) => {
     throw new Error('!latest block')
   }
 }
+
+export default latestBlocks

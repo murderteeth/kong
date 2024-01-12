@@ -2,9 +2,10 @@
 
 import React from 'react'
 import Panel from './Panel'
-import { Harvest, useData } from '@/hooks/useData'
+import { useData } from '@/hooks/useData'
 import { fEvmAddress, fUSD } from '@/util/format'
 import ReactTimeago from 'react-timeago'
+import { Harvest } from '@/hooks/useData/types'
 
 function HarvestComponent({ harvest }: { harvest: Harvest }) {
   if(!harvest) return null

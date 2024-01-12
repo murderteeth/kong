@@ -138,7 +138,7 @@ describe('vault v3', function() {
     
     expect(debts[1].maxDebt).to.equal(1000000000000n)
     expect(debts[1].currentDebt).to.equal(107907880971n)
-    expect(debts[1].currentDebtRatio).to.equal(0.4784777994386348)
+    expect(debts[1].currentDebtRatio).to.equal(Math.floor(0.4784777994386348 * 10_000))
     expect(debts[1].targetDebtRatio).to.equal(5000)
     expect(debts[1].maxDebtRatio).to.equal(6000)
 

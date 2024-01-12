@@ -120,6 +120,7 @@ export async function getVaults(where: string, values: any[]) {
         'currentDebt', debt.current_debt::text,
         'currentDebtRatio', debt.current_debt_ratio,
         'totalAssets', s.total_assets::text,
+        'totalIdle', s.total_idle::text,
         'queueIndex', wq.queue_index
       ) ORDER BY wq.chain_id, wq.vault_address, wq.queue_index ASC
       ) AS results
@@ -187,6 +188,7 @@ export async function getVaults(where: string, values: any[]) {
     v.name, 
     v.decimals, 
     v.total_assets as "totalAssets", 
+    v.total_idle as "totalIdle",
     v.deposit_limit as "depositLimit",
     v.available_deposit_limit as "availableDepositLimit",
     v.locked_profit_degradation as "lockedProfitDegradation",

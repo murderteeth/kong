@@ -1,6 +1,6 @@
 import db from '../../db'
 
-export default async (_: any, args: { chainId?: number, address?: string, limit?: number }) => {
+const harvests = async (_: any, args: { chainId?: number, address?: string, limit?: number }) => {
   const { chainId, address, limit } = args
   try {
     const result = await db.query(`
@@ -38,3 +38,5 @@ LIMIT $3;
     throw new Error('!harvests')
   }
 }
+
+export default harvests

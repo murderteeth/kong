@@ -40,7 +40,7 @@ const query = gql`
   }
 `
 
-export default [
+const typeDefs = [
   query,
   latestBlock, 
   sparklineItem,
@@ -54,3 +54,5 @@ export default [
   monitor,
   riskGroup
 ]
+
+export default typeDefs

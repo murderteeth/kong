@@ -33,20 +33,20 @@ const harvest__v2 = {
 } as types.Harvest
 
 describe('harvest apr', function() {
-  it('gets handlers', async function() {
-    const address = rando
+  it('gets no handler', async function() {
+    expect(await getHandler(1, rando)).to.be.undefined
+  })
 
-    getHandler(1, address).catch((e) => {
-      expect(e).to.exist
-    })
+  it('gets v2 handlers', async function() {
+    await upsert({ chainId: 1, address: rando }, 'strategy', 'chain_id, address')
+    expect((await getHandler(1, rando) || {}).name).to.equal('v2')
+    await db.query('DELETE FROM strategy WHERE chain_id = $1 AND address = $2', [1, rando])
+  })
 
-    await upsert({ chainId: 1, address }, 'strategy', 'chain_id, address')
-    expect((await getHandler(1, address)).name).to.equal('v2')
-    await db.query('DELETE FROM strategy WHERE chain_id = $1 AND address = $2', [1, address])
-
-    await upsert({ chainId: 1, address, type: 'strategy', apiVersion: '3.0.0' }, 'vault', 'chain_id, address')
-    expect((await getHandler(1, address)).name).to.equal('v3')
-    await db.query('DELETE FROM vault WHERE chain_id = $1 AND address = $2', [1, address])
+  it('gets v3 handlers', async function() {
+    await upsert({ chainId: 1, address: rando, type: 'strategy', apiVersion: '3.0.0' }, 'vault', 'chain_id, address')
+    expect((await getHandler(1, rando) || {}).name).to.equal('v3')
+    await db.query('DELETE FROM vault WHERE chain_id = $1 AND address = $2', [1, rando])
   })
 
   describe('v3', function() {

@@ -37,10 +37,10 @@ export default function Vault() {
         <Minibars series={vault.tvlSparkline.map(s => s.value)} className="h-5" />
       </div>
       <div className="flex items-center gap-3">
-        <Frosty _key={`vault-tvl-${fUSD(vault.tvlUsd)}`}
+        <Frosty _key={`vault-tvl-${fUSD(vault.tvlUsd || 0)}`}
           disabled={!Number.isFinite(vault.tvlUsd)}
           className={'text-2xl'}>
-          {fUSD(vault.tvlUsd, { fixed: 2 })}
+          {fUSD(vault.tvlUsd || 0, { fixed: 2 })}
         </Frosty>
       </div>
     </div>

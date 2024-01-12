@@ -1,5 +1,5 @@
 # Kong
-Real-time and historical ZooTroop data platform
+Real-time and historical ZooTroop indexer
 
 ![image](https://github.com/murderteeth/kong/assets/89237203/97d8d49e-87b7-4d0a-8ab8-7ed0884bb99c)
 
@@ -11,9 +11,9 @@ cp .env.example .env
 # configure .env
 make dev
 ```
-`dash` - http://localhost:3000
+`dash` - http://localhost:3001
 
-`graphql explorer ` - http://localhost:3000/api/gql
+`graphql explorer ` - http://localhost:3001/api/gql
 
 
 ## requirements
@@ -95,7 +95,7 @@ This way production thinks it was migrated starting from the baseline and handle
 ## postgres x timescale
 locally you can run postgres and timescale from a docker image, eg using `make postgres`. connect to your local with
 ```
-psql --host=localhost \
+PGPASSWORD=password psql --host=localhost \
   --port=5432 \
   --username=user \
   --dbname=user

@@ -21,6 +21,7 @@ type Vault {
   currentDebt: String
   currentDebtRatio: Float
   debtRatio: Int
+  totalIdle: BigInt
   assetAddress: String
   assetSymbol: String
   assetName: String

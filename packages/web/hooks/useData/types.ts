@@ -84,6 +84,8 @@ const HarvestSchema = z.object({
   transactionHash: z.string()
 })
 
+export type Harvest = z.infer<typeof HarvestSchema>
+
 const QueueSchema = z.object({
   name: z.string(),
   waiting: z.number(),

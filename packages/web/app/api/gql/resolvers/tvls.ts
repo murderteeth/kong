@@ -1,7 +1,7 @@
 import db from '../../db'
 import { PERIOD } from '../typeDefs/period'
 
-export default async (_: any, args: { chainId: number, address: string, period?: string, limit?: number }) => {
+const tvls = async (_: any, args: { chainId: number, address: string, period?: string, limit?: number }) => {
   const { chainId, address, period, limit } = args
   try {
     const result = await db.query(`
@@ -42,3 +42,5 @@ SELECT * from sample ORDER BY time ASC;
     throw new Error('!tvls')
   }
 }
+
+export default tvls

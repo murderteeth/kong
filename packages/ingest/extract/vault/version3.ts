@@ -333,7 +333,7 @@ export async function extractDebts(vault: types.Vault, queue: readonly `0x${stri
       borrower: queue[index],
       maxDebt: result[3],
       currentDebt: result[2],
-      currentDebtRatio: Math.floor(div(result[2], totalDebt) * 10_000),
+      currentDebtRatio: Math.floor(div(result[2], totalDebt) * 10_000) || 0,
       targetDebtRatio,
       maxDebtRatio,
       blockNumber: block.number,

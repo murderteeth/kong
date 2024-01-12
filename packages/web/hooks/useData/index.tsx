@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react'
-import { DEFAULT_CONTEXT, DataContext, DataContextSchema } from './types'
+import { DEFAULT_CONTEXT, DataContext } from './types'
 import useSWR from 'swr'
 
 const endpoint = process.env.NEXT_PUBLIC_GQL || '/api/gql'
