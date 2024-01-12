@@ -2,7 +2,8 @@
 Real-time and historical ZooTroop indexer
 
 
-![image](https://github.com/murderteeth/kong/assets/89237203/dd71d8f5-5ed6-429e-a7e3-8f12cd2a3661)
+![image](https://github.com/murderteeth/kong/assets/89237203/c9c70016-9de4-418f-a0bb-06b9fd9da549)
+
 
 
 
