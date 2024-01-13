@@ -1,6 +1,6 @@
 import { mainnet, optimism, polygon, fantom, base, arbitrum } from 'viem/chains'
 
-const activations = {
+export const activations = {
   [mainnet.id]: 14353601n,
   [optimism.id]: 4286263n,
   [polygon.id]: 25770160n,
