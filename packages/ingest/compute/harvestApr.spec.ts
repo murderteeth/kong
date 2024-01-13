@@ -32,7 +32,7 @@ const harvest__v2 = {
   transactionHash: '0x0000000001'
 } as types.Harvest
 
-describe.only('harvest apr', function() {
+describe('harvest apr', function() {
   it('gets no handler', async function() {
     expect(await getHandler(1, rando)).to.be.undefined
   })
