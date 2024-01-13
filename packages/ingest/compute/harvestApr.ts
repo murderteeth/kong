@@ -90,7 +90,7 @@ export async function compute__v3(latest: types.Harvest, previous: types.Harvest
 
   const profit = latest.profit
   const loss = latest.loss
-  const fees = (latest.performanceFees ?? 0n) + (latest.protocolFees ?? 0n)
+  const fees = latest.performanceFees ?? 0n
 
   const grossPerformance = (loss > profit)
   ? math.div(-loss, previousDebt)

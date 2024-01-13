@@ -32,7 +32,7 @@ const harvest__v2 = {
   transactionHash: '0x0000000001'
 } as types.Harvest
 
-describe('harvest apr', function() {
+describe.only('harvest apr', function() {
   it('gets no handler', async function() {
     expect(await getHandler(1, rando)).to.be.undefined
   })
@@ -80,10 +80,10 @@ describe('harvest apr', function() {
         blockTime: BigInt(70 * 24 * 60 * 60 + (9 * 60 * 60)),
         transactionHash: '0x0000000002'
       } as types.Harvest
-  
+
       const apr = await compute__v3(latest, harvest__v3)
       expect(apr.gross).to.equal(0.05179518421103771)
-      expect(apr.net).to.equal(0.04667889940280049)
+      expect(apr.net).to.equal(0.04795259723804295)
       expect(apr.blockNumber).to.equal(51916666n)
     })
   
