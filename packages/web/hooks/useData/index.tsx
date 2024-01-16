@@ -151,7 +151,7 @@ export default function DataProvider({children}: {children: ReactNode}) {
         query: STATUS_QUERY
       })
     }).then(res => res.json()),
-    { refreshInterval: 10_000 }
+    { refreshInterval: parseInt(process.env.NEXT_PUBLIC_DASH_REFRESH || '10_000') }
   )
 
   const { data: vault } = useSWR(
@@ -164,7 +164,7 @@ export default function DataProvider({children}: {children: ReactNode}) {
         variables: { chainId: 137, address: '0xA013Fbd4b711f9ded6fB09C1c0d358E2FbC2EAA0' }
       })
     }).then(res => res.json()),
-    { refreshInterval: 10_000 }
+    { refreshInterval: parseInt(process.env.NEXT_PUBLIC_DASH_REFRESH || '10_000') }
   )
 
   useEffect(() => {
