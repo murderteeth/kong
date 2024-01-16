@@ -84,14 +84,32 @@ async function fetchAllYDaemonPrices() {
   return cache.wrap('fetchAllYDaemonPrices', async () => {
     const url = `${process.env.YDAEMON_API}/prices/all?humanized=true`
     const result = await fetch(url)
-    return await result.json()
+    const json = await result.json()
+    return lowercaseAddresses(json)
   }, 60_000)
+}
+
+type YDaemonPrices = {
+  [key: string]: {
+      [key: string]: number
+  }
+}
+
+function lowercaseAddresses(data: YDaemonPrices): YDaemonPrices {
+  const result: YDaemonPrices = {}
+  for (const outerKey in data) {
+      result[outerKey] = {}
+      for (const innerKey in data[outerKey]) {
+          result[outerKey][innerKey.toLowerCase()] = data[outerKey][innerKey]
+      }
+  }
+  return result
 }
 
 async function fetchYDaemonPriceUsd(chainId: number, token: `0x${string}`) {
   try {
     const prices = await fetchAllYDaemonPrices()
-    const price = parseFloat(prices[chainId]?.[token] || '0')
+    const price = prices[chainId.toString()]?.[token.toLowerCase()] || 0
     if(isNaN(price)) return 0
     return price
   } catch(error) {
