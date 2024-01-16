@@ -26,8 +26,8 @@ export class ApyComputer implements Processor {
     : { chainId: number, address: `0x${string}`, time: bigint }) 
   {
     let blockNumber: bigint = 0n
-    if(time > BigInt((new Date()).getTime() * 1000)) {
-      blockNumber = await rpcs.next(chainId).getBlockNumber()
+    if(time >= BigInt(Math.floor(new Date().getTime() / 1000))) {
+      blockNumber = (await getBlock(chainId)).number
     } else {
       blockNumber = await estimateHeight(chainId, time)
     }

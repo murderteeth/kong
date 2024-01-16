@@ -10,6 +10,7 @@ import { extractWithdrawalQueue } from '../extract/vault/version2'
 import { scaleDown } from 'lib/math'
 import { endOfDay } from 'lib/dates'
 import { extractDelegatedAssets } from '../extract/strategy'
+import { TVLSchema } from 'lib/types'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined
@@ -28,7 +29,7 @@ export class TvlComputer implements Processor {
     let number: bigint = 0n
     let latest: boolean = false
     if(time >= BigInt(Math.floor(new Date().getTime() / 1000))) {
-      ({ number, latest } = {...await rpcs.next(chainId).getBlock(), latest: true})
+      ({ number, latest } = {...await getBlock(chainId), latest: true})
     } else {
       const estimate = await estimateHeight(chainId, time);
       ({ number } = await getBlock(chainId, estimate))
@@ -37,7 +38,7 @@ export class TvlComputer implements Processor {
     const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, number, latest)
     const artificialBlockTime = endOfDay(time)
 
-    await this.queue?.add(mq.job.load.tvl, {
+    await this.queue?.add(mq.job.load.tvl, TVLSchema.parse({
       chainId,
       address,
       priceUsd,
@@ -45,7 +46,7 @@ export class TvlComputer implements Processor {
       tvlUsd,
       blockNumber: number,
       blockTime: artificialBlockTime
-    } as types.TVL)
+    }))
   }
 }
 
@@ -60,7 +61,7 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
     blockNumber
   }) as bigint
 
-  if(totalAssets === 0n) return { price, tvl: 0 }
+  if(totalAssets === 0n) return { price, source, tvl: 0 }
 
   const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
   const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)

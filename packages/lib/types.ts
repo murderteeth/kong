@@ -40,13 +40,17 @@ export const APYSchema = z.object({
 
 export type APY = z.infer<typeof APYSchema>
 
-export interface TVL {
-  chainId: number
-  address: string
-  tvlUsd: number
-  blockNumber: bigint
-  blockTime: bigint
-}
+export const TVLSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  priceUsd: z.number(),
+  priceSource: z.string(),
+  tvlUsd: z.number(),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true })
+})
+
+export type TVL = z.infer<typeof TVLSchema>
 
 export const VaultSchema = z.object({
   chainId: z.number(),
