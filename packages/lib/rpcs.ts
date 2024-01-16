@@ -66,9 +66,6 @@ class pool {
   async down() {
     clearInterval(this.recycling)
     for(const pool of Object.values(this.rpcs)) {
-      for(const rpc of pool.clients) {
-        (await rpc.transport.getSocket()).close()
-      }
       pool.clients.length = 0
       pool.pointers.next = 0
       pool.pointers.recycle = 0
