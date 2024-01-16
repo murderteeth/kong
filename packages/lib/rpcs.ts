@@ -1,5 +1,5 @@
 import { chains } from 'lib'
-import { PublicClient, createPublicClient, webSocket } from 'viem'
+import { PublicClient, createPublicClient, http } from 'viem'
 import { Chain } from 'viem/chains'
 
 export interface RpcClients { [chaindId: number]: PublicClient }
@@ -13,9 +13,9 @@ class pool {
 
   constructor(private size: number, private recycleMs: number) {}
 
-  private wss(chain: Chain, archive: boolean) {
-    if(archive) return process.env[`WSS_ARCHIVE_${chain.id}`] as string
-    return process.env[`WSS_FULLNODE_${chain.id}`] as string
+  private http(chain: Chain, archive: boolean) {
+    if(archive) return process.env[`HTTP_ARCHIVE_${chain.id}`] as string
+    return process.env[`HTTP_FULLNODE_${chain.id}`] as string
   }
 
   private key(chain: Chain, archive: boolean) {
@@ -32,7 +32,7 @@ class pool {
       for(const archive of [true, false]) {
         this.rpcs[this.key(chain, archive)] = {
           clients: Array(this.size).fill(createPublicClient({
-            chain, transport: webSocket(this.wss(chain, archive))
+            chain, transport: http(this.http(chain, archive))
           })),
           pointers: { next: 0, recycle: 0 }
         }
@@ -47,13 +47,12 @@ class pool {
         const rpcsForKey = this.rpcs[key]
         const clients = rpcsForKey.clients
         const pointer = rpcsForKey.pointers.recycle
-        const rpc = clients[pointer]
+        const to_recycle = clients[pointer]
         console.log('♻️ ', 'rpc', chainId, pointer)
         clients[pointer] = createPublicClient({
-          chain: rpc.chain, transport: webSocket(this.wss(rpc.chain as Chain, archive))
+          chain: to_recycle.chain, transport: http(this.http(to_recycle.chain as Chain, archive))
         })
         rpcsForKey.pointers.recycle = (pointer + 1) % clients.length
-        rpc.transport.getSocket().then((socket: any) => socket.close())
       })
     }, this.recycleMs)
   }
