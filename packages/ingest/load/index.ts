@@ -40,14 +40,14 @@ export default class Load implements Processor {
     await upsertBatch(data.batch, 'transfer', 'chain_id, block_number, block_index'),
 
     [mq.job.load.tvl]: async (data: types.TVL) => {
-      await upsert(data, 'tvl', 'chain_id, address, block_time', 'WHERE tvl.price_usd > 0'),
+      await upsertTvl(data)
       await this.queue?.add(mq.job.load.sparkline.tvl, { 
         chainId: data.chainId, address: data.address 
       })
     },
 
     [mq.job.load.apy]: async (data: types.APY) => {
-      await upsert(data, 'apy', 'chain_id, address, block_time'),
+      await upsert(data, 'apy', 'chain_id, address, block_time')
       await this.queue?.add(mq.job.load.sparkline.apy, { 
         chainId: data.chainId, address: data.address 
       })
@@ -87,6 +87,10 @@ export default class Load implements Processor {
     await this.worker?.close()
     await this.queue?.close()
   }
+}
+
+export async function upsertTvl(data: any) {
+  await upsert(data, 'tvl', 'chain_id, address, block_time', `WHERE EXCLUDED.price_source <> 'none'`)
 }
 
 export async function upsertAsOfBlock(data: any, table: string, pk: string[]) {
