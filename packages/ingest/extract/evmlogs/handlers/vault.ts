@@ -18,17 +18,23 @@ export class VaultHandler implements Handler {
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
     const harvestLogs__v2 = logs.filter(log => log.eventName === 'StrategyReported' && log.args.gain !== undefined)
     const harvests__v2 = this.logs2Harvests__v2(chainId, address, harvestLogs__v2)
-    console.log('📋', chainId, address, 'harvests__v2', harvests__v2.length)
-    await this.handleHarvests(harvests__v2)
+    if(harvests__v2.length > 0) {
+      console.log('📋', chainId, address, 'harvests__v2', harvests__v2.length)
+      await this.handleHarvests(harvests__v2)
+    }
 
     const harvestLogs__v3 = logs.filter(log => log.eventName === 'Reported')
     const harvests__v3 = this.logs2Harvests__v3(chainId, address, harvestLogs__v3)
-    console.log('📋', chainId, address, 'harvests__v3', harvests__v3.length)
-    await this.handleHarvests(harvests__v3)
+    if(harvests__v3.length > 0) {
+      console.log('📋', chainId, address, 'harvests__v3', harvests__v3.length)
+      await this.handleHarvests(harvests__v3)
+    }
 
     const transfers = logs.filter(log => log.eventName === 'Transfer')
-    console.log('📋', chainId, address, 'transfers', transfers.length)
-    await this.handleTransfers(chainId, address, transfers)
+    if(transfers.length > 0) {
+      console.log('📋', chainId, address, 'transfers', transfers.length)
+      await this.handleTransfers(chainId, address, transfers)
+    }
   }
 
   private logs2Harvests__v2(chainId: number, address: string, logs: any[]) {
