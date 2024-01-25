@@ -1,5 +1,5 @@
 import { setTimeout } from 'timers/promises'
-import { contracts } from './registries'
+import { registries } from './registries'
 import { chains, math, mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
@@ -20,9 +20,11 @@ export default class RegistryFanout implements Processor {
 
   async fanout() {
     for(const chain of chains) {
-      for(const registry of contracts.filter(c => c.chainId === chain.id)) {
-        switch(registry.version) {
-        case 2:
+      for(const registry of registries.filter(c => c.chainId === chain.id)) {
+        if(registry.version >= 3) {
+          await this.fanoutVaultExtract(chain.id, registry.address)
+
+        } else {
           const blockPointer = await getAddressPointer(chain.id, registry.address)
           const from = math.max(blockPointer, registry.incept)
           const to = await getLatestBlock(chain.id)
@@ -33,12 +35,7 @@ export default class RegistryFanout implements Processor {
           registry.events, 
           from, to)
 
-          await setAddressPointer(chain.id, registry.address, to)
-          break
-
-        case 3:
-          await this.fanoutVaultExtract(chain.id, registry.address)
-          break
+          await setAddressPointer(chain.id, registry.address, to) 
 
         }
       }

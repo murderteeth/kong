@@ -12,7 +12,7 @@ export async function getBlock(chainId: number, blockNumber?: bigint) {
 }
 
 async function __getBlock(chainId: number, blockNumber?: bigint) {
-  return rpcs.next(chainId).getBlock({ blockNumber })
+  return await rpcs.next(chainId).getBlock({ blockNumber })
 }
 
 export async function estimateHeight(chainId: number, timestamp: bigint) {

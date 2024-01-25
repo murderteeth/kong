@@ -164,11 +164,11 @@ async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNum
   const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     {
       address, functionName: 'vault',
-      abi: parseAbi(['function vault() returns (address)'])
+      abi: parseAbi(['function vault() view returns (address)'])
     },
     {
       address, functionName: 'delegatedAssets',
-      abi: parseAbi(['function delegatedAssets() returns (uint256)'])
+      abi: parseAbi(['function delegatedAssets() view returns (uint256)'])
     }
   ], blockNumber })
 

@@ -85,47 +85,47 @@ export class StrategyExtractor implements Processor {
     const multicallResult = await rpcs.next(chainId).multicall({ contracts: [
       {
         address: strategy, functionName: 'name',
-        abi: parseAbi(['function name() returns (string)'])
+        abi: parseAbi(['function name() view returns (string)'])
       },
       {
         address: strategy, functionName: 'apiVersion',
-        abi: parseAbi(['function apiVersion() returns (string)'])
+        abi: parseAbi(['function apiVersion() view returns (string)'])
       },
       {
         address: strategy, functionName: 'want',
-        abi: parseAbi(['function want() returns (address)'])
+        abi: parseAbi(['function want() view returns (address)'])
       },
       {
         address: vault, functionName: 'strategies', args: [strategy],
-        abi: parseAbi(['function strategies(address) returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)'])
+        abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)'])
       },
       {
         address: strategy, functionName: 'estimatedTotalAssets',
-        abi: parseAbi(['function estimatedTotalAssets() returns (uint256)'])
+        abi: parseAbi(['function estimatedTotalAssets() view returns (uint256)'])
       },
       {
         address: strategy, functionName: 'delegatedAssets',
-        abi: parseAbi(['function delegatedAssets() returns (uint256)'])
+        abi: parseAbi(['function delegatedAssets() view returns (uint256)'])
       },
       {
         address: strategy, functionName: 'strategist',
-        abi: parseAbi(['function strategist() returns (address)'])
+        abi: parseAbi(['function strategist() view returns (address)'])
       },
       {
         address: strategy, functionName: 'keeper',
-        abi: parseAbi(['function keeper() returns (address)'])
+        abi: parseAbi(['function keeper() view returns (address)'])
       },
       {
         address: strategy, functionName: 'healthCheck',
-        abi: parseAbi(['function healthCheck() returns (address)'])
+        abi: parseAbi(['function healthCheck() view returns (address)'])
       },
       {
         address: strategy, functionName: 'doHealthCheck',
-        abi: parseAbi(['function doHealthCheck() returns (bool)'])
+        abi: parseAbi(['function doHealthCheck() view returns (bool)'])
       },
       {
         address: strategy, functionName: 'tradeFactory',
-        abi: parseAbi(['function tradeFactory() returns (address)'])
+        abi: parseAbi(['function tradeFactory() view returns (address)'])
       }
     ], blockNumber })
 
@@ -195,7 +195,7 @@ export async function extractDelegatedAssets(chainId: number, addresses: `0x${st
   const results = [] as { address: `0x${string}`, delegatedAssets: bigint } []
 
   const contracts = addresses.map(address => ({
-    args: [], address, functionName: 'delegatedAssets', abi: parseAbi(['function delegatedAssets() returns (uint256)'])
+    args: [], address, functionName: 'delegatedAssets', abi: parseAbi(['function delegatedAssets() view returns (uint256)'])
   }))
 
   const multicallresults = await rpcs.next(chainId, blockNumber).multicall({ contracts, blockNumber})

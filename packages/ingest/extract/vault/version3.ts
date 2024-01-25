@@ -6,6 +6,7 @@ import { Queue } from 'bullmq'
 import { firstRow } from '../../db'
 import { getBlock } from 'lib/blocks'
 import { div } from 'lib/math'
+import { registries } from '../../fanout/registry/registries'
 
 export class VaultExtractor__v3 implements Processor {
   queues: { [name: string]: Queue } = {}
@@ -86,6 +87,32 @@ export async function getRegistration(vault: types.Vault) {
 
 export async function extractRegistration(vault: types.Vault, blockNumber?: bigint) {
   if(!vault.registryAddress) throw new Error('!vault.registryAddress')
+  const registry = registries.find(r => r.chainId === vault.chainId && r.address === vault.registryAddress)
+  if(!registry) throw new Error('!registry')
+
+  const { vaultType, deploymentTimestamp } = registry.version >= 3.1
+  ? await __extractRegistration_v3_1(vault, blockNumber)
+  : await __extractRegistration_v3(vault, blockNumber)
+
+  return {
+    type: Number(vaultType) === 1 ? 'vault' : 'strategy',
+    activationBlockTime: deploymentTimestamp,
+    activationBlockNumber: await blocks.estimateHeight(vault.chainId, deploymentTimestamp)
+  } as types.Vault
+}
+
+async function __extractRegistration_v3_1(vault: types.Vault, blockNumber?: bigint) {
+  const [asset, releaseVersion, vaultType, deploymentTimestamp, index, tag] = await rpcs.next(vault.chainId, blockNumber).readContract({
+    address: vault.registryAddress as `0x${string}`,
+    abi: parseAbi(['function vaultInfo(address) view returns (address, uint96, uint64, uint128, uint64, string)']),
+    functionName: 'vaultInfo',
+    args: [vault.address],
+    blockNumber
+  })
+  return { vaultType, deploymentTimestamp }
+}
+
+async function __extractRegistration_v3(vault: types.Vault, blockNumber?: bigint) {
   const [asset, releaseVersion, vaultType, deploymentTimestamp, tag] = await rpcs.next(vault.chainId, blockNumber).readContract({
     address: vault.registryAddress as `0x${string}`,
     abi: parseAbi(['function vaultInfo(address) view returns (address, uint96, uint128, uint128, string)']),
@@ -93,12 +120,7 @@ export async function extractRegistration(vault: types.Vault, blockNumber?: bigi
     args: [vault.address],
     blockNumber
   })
-
-  return { 
-    type: Number(vaultType) === 1 ? 'vault' : 'strategy', 
-    activationBlockTime: deploymentTimestamp,
-    activationBlockNumber: await blocks.estimateHeight(vault.chainId, deploymentTimestamp)
-  } as types.Vault
+  return { vaultType, deploymentTimestamp }
 }
 
 export async function extractFields(vault: types.Vault, blockNumber?: bigint) {
@@ -284,14 +306,14 @@ export async function extractDebts(vault: types.Vault, queue: readonly `0x${stri
     address: vault.address, abi: parseAbi(['function totalDebt() view returns (uint256)']), functionName: 'totalDebt'
   }
 
-  const strategiesAbi = parseAbi(['function strategies(address) returns (uint256, uint256, uint256, uint256)'])
+  const strategiesAbi = parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)'])
 
   const callStrategies = queue.map((strategyAddress) => ({
     address: vault.address, abi: strategiesAbi, functionName: 'strategies', 
     args: [ strategyAddress ]
   }))
 
-  const multicallResults = await rpcs.next(vault.chainId, blockNumber).multicall({ contracts: [ callTotalDebt, ...callStrategies ], blockNumber })
+  const multicallResults = await rpcs.next(vault.chainId, blockNumber).multicall({ contracts: [ ...[callTotalDebt], ...callStrategies ], blockNumber })
 
   if(multicallResults.some(result => result.status !== 'success')) throw new Error('!multicallResults.success')
 

@@ -32,7 +32,7 @@
     "react-timeago": "^7.1.0",
     "swr": "^2.2.4",
     "tailwind-scrollbar": "^3.0.5",
-    "viem": "1.16.5"
+    "viem": "2.5.0"
   },
   "devDependencies": {
     "@types/figlet": "^1.5.6",

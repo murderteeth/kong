@@ -8,7 +8,7 @@ export interface Registry {
   events?: readonly any[]
 }
 
-export const contracts: Registry[] = [
+export const registries: Registry[] = [
   {
     chainId: 1,
     address: '0xe15461b18ee31b7379019dc523231c57d1cbc18c' as `0x${string}`,
@@ -38,6 +38,12 @@ export const contracts: Registry[] = [
       `event NewVault(address indexed token, uint256 indexed vaultId, uint256 vaultType, address vault, string apiVersion)`
     ])
   },
+  {
+    chainId: 1,
+    address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af' as `0x${string}`,
+    version: 3.1,
+    incept: 19072527n
+  },
 
 
   {
@@ -66,6 +72,12 @@ export const contracts: Registry[] = [
     address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500' as `0x${string}`,
     version: 3,
     incept: 49100596n,
+  },
+  {
+    chainId: 137,
+    address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af' as `0x${string}`,
+    version: 3.1,
+    incept: 52488140n,
   },
 
 

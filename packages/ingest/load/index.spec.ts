@@ -33,7 +33,7 @@ describe('load', function() {
     expect(name).to.eq('2')
   })
 
-  it.only('keeps last good TVL', async function() {
+  it('keeps last good TVL', async function() {
     const goodTvl = {
       chainId: 1,
       address: zeroAddress,
