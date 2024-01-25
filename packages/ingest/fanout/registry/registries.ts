@@ -8,7 +8,7 @@ export interface Registry {
   events?: readonly any[]
 }
 
-export const contracts: Registry[] = [
+export const registries: Registry[] = [
   {
     chainId: 1,
     address: '0xe15461b18ee31b7379019dc523231c57d1cbc18c' as `0x${string}`,
@@ -41,7 +41,7 @@ export const contracts: Registry[] = [
   {
     chainId: 1,
     address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af' as `0x${string}`,
-    version: 3,
+    version: 3.1,
     incept: 19072527n
   },
 
@@ -76,7 +76,7 @@ export const contracts: Registry[] = [
   {
     chainId: 137,
     address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af' as `0x${string}`,
-    version: 3,
+    version: 3.1,
     incept: 52488140n,
   },
 

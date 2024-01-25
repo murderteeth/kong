@@ -245,15 +245,15 @@ export async function extractLockedProfit__v2(chainId: number, address: `0x${str
   const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     {
       address, functionName: 'lastReport',
-      abi: parseAbi(['function lastReport() returns (uint256)'])
+      abi: parseAbi(['function lastReport() view returns (uint256)'])
     },
     {
       address, functionName: 'lockedProfit',
-      abi: parseAbi(['function lockedProfit() returns (uint256)'])
+      abi: parseAbi(['function lockedProfit() view returns (uint256)'])
     },
     {
       address, functionName: 'lockedProfitDegradation',
-      abi: parseAbi(['function lockedProfitDegradation() returns (uint256)'])
+      abi: parseAbi(['function lockedProfitDegradation() view returns (uint256)'])
     }
   ], blockNumber })
 
@@ -346,7 +346,7 @@ export async function extractFees__v3(chainId: number, address: `0x${string}`, b
     }
   ]).flat()
 
-  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
+  const extraMulticalls = [
     {
       address: accountant,
       abi: parseAbi(['function defaultConfig() view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
@@ -356,25 +356,29 @@ export async function extractFees__v3(chainId: number, address: `0x${string}`, b
       address,
       abi: parseAbi(['function totalDebt() view returns (uint256)']),
       functionName: 'totalDebt'
-    },
+    }
+  ]
+
+  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
+    ...extraMulticalls,
     ...strategyMulticalls
   ], blockNumber})
 
   const defaultConfigResult = multicallResult[0]
-  const defaultManagementFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as number[])[0] : 0
-  const defaultPerformanceFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as number[])[1] : 0
+  const defaultManagementFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as readonly [number, number, number, number, number, number])[0] : 0
+  const defaultPerformanceFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as readonly [number, number, number, number, number, number])[1] : 0
   const totalDebt = multicallResult[1].result as bigint
   const feesBps = { performance: 0, management: 0 }
   for(let i = 0; i < strategies.length; i++) {
     const vaultParameters = multicallResult[i * 3 + 2 + 0]
-    const [ activation, lastReport, currentDebt, maxDebt ] = vaultParameters.result as bigint[]
+    const [ activation, lastReport, currentDebt, maxDebt ] = vaultParameters.result as readonly [bigint, bigint, bigint, bigint]
     const debtRatio = math.div(currentDebt, totalDebt)
 
     const useCustomConfigResult = multicallResult[i * 3 + 2 + 1]
     const useCustomConfig = useCustomConfigResult.result as boolean
     if(useCustomConfig) {
       const customConfigResult = multicallResult[i * 3 + 2 + 2]
-      const [ managementFee, performanceFee, refundRatio, maxFee, maxGain, maxLoss ] = customConfigResult.result as number []
+      const [ managementFee, performanceFee, refundRatio, maxFee, maxGain, maxLoss ] = customConfigResult.result as readonly [number, number, number, number, number, number]
       feesBps.performance += debtRatio * performanceFee
       feesBps.management += debtRatio * managementFee
     } else {
