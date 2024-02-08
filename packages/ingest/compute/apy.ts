@@ -1,5 +1,5 @@
 import { math, mq, multicall3, types } from 'lib'
-import db, { firstRow, getApiVersion } from '../db'
+import db, { firstRow } from '../db'
 import { rpcs } from '../rpcs'
 import { ReadContractParameters, parseAbi } from 'viem'
 import { Processor } from 'lib/processor'
@@ -103,7 +103,7 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
 
   const ppsParameters = {
     address, functionName: 'pricePerShare' as never,
-    abi: parseAbi(['function pricePerShare() returns (uint256)'])
+    abi: parseAbi(['function pricePerShare() view returns (uint256)'])
   } as ReadContractParameters
 
   const day = 24n * 60n * 60n
