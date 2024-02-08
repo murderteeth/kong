@@ -1,6 +1,6 @@
 import { blocks, mq, types } from 'lib'
 import { rpcs } from '../../rpcs'
-import { parseAbi } from 'viem'
+import { parseAbi, zeroAddress } from 'viem'
 import { Processor } from 'lib/processor'
 import { Queue } from 'bullmq'
 import { firstRow } from '../../db'
@@ -230,7 +230,7 @@ export async function extractFees(vault: types.Vault, blockNumber?: bigint) {
 }
 
 export async function extractFeesBps(vault: types.Vault, blockNumber?: bigint) {
-  if(vault.accountant) {
+  if(vault.accountant && vault.accountant !== zeroAddress) {
     const defaultConfig = await rpcs.next(vault.chainId, blockNumber).readContract({
       address: vault.accountant,
       abi: parseAbi(['function defaultConfig() view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),

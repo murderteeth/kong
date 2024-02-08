@@ -40,7 +40,7 @@ async function estimateHeightLlama(chainId: number, timestamp: bigint) {
 }
 
 async function estimateHeightManual(chainId: number, timestamp: bigint) {
-  const top = await rpcs.next(chainId).getBlock()
+  const top = await getBlock(chainId)
   let hi = top.number
   let lo = 0n
   let block = top
