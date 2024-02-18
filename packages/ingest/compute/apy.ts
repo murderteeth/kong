@@ -10,6 +10,7 @@ import { mainnet } from 'viem/chains'
 import { compare } from 'compare-versions'
 import { endOfDay } from 'lib/dates'
 import { extractDefaultQueue } from '../extract/vault/version3'
+import { MeasureSchema } from 'lib/types'
 
 export class ApyComputer implements Processor {
   queue: Queue | undefined
@@ -46,6 +47,49 @@ export class ApyComputer implements Processor {
     await this.queue?.add(mq.job.load.apy, apy, {
       jobId: `${chainId}-${blockNumber}-${address}-apy`
     })
+
+    {
+      // await addQueue<MeasureSchema>(mq.job.load.measure, {})
+      // await mq.push(mq.job.load.measure, {
+      //   chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'net', value: apy.net        
+      // }, { jobId: '' })
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'net', value: apy.net
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'gross-apr', value: apy.grossApr
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'pps', value: apy.pricePerShare
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-net', value: apy.weeklyNet
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-pps', value: apy.weeklyPricePerShare
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-blockNumber', value: apy.weeklyBlockNumber
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-net', value: apy.monthlyNet
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-pps', value: apy.monthlyPricePerShare
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-blockNumber', value: apy.monthlyBlockNumber
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-net', value: apy.inceptionNet
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-pps', value: apy.inceptionPricePerShare
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-blockNumber', value: apy.inceptionBlockNumber
+      }))
+    }
   }
 }
 

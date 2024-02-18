@@ -10,7 +10,7 @@ import { extractWithdrawalQueue } from '../extract/vault/version2'
 import { scaleDown } from 'lib/math'
 import { endOfDay } from 'lib/dates'
 import { extractDelegatedAssets } from '../extract/strategy'
-import { TVLSchema } from 'lib/types'
+import { MeasureSchema, TVLSchema } from 'lib/types'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined
@@ -26,17 +26,17 @@ export class TvlComputer implements Processor {
   async compute({ chainId, address, time }
     : { chainId: number, address: `0x${string}`, time: bigint })
   {
-    let number: bigint = 0n
+    let blockNumber: bigint = 0n
     let latest: boolean = false
     if(time >= BigInt(Math.floor(new Date().getTime() / 1000))) {
       latest = true;
-      ({ number } = await getBlock(chainId))
+      ({ number: blockNumber } = await getBlock(chainId))
     } else {
       const estimate = await estimateHeight(chainId, time);
-      ({ number } = await getBlock(chainId, estimate))
+      ({ number: blockNumber } = await getBlock(chainId, estimate))
     }
 
-    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, number, latest)
+    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, blockNumber, latest)
     const artificialBlockTime = endOfDay(time)
 
     await this.queue?.add(mq.job.load.tvl, TVLSchema.parse({
@@ -45,9 +45,18 @@ export class TvlComputer implements Processor {
       priceUsd,
       priceSource,
       tvlUsd,
-      blockNumber: number,
+      blockNumber,
       blockTime: artificialBlockTime
     }))
+
+    {
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'tvl', component: 'usd', value: tvlUsd
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'price', component: priceSource, value: priceUsd
+      }))
+    }
   }
 }
 

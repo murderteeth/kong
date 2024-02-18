@@ -1,23 +1,4 @@
-import { Pool, types as pgTypes } from 'pg'
-
-// Convert timestamptz (OID 1184) to seconds
-pgTypes.setTypeParser(1184, (stringValue) => {
-  return BigInt(Math.floor(Date.parse(stringValue) / 1000))
-})
-
-const db = new Pool({
-  host: process.env.POSTGRES_HOST || 'localhost',
-  port: (process.env.POSTGRES_PORT || 5432) as number,
-  ssl: (process.env.POSTGRES_SSL || false) as boolean,
-  database: process.env.POSTGRES_DATABASE || 'user',
-  user: process.env.POSTGRES_USER || 'user',
-  password: process.env.POSTGRES_PASSWORD || 'password',
-  max: 4,
-  idleTimeoutMillis: 60_000,
-  connectionTimeoutMillis: 5_000,
-})
-
-export default db
+import db from '.'
 
 export async function getVaults(where: string, values: any[]) {
   const query = `
@@ -198,14 +179,6 @@ export async function getVaults(where: string, values: any[]) {
     v.asset_name as "assetName", 
     v.asset_symbol as "assetSymbol",
     v.asset_description as "assetDescription",
-    v.asset_price_usd as "assetPriceUsd",
-    v.asset_price_source as "assetPriceSource",
-    v.tvl_usd as "tvlUsd",
-    v.apy_net as "apyNet",
-    v.apy_weekly_net as "apyWeeklyNet",
-    v.apy_monthly_net as "apyMonthlyNet",
-    v.apy_inception_net as "apyInceptionNet",
-    v.apr_gross as "aprGross",
     v.management_fee as "managementFee",
     v.performance_fee as "performanceFee",
     v.governance,
@@ -232,6 +205,31 @@ export async function getVaults(where: string, values: any[]) {
     AND v.address = apy_agg.address
   ${where};
   `
-  const result = await db.query(query, values)
-  return result.rows
+  const vaults = (await db.query(query, values)).rows
+
+  const measures = (await db.query(
+  `SELECT DISTINCT ON(chain_id, address, label, component) * 
+  FROM measure v
+  ${where} AND label in ('apy-bwd-delta-pps', 'tvl', 'price')
+  ORDER BY chain_id, address, label, component, block_number DESC`
+  , values)).rows
+
+  const results = vaults.map((vault: any) => {
+    const apy = measures.filter((m: any) => m.label === 'apy-bwd-delta-pps' && m.chain_id === vault.chainId && m.address === vault.address)
+    const tvl = measures.filter((m: any) => m.label === 'tvl' && m.chain_id === vault.chainId && m.address === vault.address)
+    const price = measures.filter((m: any) => m.label === 'price' && m.chain_id === vault.chainId && m.address === vault.address)
+    return {
+      ...vault,
+      tvlUsd: tvl[0]?.value,
+      assetPriceUsd: price[0]?.value,
+      assetPriceSource: price[0]?.component,
+      apyNet: apy.find((a: any) => a.component === 'net')?.value,
+      apyWeeklyNet: apy.find((a: any) => a.component === 'weekly-net')?.value,
+      apyMonthlyNet: apy.find((a: any) => a.component === 'monthly-net')?.value,
+      apyInceptionNet: apy.find((a: any) => a.component === 'inception-net')?.value,
+      aprGross: apy.find((a: any) => a.component === 'gross-apr')?.value
+    }
+  })
+
+  return results
 }

@@ -1,4 +1,3 @@
-require('./json.monkeypatch')
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateNextHandler } from '@as-integrations/next'
 import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl'

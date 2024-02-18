@@ -222,3 +222,15 @@ export const VaultDebtSchema = z.object({
 })
 
 export type VaultDebt = z.infer<typeof VaultDebtSchema>
+
+export const MeasureSchema = z.object({
+  chainId: z.number(),
+  address: zaddress,
+  label: z.string(),
+  component: z.string().nullish(),
+  value: z.number({ coerce: true }).nullish(),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true })
+})
+
+export type Measure = z.infer<typeof MeasureSchema>

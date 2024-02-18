@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react'
-import { DEFAULT_CONTEXT, DataContext } from './types'
+import { DEFAULT_CONTEXT, DataContext, DataContextSchema } from './types'
 import useSWR from 'swr'
 
 const endpoint = process.env.NEXT_PUBLIC_GQL || '/api/gql'
@@ -139,7 +139,7 @@ export const dataContext = createContext<DataContext>(DEFAULT_CONTEXT)
 
 export const useData = () => useContext(dataContext)
 
-export default function DataProvider({children}: {children: ReactNode}) {
+export default function DataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<DataContext>(DEFAULT_CONTEXT)
 
   const { data: status } = useSWR(
@@ -161,14 +161,18 @@ export default function DataProvider({children}: {children: ReactNode}) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         query: VAULT_QUERY,
-        variables: { chainId: 137, address: '0xA013Fbd4b711f9ded6fB09C1c0d358E2FbC2EAA0' }
+        variables: { chainId: 1, address: '0x27B5739e22ad9033bcBf192059122d163b60349D' }
       })
     }).then(res => res.json()),
     { refreshInterval: parseInt(process.env.NEXT_PUBLIC_DASH_REFRESH || '10_000') }
   )
 
   useEffect(() => {
-    setData({...DEFAULT_CONTEXT, ...vault?.data, ...status?.data})
+    setData(DataContextSchema.parse({
+      ...DEFAULT_CONTEXT,
+      ...vault?.data,
+      ...status?.data
+    }))
   }, [status, vault, setData])
 
   return <dataContext.Provider value={data}>{children}</dataContext.Provider>
