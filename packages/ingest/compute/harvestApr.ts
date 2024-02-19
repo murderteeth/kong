@@ -7,7 +7,7 @@ import { Queue } from 'bullmq'
 import { getBlock } from 'lib/blocks'
 import { extractFees } from '../extract/vault/version2'
 import { compare } from 'compare-versions'
-import { HarvestSchema } from 'lib/types'
+import { HarvestSchema, MeasureSchema } from 'lib/types'
 
 export class HarvestAprComputer implements Processor {
   queue: Queue | undefined
@@ -50,6 +50,15 @@ export class HarvestAprComputer implements Processor {
     } as types.APR, {
       jobId: `${chainId}-${address}-${blockNumber}-${blockIndex}-harvest-apr`
     })
+
+    {
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: block.timestamp, label: 'apr-spot-harvest', component: 'gross', value: apr.gross
+      }))
+      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
+        chainId, address, blockNumber, blockTime: block.timestamp, label: 'apr-spot-harvest', component: 'net', value: apr.net
+      }))
+    }
   }
 }
 

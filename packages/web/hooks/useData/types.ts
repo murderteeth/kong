@@ -148,10 +148,10 @@ type Monitor = z.infer<typeof MonitorSchema>
 export const DataContextSchema = z.object({
   latestBlocks: z.array(LatestBlockSchema),
   vault: VaultSchema.nullish(),
-  tvls: z.array(TVLSchema).default([]),
-  apys: z.array(APYSchema).default([]),
-  transfers: z.array(TransferSchema).default([]),
-  harvests: z.array(HarvestSchema).default([]),
+  tvls: z.array(TVLSchema).nullish().transform(data => data ?? []),
+  apys: z.array(APYSchema).nullish().transform(data => data ?? []),
+  transfers: z.array(TransferSchema).nullish().transform(data => data ?? []),
+  harvests: z.array(HarvestSchema).nullish().transform(data => data ?? []),
   monitor: MonitorSchema
 })
 
