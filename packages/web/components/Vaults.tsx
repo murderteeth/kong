@@ -38,7 +38,7 @@ export default function Vaults() {
       </Frosty>
     </div>)}
 
-    <div className="w-full flex items-center justify-between text-xs">
+    {/* <div className="w-full flex items-center justify-between text-xs">
       <div>apetax</div>
       <div className="flex items-center gap-2 whitespace-nowrap">
         <Frosty _key={`apetax-s-${stats.apetax.stealth}`} disabled={stats.apetax.stealth < 1}>{`s ${pad(stats.apetax.stealth)}`}</Frosty>
@@ -46,6 +46,6 @@ export default function Vaults() {
         <Frosty _key={`apetax-a-${stats.apetax.active}`} disabled={stats.apetax.active < 1}>{`a ${pad(stats.apetax.active)}`}</Frosty>
         <Frosty _key={`apetax-w-${stats.apetax.withdraw}`} disabled={stats.apetax.withdraw < 1}>{`w ${pad(stats.apetax.withdraw)}`}</Frosty>
       </div>
-    </div>
+    </div> */}
   </Panel>
 }
