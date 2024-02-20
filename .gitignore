@@ -1,5 +1,5 @@
 .env
-.local/
+.grove/
 config/*.local.yaml
 node_modules/
 build/
