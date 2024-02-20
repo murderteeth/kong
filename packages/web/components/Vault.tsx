@@ -61,9 +61,9 @@ export default function Vault() {
     {vault.withdrawalQueue.length > 0 && vault.withdrawalQueue.map((strategy, index) => 
       <div key={index} className="flex items-center justify-between">
         <div className="text-sm">{strategy.name}</div>
-        <Frosty _key={`vault-tvl-${fPercent(strategy.netApr)}`}
+        <Frosty _key={`vault-tvl-${fPercent(strategy.netApr || 0)}`}
           className={'text-sm'}>
-          {`APR ${fPercent(strategy.netApr)}`}
+          {`APR ${fPercent(strategy.netApr || 0)}`}
         </Frosty>
       </div>
     )}

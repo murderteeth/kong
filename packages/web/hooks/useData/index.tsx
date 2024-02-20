@@ -150,7 +150,10 @@ export default function DataProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ 
         query: STATUS_QUERY
       })
-    }).then(res => res.json()),
+    }).then(res => res.json()).catch(reason => {
+      console.error(reason)
+      return {}
+    }),
     { refreshInterval: parseInt(process.env.NEXT_PUBLIC_DASH_REFRESH || '10_000') }
   )
 
@@ -163,7 +166,10 @@ export default function DataProvider({ children }: { children: ReactNode }) {
         query: VAULT_QUERY,
         variables: { chainId: 1, address: '0x27B5739e22ad9033bcBf192059122d163b60349D' }
       })
-    }).then(res => res.json()),
+    }).then(res => res.json()).catch(reason => {
+      console.error(reason)
+      return {}
+    }),
     { refreshInterval: parseInt(process.env.NEXT_PUBLIC_DASH_REFRESH || '10_000') }
   )
 

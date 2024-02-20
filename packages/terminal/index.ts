@@ -11,7 +11,7 @@ dotenv.config({ path: envPath })
 async function main() {
   console.log()
   console.log(chalk.yellowBright(figlet.textSync('KONG', { font: 'Cyberlarge', horizontalLayout: 'fitted' })))
-  console.log(chalk.greenBright(`🔗 ${chains.map(c => c.name).join(', ')}`))
+  console.log(chalk.greenBright(`${chains.map(c => c.name).join(' x ')}`))
   console.log()
 
   while(true) { await menuPrompt() }
