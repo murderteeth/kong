@@ -16,7 +16,7 @@ export class VaultHandler implements Handler {
   }
 
   async handle(chainId: number, address: `0x${string}`, logs: any[]) {
-    const harvestLogs__v2 = logs.filter(log => log.eventName === 'StrategyReported' && log.args.gain !== undefined)
+    const harvestLogs__v2 = logs.filter(log => log.eventName === 'StrategyReported' && log.args.total_refunds === undefined)
     const harvests__v2 = this.logs2Harvests__v2(chainId, address, harvestLogs__v2)
     console.log('📋', chainId, address, 'harvests__v2', harvests__v2.length)
     await this.handleHarvests(harvests__v2)

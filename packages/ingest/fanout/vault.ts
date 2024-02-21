@@ -22,6 +22,13 @@ export default class VaultFanout implements Processor {
   async fanout() {
     for(const chain of chains) {
       const default_start_block = await estimateHeight(chain.id, dates.DEFAULT_START())
+      // for each vault (vault where type = 'vault')
+      //    filter correct events by api version
+      //    get all evm pointers
+      //    loop starting from youngest pointer
+      //        if pointer in range, add to events list
+      //        push events to extract queue
+
       const pointers = await getVaultPointers(chain.id)
       for(const pointer of pointers) {
         const from = max(pointer.blockNumber, pointer.activationBlockNumber, default_start_block)
@@ -32,9 +39,10 @@ export default class VaultFanout implements Processor {
           address: pointer.address
         })
 
-        const events = compare(pointer.apiVersion, '3.0.0', '>=') 
+        const events = compare(pointer.apiVersion, '3.0.0', '>=')
         ? parseAbi([
           `event Reported(uint256 profit, uint256 loss, uint256 protocolFees, uint256 performanceFees)`,
+          `event StrategyReported(address indexed strategy, uint256 gain, uint256 loss, uint256 current_debt, uint256 protocol_fees, uint256 total_fees, uint256 total_refunds)`,
           `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
         ])
         : parseAbi([
@@ -53,12 +61,12 @@ export default class VaultFanout implements Processor {
     console.log('📤', 'fanout', chainId, address, from, to)
     const stride = BigInt(process.env.LOG_STRIDE || 10_000)
     const throttle = 16
-    for (let block = from; block <= to; block += stride) {
-      const toBlock = block + stride - 1n < to ? block + stride - 1n : to
+    for (let fromBlock = from; fromBlock <= to; fromBlock += stride) {
+      const toBlock = fromBlock + stride - 1n < to ? fromBlock + stride - 1n : to
       const options = {
         chainId, address,
         events: JSON.stringify(events),
-        from: block, to: toBlock,
+        from: fromBlock, to: toBlock,
         handler: 'vault'
       }
       await this.queues[mq.q.extract].add(mq.job.extract.evmlogs, options)
