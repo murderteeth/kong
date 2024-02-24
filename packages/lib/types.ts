@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const zaddress = z.custom<`0x${string}`>((val: any) => /^0x/.test(val))
+export const zhexstring = z.custom<`0x${string}`>((val: any) => /^0x/.test(val))
 export const zvaultType = z.enum(['vault', 'strategy'])
 
 export interface LatestBlock {
@@ -20,7 +20,7 @@ export interface APR {
 
 export const APYSchema = z.object({
   chainId: z.number(),
-  address: zaddress,
+  address: zhexstring,
   weeklyNet: z.number().nullish(),
   weeklyPricePerShare: z.bigint({ coerce: true }).nullish(),
   weeklyBlockNumber: z.bigint({ coerce: true }),
@@ -42,7 +42,7 @@ export type APY = z.infer<typeof APYSchema>
 
 export const TVLSchema = z.object({
   chainId: z.number(),
-  address: zaddress,
+  address: zhexstring,
   priceUsd: z.number(),
   priceSource: z.string(),
   tvlUsd: z.number(),
@@ -54,17 +54,17 @@ export type TVL = z.infer<typeof TVLSchema>
 
 export const VaultSchema = z.object({
   chainId: z.number(),
-  address: zaddress,
+  address: zhexstring,
   type: zvaultType.nullish(),
   apiVersion: z.string().nullish(),
   apetaxType: z.string().nullish(),
   apetaxStatus: z.string().nullish(),
   registryStatus: z.string().nullish(),
-  registryAddress: zaddress.nullish(),
+  registryAddress: zhexstring.nullish(),
   symbol: z.string().nullish(),
   name: z.string().nullish(),
   decimals: z.number().nullish(),
-  assetAddress: zaddress.nullish(),
+  assetAddress: zhexstring.nullish(),
   assetName: z.string().nullish(),
   assetSymbol: z.string().nullish(),
   totalAssets: z.bigint({ coerce: true }).nullish(),
@@ -74,7 +74,7 @@ export const VaultSchema = z.object({
   debtRatio: z.number().nullish(),
   availableDepositLimit: z.bigint({ coerce: true }).nullish(),
   depositLimit: z.bigint({ coerce: true }).nullish(),
-  governance: zaddress.nullish(),
+  governance: zhexstring.nullish(),
   performanceFee: z.number().nullish(),
   managementFee: z.number().nullish(),
   lockedProfitDegradation: z.bigint({ coerce: true }).nullish(),
@@ -82,10 +82,10 @@ export const VaultSchema = z.object({
   profitUnlockingRate: z.bigint({ coerce: true }).nullish(),
   fullProfitUnlockDate: z.bigint({ coerce: true }).nullish(),
   lastProfitUpdate: z.bigint({ coerce: true }).nullish(),
-  accountant: zaddress.nullish(),
-  roleManager: zaddress.nullish(),
-  debtManager: zaddress.nullish(),
-  keeper: zaddress.nullish(),
+  accountant: zhexstring.nullish(),
+  roleManager: zhexstring.nullish(),
+  debtManager: zhexstring.nullish(),
+  keeper: zhexstring.nullish(),
   doHealthCheck: z.boolean().nullish(),
   emergencyShutdown: z.boolean().nullish(),
   isShutdown: z.boolean().nullish(),
@@ -178,7 +178,7 @@ export interface RiskGroup {
 
 export const HarvestSchema = z.object({
   chainId: z.number(),
-  address: zaddress,
+  address: zhexstring,
   profit: z.bigint({ coerce: true }),
   profitUsd: z.number({ coerce: true }).nullish(),
   loss: z.bigint({ coerce: true }),
@@ -195,7 +195,7 @@ export const HarvestSchema = z.object({
   blockNumber: z.bigint({ coerce: true }),
   blockIndex: z.number({ coerce: true }),
   blockTime: z.bigint({ coerce: true }).nullish(),
-  transactionHash: zaddress
+  transactionHash: zhexstring
 })
 
 export type Harvest = z.infer<typeof HarvestSchema>
@@ -210,8 +210,8 @@ export interface SparklinePoint {
 
 export const VaultDebtSchema = z.object({
   chainId: z.number(),
-  lender: zaddress,
-  borrower: zaddress,
+  lender: zhexstring,
+  borrower: zhexstring,
   maxDebt: z.bigint({ coerce: true }),
   currentDebt: z.bigint({ coerce: true }),
   currentDebtRatio: z.number({ coerce: true }),
@@ -225,7 +225,7 @@ export type VaultDebt = z.infer<typeof VaultDebtSchema>
 
 export const MeasureSchema = z.object({
   chainId: z.number(),
-  address: zaddress,
+  address: zhexstring,
   label: z.string(),
   component: z.string().nullish(),
   value: z.number({ coerce: true }).nullish(),
@@ -234,3 +234,26 @@ export const MeasureSchema = z.object({
 })
 
 export type Measure = z.infer<typeof MeasureSchema>
+
+export const EvmLogSchema = z.object({
+  chainId: z.number(),
+  address: zhexstring,
+  eventName: z.string(),
+  topic: zhexstring,
+  args: z.record(z.any()),
+  hooks: z.record(z.any()),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true }),
+  logIndex: z.number(),
+  transactionHash: zhexstring,
+  transactionIndex: z.number()
+})
+
+export type EvmLog = z.infer<typeof EvmLogSchema>
+
+export const StrideSchema = z.object({
+  from: z.bigint({ coerce: true }),
+  to: z.bigint({ coerce: true })
+})
+
+export type Stride = z.infer<typeof StrideSchema>

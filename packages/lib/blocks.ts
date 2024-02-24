@@ -1,11 +1,16 @@
+import { GetBlockReturnType } from 'viem'
 import { cache } from './cache'
 import { rpcs } from './rpcs'
 
-export async function getBlockTime(chainId: number, blockNumber: bigint) {
+export async function getBlockNumber(chainId: number, blockNumber?: bigint): Promise<bigint> {
+  return (await getBlock(chainId, blockNumber)).number
+}
+
+export async function getBlockTime(chainId: number, blockNumber?: bigint): Promise<bigint> {
   return (await getBlock(chainId, blockNumber)).timestamp
 }
 
-export async function getBlock(chainId: number, blockNumber?: bigint) {
+export async function getBlock(chainId: number, blockNumber?: bigint): Promise<GetBlockReturnType> {
   return cache.wrap(`getBlock:${chainId}:${blockNumber}`, async () => {
     return await __getBlock(chainId, blockNumber)
   }, 10_000)

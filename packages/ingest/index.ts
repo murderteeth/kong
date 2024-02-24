@@ -4,7 +4,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
-import { cache, crons as cronsConfig, mq } from 'lib'
+import { cache, contracts as contractsConfig, crons as cronsConfig, mq } from 'lib'
 import db from './db'
 import { camelToSnake } from 'lib/strings'
 
@@ -29,6 +29,18 @@ const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   }
 }).filter(p => p) as Processor[]
 
+const contracts = contractsConfig
+.filter(contract => contract.start)
+.map(contract => new Promise((resolve, reject) => {
+  const queue = mq.queue(mq.q.fanout)
+  queue.add(mq.job.fanout.contracts, { id: camelToSnake(contract.id) }, {
+    repeat: { pattern: contract.schedule }
+  }).then(() => {
+    console.log('⬆', 'contracts up', contract.abi)
+    queue.close().then(resolve).catch(reject)
+  })
+}))
+
 const crons = cronsConfig.default
 .filter(cron => cron.start)
 .map(cron => new Promise((resolve, reject) => {
@@ -46,6 +58,7 @@ function up() {
     rpcs.up(),
     cache.up(),
     ...pools.map(pool => pool.up()),
+    ...contracts,
     ...crons
   ]).then(() => {
 

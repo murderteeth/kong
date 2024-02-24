@@ -1,5 +1,5 @@
-import { mq, strings, types } from 'lib'
-import db, { getBlockPointer, setBlockPointer, toUpsertSql } from '../db'
+import { mq, strider, strings, types } from 'lib'
+import db, { getBlockPointer, getStrides, setBlockPointer, toUpsertSql } from '../db'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
@@ -74,6 +74,10 @@ export default class Load implements Processor {
 
     [mq.job.load.monitor]: async data => 
     await upsert({ singleton: true, latest: data }, 'monitor', 'singleton'),
+
+    [mq.job.load.evmlog]: async data => await upsertEvmLog(data),
+
+    [mq.job.load.snapshot]: async data => await upsert(data, 'snapshot', 'chain_id, address, block_number'),
   }
 
   async up() {
@@ -92,6 +96,33 @@ export default class Load implements Processor {
   }
 }
 
+export async function upsertEvmLog(data: any) {
+  const { chainId, address, from, to, batch } = data
+  await upsertBatch(batch, 'evmlog', 'chain_id, address, topic, block_number, log_index, transaction_hash, transaction_index')
+  const client = await db.connect()
+  try {
+    await client.query('BEGIN')
+
+    const current = await getStrides(chainId, address, client)
+    const next = strider.add({ from, to }, current)
+    await client.query(`
+      INSERT INTO evmlog_strides(chain_id, address, strides) 
+      VALUES ($1, $2, $3) 
+      ON CONFLICT (chain_id, address) 
+      DO UPDATE SET strides = $3`, 
+      [chainId, address, JSON.stringify(next)]
+    )
+
+    await client.query('COMMIT')
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
 export async function upsertTvl(data: any) {
   await upsert(data, 'tvl', 'chain_id, address, block_time', `WHERE EXCLUDED.price_source <> 'none'`)
 }
@@ -107,11 +138,11 @@ export async function upsertAsOfBlock(data: any, table: string, pk: string[]) {
   const fields = Object.keys(data).filter(k => !pk.includes(strings.camelToSnake(k)))
 
   const client = await db.connect()
-  await client.query('BEGIN')
 
   try {
+    await client.query('BEGIN')
     const pointers = (await client.query(
-      `SELECT pointer as "key", block_number as "blockNumber" from block_pointer WHERE pointer = ANY($1)`, 
+      `SELECT pointer as "key", block_number as "blockNumber" FROM block_pointer WHERE pointer = ANY($1)`, 
       [fields.map(f => pointerKey(f))]
     )).rows
   
@@ -210,9 +241,9 @@ async function upsertWithdrawalQueue(data: any) {
   const asOfBlockNumber = BigInt(data.__as_of_block)
 
   const client = await db.connect()
-  await client.query('BEGIN')
 
   try {
+    await client.query('BEGIN')
     const pointer = await getBlockPointer(pointerKey, client)
     if(pointer < asOfBlockNumber) {
       await replaceWithBatch(
@@ -251,9 +282,9 @@ async function upsertStrategyLenderStatus(data: any) {
   const asOfBlockNumber = BigInt(data.__as_of_block)
 
   const client = await db.connect()
-  await client.query('BEGIN')
 
   try {
+    await client.query('BEGIN')
     const pointer = await getBlockPointer(pointerKey, client)
     if(pointer < asOfBlockNumber) {
       await replaceWithBatch(
@@ -291,9 +322,9 @@ async function upsertVaultDebt(data: any) {
   const asOfBlockNumber = BigInt(data.__as_of_block)
 
   const client = await db.connect()
-  await client.query('BEGIN')
 
   try {
+    await client.query('BEGIN')
     const pointer = await getBlockPointer(pointerKey, client)
     if(pointer < asOfBlockNumber) {
       await replaceWithBatch(

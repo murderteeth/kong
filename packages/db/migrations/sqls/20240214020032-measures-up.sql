@@ -1,25 +1,40 @@
 CREATE TABLE evmlog (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
-	event_signature text NOT NULL,
+	event_name text NOT NULL,
+	topic text NOT NULL,
 	args jsonb NULL,
+	hooks jsonb NULL,
 	block_number int8 NOT NULL,
-	block_index int4 NOT NULL,
 	block_time timestamptz NULL,
+	log_index int4 NOT NULL,
 	transaction_hash text NOT NULL,
-	CONSTRAINT evmlog_pkey PRIMARY KEY (chain_id, address, event_signature, block_number, block_index)
+	transaction_index int4 NOT NULL,
+	CONSTRAINT evmlog_pkey PRIMARY KEY (chain_id, address, topic, block_number, log_index, transaction_hash, transaction_index)
 );
 
-CREATE TABLE evmlog_block_pointer (
+CREATE TABLE evmlog_strides (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
-	topic text NOT NULL,
-	block_number int8 NOT NULL,
-	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT evmlog_block_pointer_pkey PRIMARY KEY (chain_id, address, topic)
+	strides text NOT NULL,
+	CONSTRAINT evmlog_walk_pkey PRIMARY KEY (chain_id, address)
 );
 
--- init evmlog_block_pointers for existing logs
+CREATE TABLE snapshot (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	snapshot jsonb NULL,
+	block_number int8 NOT NULL,
+	block_time timestamptz NULL,
+	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address, block_number)
+);
+
+-- CREATE TABLE thing (
+-- 	chain_id int4 NOT NULL,
+-- 	address text NOT NULL,
+-- 	label text NOT NULL,
+-- 	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address, block_number)
+-- );
 
 CREATE TABLE measure (
 	chain_id int4 NOT NULL,

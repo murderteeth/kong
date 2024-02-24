@@ -14,6 +14,10 @@ async function action() {
       name: 'q',
       message: 'pick an ingest job',
       choices: [
+        { title: 'fanout contracts', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.contracts
+        }},
         { title: 'index registry events', value: {
           name: mq.q.fanout,
           job: mq.job.fanout.registry

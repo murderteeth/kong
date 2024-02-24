@@ -1,4 +1,5 @@
 import { strings, types } from 'lib'
+import { StrideSchema } from 'lib/types'
 import { Pool, PoolClient, types as pgTypes } from 'pg'
 
 // Convert numeric (OID 1700) to float
@@ -131,6 +132,15 @@ export async function getSparkline(chainId: number, address: string, type: strin
     ORDER BY time ASC;
   `, [chainId, address, type])
   return result.rows as types.SparklinePoint[]
+}
+
+export async function getStrides(chainId: number, address: `0x${string}`, client?: PoolClient) {
+  const result = await (client ?? db).query(
+    `SELECT strides FROM evmlog_strides WHERE chain_id = $1 AND address = $2 ${client ? 'FOR UPDATE' : ''};`,
+    [chainId, address]
+  )
+  const stridesJson = result.rows[0]?.strides
+  return stridesJson ? StrideSchema.array().parse(JSON.parse(stridesJson)) : undefined
 }
 
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {

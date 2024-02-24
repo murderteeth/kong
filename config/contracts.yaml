@@ -1,0 +1,27 @@
+
+contracts:
+  - abi: 'yearn/3/registry-0'
+    schedule: '0-59/30 * * * *'
+    start: false
+    fromIncept: true
+    source: [
+      {
+        chainId: 137,
+        address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500',
+        incept: 49100596n
+      }
+    ]
+
+    # snapshot: [
+    #   {
+    #     functionName: 'balanceOf',
+    #     args: ['0x2f2a2543B76A4166549F7aab2e75Bef0aefC5B0f'],
+    #     thing: { label: 'vault' }
+    #   }
+    # ]
+
+  # - abi: 'yearn/2/vault'
+  #   schedule: "0-59/30 * * * *"
+  #   start: false
+  #   thing: true
+

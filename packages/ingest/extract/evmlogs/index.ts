@@ -1,18 +1,30 @@
+import { promises as fs } from 'fs'
+import path from 'path'
 import { Processor } from 'lib/processor'
 import { rpcs } from '../../rpcs'
 import { RegistryHandler } from './handlers/registry'
 import { VaultHandler } from './handlers/vault'
 import { DebtManagerFactoryHandler } from './handlers/debtManagerFactory'
 import grove from 'lib/grove'
-import strides from 'lib/grove/strides'
-import { toEventSelector } from 'viem'
-import { setTimeout } from 'timers/promises'
+import { Queue } from 'bullmq'
+import { mq } from 'lib'
+import { EvmLogSchema } from 'lib/types'
+import { getBlockTime } from 'lib/blocks'
+import { Log } from 'viem'
 
 export interface Handler extends Processor {
   handle: (chainId: number, address: `0x${string}`, logs: any[]) => Promise<void>
 }
 
+export interface Hook extends Processor {
+  key: string
+  hook: (chainId: number, address: `0x${string}`, log: Log) => Promise<any|undefined>
+}
+
 export class EvmLogsExtractor implements Processor {
+  queues: { [key: string]: Queue } = {}
+  hooks: Hook[] = []
+
   handlers = {
     registry: new RegistryHandler(),
     vault: new VaultHandler(),
@@ -20,10 +32,22 @@ export class EvmLogsExtractor implements Processor {
   } as { [key: string]: Handler }
 
   async up() {
+    (await fs.readdir(path.join(__dirname, 'hooks'), { withFileTypes: true })).map(dirent => {
+      if(dirent.isFile()) {
+        const hookPath = path.join(__dirname, 'hooks', dirent.name)
+        const HookClass = require(hookPath).default
+        this.hooks.push(new HookClass())
+      }
+    })
+
+    this.queues[mq.q.load] = mq.queue(mq.q.load)
+    await Promise.all(Object.values(this.hooks).map(h => h.up()))
     await Promise.all(Object.values(this.handlers).map(h => h.up()))
   }
 
   async down() {
+    await Promise.all(Object.values(this.queues).map(q => q.close()))
+    await Promise.all(Object.values(this.hooks).map(h => h.down()))
     await Promise.all(Object.values(this.handlers).map(h => h.down()))
   }
 
@@ -38,44 +62,37 @@ export class EvmLogsExtractor implements Processor {
       toBlock: BigInt(to)
     })
 
-    const throttle = 16
     for (const log of logs) {
-      const path = `evmlogs/${chainId}/${address}/${log.topics[0]}/${log.blockNumber}-${log.logIndex}-${log.transactionHash}-${log.transactionIndex}.json`
-      // console.log()
-      // console.log('😪😪😪 chainId, address, from, to', chainId, address, from, to)
-      // console.log('🥭🥭🥭 grove().store(path, log)', path)
-      try {
-        await grove().store(path, log)
-      } catch(error) {
-        console.log()
-        console.log()
-        console.log('logs')
-        console.error(error)
-        console.log()
-        console.log()
-      }
-
-      await setTimeout(throttle)
+      const _path = `evmlog/${chainId}/${address}/${log.topics[0]}/${log.blockNumber}-${log.logIndex}-${log.transactionHash}-${log.transactionIndex}.json`
+      await grove().store(_path, log)
     }
 
-    for (const event of events) {
-      const topic = toEventSelector(event)
-      const prefix = `evmlogs/${chainId}/${address}/${topic}`
-      // console.log()
-      // console.log('💣💣💣 prefix, { from, to }', prefix, { from, to })
-      try {
-        await strides.store(prefix, { from, to })
-      } catch(error) {
-        console.log()
-        console.log()
-        console.log('strides')
-        console.error(error)
-        console.log()
-        console.log()
+    const preparedLogs = []
+    for (const log of logs) {
+      const hookResults = async () => {
+        const results: { [key: string]: any } = {}
+        for (const { key, hook } of this.hooks) {
+          const result = await hook(chainId, address, log)
+          if(result) results[key] = result
+        }
+        return results
       }
 
-      await setTimeout(1000)
+      preparedLogs.push({
+        ...log,
+        chainId,
+        topic: log.topics[0],
+        hooks: await hookResults(),
+        blockTime: await getBlockTime(chainId, log.blockNumber)
+      })
     }
+
+    await this.queues[mq.q.load].add(mq.job.load.evmlog, { 
+      chainId, address, from, to,
+      batch: EvmLogSchema.array().parse(preparedLogs)
+    }, {
+      priority: mq.LOWEST_PRIORITY
+    })
 
     // await this.handlers[handler].handle(chainId, address, logs)
   }

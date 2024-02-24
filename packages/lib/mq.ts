@@ -16,12 +16,15 @@ export const job = {
     strategy: 'strategy',
     tvl: 'tvl',
     apy: 'apy',
-    harvestApr: 'harvest-apr'
+    harvestApr: 'harvest-apr',
+    contracts: 'contracts',
+    events: 'events'
   },
 
   extract: {
     block: 'block',
-    evmlogs: 'evmlogs',
+    evmlog: 'evmlog',
+    snapshot: 'snapshot',
     apetax: 'apetax',
     vault: 'vault',
     strategy: 'strategy',
@@ -58,7 +61,9 @@ export const job = {
       apr: 'sparkline-apr'
     },
     measure: 'measure',
-    monitor: 'monitor'
+    monitor: 'monitor',
+    evmlog: 'evmlog',
+    snapshot: 'snapshot'
   },
 
   probe: {

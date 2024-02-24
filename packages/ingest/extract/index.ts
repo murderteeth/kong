@@ -10,14 +10,15 @@ import { TransferExtractor } from './transfer'
 import { BlockExtractor } from './block'
 import { RiskExtractor } from './risk'
 import { MetaExtractor } from './meta'
-import { WaveyDbExtract } from './waveydb'
+import { WaveyDbExtractor } from './waveydb'
+import { SnapshotExtractor } from './snapshot'
 
 export default class Extract implements Processor {
   worker: Worker | undefined
 
   extractors = {
     [mq.job.extract.block]: new BlockExtractor(),
-    [mq.job.extract.evmlogs]: new EvmLogsExtractor(),
+    [mq.job.extract.evmlog]: new EvmLogsExtractor(),
     [mq.job.extract.vault]: new VaultExtractor(),
     [mq.job.extract.strategy]: new StrategyExtractor(),
     [mq.job.extract.harvest]: new HarvestExtractor(),
@@ -25,7 +26,8 @@ export default class Extract implements Processor {
     [mq.job.extract.transfer]: new TransferExtractor(),
     [mq.job.extract.risk]: new RiskExtractor(),
     [mq.job.extract.meta]: new MetaExtractor(),
-    [mq.job.extract.waveydb]: new WaveyDbExtract()
+    [mq.job.extract.waveydb]: new WaveyDbExtractor(),
+    [mq.job.extract.snapshot]: new SnapshotExtractor()
   }
 
   async up() {

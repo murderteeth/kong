@@ -16,7 +16,7 @@ const db = new Pool({
   connectionTimeoutMillis: 60_000,
 })
 
-export class WaveyDbExtract implements Processor {
+export class WaveyDbExtractor implements Processor {
   queues: { [key: string]: Queue } = {}
 
   async up() {

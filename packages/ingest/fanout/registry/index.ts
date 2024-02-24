@@ -54,7 +54,7 @@ export default class RegistryFanout implements Processor {
         from: block, to: toBlock,
         handler: 'registry'
       }
-      await this.queues[mq.q.extract].add(mq.job.extract.evmlogs, options)
+      await this.queues[mq.q.extract].add(mq.job.extract.evmlog, options)
       await setTimeout(throttle)
     }
   }

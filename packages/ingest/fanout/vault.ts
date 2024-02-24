@@ -69,7 +69,7 @@ export default class VaultFanout implements Processor {
         from: fromBlock, to: toBlock,
         handler: 'vault'
       }
-      await this.queues[mq.q.extract].add(mq.job.extract.evmlogs, options)
+      await this.queues[mq.q.extract].add(mq.job.extract.evmlog, options)
       await setTimeout(throttle)
     }
   }
