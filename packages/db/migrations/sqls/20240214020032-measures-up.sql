@@ -29,12 +29,13 @@ CREATE TABLE snapshot (
 	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address, block_number)
 );
 
--- CREATE TABLE thing (
--- 	chain_id int4 NOT NULL,
--- 	address text NOT NULL,
--- 	label text NOT NULL,
--- 	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address, block_number)
--- );
+CREATE TABLE thing (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	label text NOT NULL,
+	defaults jsonb NULL,
+	CONSTRAINT thing_pkey PRIMARY KEY (chain_id, address, label)
+);
 
 CREATE TABLE measure (
 	chain_id int4 NOT NULL,

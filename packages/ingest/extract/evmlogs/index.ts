@@ -6,6 +6,7 @@ import { RegistryHandler } from './handlers/registry'
 import { VaultHandler } from './handlers/vault'
 import { DebtManagerFactoryHandler } from './handlers/debtManagerFactory'
 import grove from 'lib/grove'
+import { StrideProcessor } from 'lib/grove/strideProcessor'
 import { Queue } from 'bullmq'
 import { mq } from 'lib'
 import { EvmLogSchema } from 'lib/types'
@@ -32,7 +33,7 @@ export class EvmLogsExtractor implements Processor {
   } as { [key: string]: Handler }
 
   async up() {
-    (await fs.readdir(path.join(__dirname, 'hooks'), { withFileTypes: true })).map(dirent => {
+    (await fs.readdir(path.join(__dirname, 'hooks'), { withFileTypes: true })).forEach(dirent => {
       if(dirent.isFile()) {
         const hookPath = path.join(__dirname, 'hooks', dirent.name)
         const HookClass = require(hookPath).default
@@ -67,22 +68,21 @@ export class EvmLogsExtractor implements Processor {
       await grove().store(_path, log)
     }
 
+    await StrideProcessor.get().add(chainId, address, { from, to })
+
     const preparedLogs = []
     for (const log of logs) {
-      const hookResults = async () => {
-        const results: { [key: string]: any } = {}
-        for (const { key, hook } of this.hooks) {
-          const result = await hook(chainId, address, log)
-          if(result) results[key] = result
-        }
-        return results
+      const hookResults: { [key: string]: any } = {}
+      for (const { key, hook } of this.hooks) {
+        const result = await hook(chainId, address, log)
+        if(result) hookResults[key] = result
       }
 
       preparedLogs.push({
         ...log,
         chainId,
         topic: log.topics[0],
-        hooks: await hookResults(),
+        hooks: hookResults,
         blockTime: await getBlockTime(chainId, log.blockNumber)
       })
     }

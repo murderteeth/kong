@@ -1,5 +1,5 @@
 import { mq, strider, strings, types } from 'lib'
-import db, { getBlockPointer, getStrides, setBlockPointer, toUpsertSql } from '../db'
+import db, { getBlockPointer, getLocalStrides, setBlockPointer, toUpsertSql } from '../db'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
@@ -75,9 +75,14 @@ export default class Load implements Processor {
     [mq.job.load.monitor]: async data => 
     await upsert({ singleton: true, latest: data }, 'monitor', 'singleton'),
 
-    [mq.job.load.evmlog]: async data => await upsertEvmLog(data),
+    [mq.job.load.evmlog]: 
+    async data => await upsertEvmLog(data),
 
-    [mq.job.load.snapshot]: async data => await upsert(data, 'snapshot', 'chain_id, address, block_number'),
+    [mq.job.load.snapshot]: 
+    async data => await upsert(data, 'snapshot', 'chain_id, address, block_number'),
+
+    [mq.job.load.thing]: 
+    async data => await upsert(data, 'thing', 'chain_id, address, label'),
   }
 
   async up() {
@@ -98,12 +103,12 @@ export default class Load implements Processor {
 
 export async function upsertEvmLog(data: any) {
   const { chainId, address, from, to, batch } = data
-  await upsertBatch(batch, 'evmlog', 'chain_id, address, topic, block_number, log_index, transaction_hash, transaction_index')
   const client = await db.connect()
   try {
     await client.query('BEGIN')
+    await upsertBatch(batch, 'evmlog', 'chain_id, address, topic, block_number, log_index, transaction_hash, transaction_index', undefined, client)
 
-    const current = await getStrides(chainId, address, client)
+    const current = await getLocalStrides(chainId, address, client)
     const next = strider.add({ from, to }, current)
     await client.query(`
       INSERT INTO evmlog_strides(chain_id, address, strides) 

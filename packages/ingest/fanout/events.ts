@@ -3,8 +3,9 @@ import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { abiutil, dates, math, mq, strider } from 'lib'
 import { Contract, ContractSource } from 'lib/contracts'
-import { getStrides } from '../db'
 import { estimateHeight, getBlockNumber } from 'lib/blocks'
+import { getLocalStrides } from '../db'
+import grove from 'lib/grove'
 
 export default class EventsFanout implements Processor {
   queues: { [key: string]: Queue } = {}
@@ -26,8 +27,10 @@ export default class EventsFanout implements Processor {
     const defaultStartBlock = await estimateHeight(chainId, dates.DEFAULT_START())
     const from = fromIncept ? incept : math.max(incept, defaultStartBlock)
     const to = await getBlockNumber(chainId)
-    const alreadyIndexed = await getStrides(chainId, address)
-    const strides = strider.plan(from, to, alreadyIndexed)
+
+    const groveStrides = await grove().fetchStrides(chainId, address)
+    const localStrides = await getLocalStrides(chainId, address)
+    const strides = strider.plan(from, to, localStrides)
 
     for (const stride of strides) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)

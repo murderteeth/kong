@@ -1,5 +1,5 @@
-import { math } from '.'
-import { Stride } from './types'
+import { math } from '..'
+import { Stride } from '../types'
 
 export function plan(from: bigint, to: bigint, travelled: Stride[] | undefined): Stride[] {
   if(!travelled) return [{ from, to }]

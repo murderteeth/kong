@@ -63,7 +63,8 @@ export const job = {
     measure: 'measure',
     monitor: 'monitor',
     evmlog: 'evmlog',
-    snapshot: 'snapshot'
+    snapshot: 'snapshot',
+    thing: 'thing'
   },
 
   probe: {
