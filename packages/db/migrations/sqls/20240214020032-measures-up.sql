@@ -26,7 +26,7 @@ CREATE TABLE snapshot (
 	snapshot jsonb NULL,
 	block_number int8 NOT NULL,
 	block_time timestamptz NULL,
-	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address, block_number)
+	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address)
 );
 
 CREATE TABLE thing (

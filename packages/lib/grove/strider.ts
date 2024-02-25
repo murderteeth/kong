@@ -16,7 +16,7 @@ export function plan(from: bigint, to: bigint, travelled: Stride[] | undefined):
   }
 
   if (currentFrom <= to) {
-    result.push({ from: currentFrom, to: to })
+    result.push({ from: currentFrom, to })
   }
 
   return result
@@ -62,4 +62,8 @@ export function add(next: Stride, travelled: Stride[] | undefined): Stride[] {
   }
 
   return merged.sort((a, b) => Number(a.from - b.from))
+}
+
+export function contains(a: Stride, b: Stride) {
+  return a.from <= b.from && a.to >= b.to
 }

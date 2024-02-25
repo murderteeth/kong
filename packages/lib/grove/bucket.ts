@@ -1,6 +1,7 @@
 import _path from 'path'
 import { Storage } from '@google-cloud/storage'
-import { Grove } from '.'
+import { GroveCore } from '.'
+import { cache } from '../cache'
 
 const getBucket = () => {
   if(!process.env.GROVE_BUCKET) throw new Error('!process.env.GROVE_BUCKET')
@@ -10,7 +11,7 @@ const getBucket = () => {
 }
 
 const removeLeadingSlash = (path: string) => path.startsWith('/') ? path.slice(1) : path
-export const bucket: Grove = {
+export const bucket: GroveCore = {
   exists: async (path) => {
     const __bucket = getBucket()
     const file = __bucket.file(removeLeadingSlash(path))
@@ -29,9 +30,11 @@ export const bucket: Grove = {
     return JSON.parse(data.toString())
   },
   list: async (path) => {
-    const __bucket = getBucket()
-    const [files] = await __bucket.getFiles({ prefix: removeLeadingSlash(path) })
-    return files.map(file => `/${file.name}`)
+    return cache.wrap(`lib/grove/bucket.list(${path})`, async () => {
+      const __bucket = getBucket()
+      const [files] = await __bucket.getFiles({ prefix: removeLeadingSlash(path) })
+      return files.map(file => `/${file.name}`)
+    }, 10_000)
   },
   delete: async (path) => {
     const __bucket = getBucket()

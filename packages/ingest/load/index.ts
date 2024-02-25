@@ -79,7 +79,7 @@ export default class Load implements Processor {
     async data => await upsertEvmLog(data),
 
     [mq.job.load.snapshot]: 
-    async data => await upsert(data, 'snapshot', 'chain_id, address, block_number'),
+    async data => await upsert(data, 'snapshot', 'chain_id, address'),
 
     [mq.job.load.thing]: 
     async data => await upsert(data, 'thing', 'chain_id, address, label'),

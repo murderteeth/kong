@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { add, plan } from './strider'
+import { add, contains, plan } from './strider'
 
 describe('grove', function() {
   describe('strider', function() {
@@ -28,6 +28,13 @@ describe('grove', function() {
       expect(add({ from: 100n, to: 200n },  [{ from: 0n, to: 100n }, { from: 200n, to: 300n }])).to.deep.equal([{ from: 0n, to: 300n }])
       expect(add({ from: 101n, to: 199n },  [{ from: 0n, to: 100n }, { from: 200n, to: 300n }])).to.deep.equal([{ from: 0n, to: 300n }])
       expect(add({ from: 100n, to: 199n },  [{ from: 200n, to: 300n }])).to.deep.equal([{ from: 100n, to: 300n }])
+    })
+
+    it('knows when strides contain a strides', async function() {
+      expect(contains({ from: 0n, to: 10n }, { from: 0n, to: 10n })).to.be.true
+      expect(contains({ from: 0n, to: 10n }, { from: 2n, to: 9n })).to.be.true
+      expect(contains({ from: 0n, to: 10n }, { from: 11n, to: 12n })).to.be.false
+      expect(contains({ from: 0n, to: 10n }, { from: 0n, to: 12n })).to.be.false
     })
   })  
 })

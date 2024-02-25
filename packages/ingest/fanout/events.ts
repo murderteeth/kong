@@ -30,13 +30,14 @@ export default class EventsFanout implements Processor {
 
     const groveStrides = await grove().fetchStrides(chainId, address)
     const localStrides = await getLocalStrides(chainId, address)
-    const strides = strider.plan(from, to, localStrides)
+    const nextStrides = strider.plan(from, to, localStrides)
 
-    for (const stride of strides) {
+    for (const stride of nextStrides) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)
       await walklog(stride, async (from, to) => {
+        const useGrove = groveStrides.some(g => strider.contains(g, { from, to }))
         await this.queues[mq.q.extract].add(mq.job.extract.evmlog, {
-          chainId, address, events: JSON.stringify(events), from, to
+          chainId, address, events: JSON.stringify(events), from, to, useGrove
         })
       })
     }
@@ -44,13 +45,13 @@ export default class EventsFanout implements Processor {
 }
 
 async function walklog(
-  o: { from: bigint, to: bigint, stride?: bigint, rest?: number }, 
+  o: { from: bigint, to: bigint, stride?: bigint, throttle?: number }, 
   f: (from: bigint, to: bigint) => Promise<void>
 ) {
   const stride = o.stride || BigInt(process.env.LOG_STRIDE || 10_000)
   for (let fromBlock = o.from; fromBlock <= o.to; fromBlock += stride) {
     const toBlock = fromBlock + stride - 1n < o.to ? fromBlock + stride - 1n : o.to
     await f(fromBlock, toBlock)
-    await setTimeout(o.rest || 16)
+    await setTimeout(o.throttle || 16)
   }
 }

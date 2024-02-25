@@ -53,22 +53,29 @@ export class EvmLogsExtractor implements Processor {
   }
 
   async extract(data: any) {
-    const { chainId, address, events: eventsJson, from, to, handler } = data
+    const { chainId, address, events: eventsJson, from, to, useGrove, handler } = data
     const events = JSON.parse(eventsJson)
 
-    const logs = await rpcs.next(chainId, from).getLogs({
-      address,
-      events,
-      fromBlock: BigInt(from),
-      toBlock: BigInt(to)
-    })
-
-    for (const log of logs) {
-      const _path = `evmlog/${chainId}/${address}/${log.topics[0]}/${log.blockNumber}-${log.logIndex}-${log.transactionHash}-${log.transactionIndex}.json`
-      await grove().store(_path, log)
-    }
-
-    await StrideProcessor.get().add(chainId, address, { from, to })
+    const logs = await (async () => {
+      if (useGrove) {
+        return await grove().getLogs(chainId, address, from, to) as Log[]
+      } else {
+        const logs = await rpcs.next(chainId, from).getLogs({
+          address,
+          events,
+          fromBlock: BigInt(from),
+          toBlock: BigInt(to)
+        })
+    
+        for (const log of logs) {
+          const _path = `evmlog/${chainId}/${address}/${log.topics[0]}/${log.blockNumber}-${log.logIndex}-${log.transactionHash}-${log.transactionIndex}.json`
+          await grove().store(_path, log)
+        }
+    
+        await StrideProcessor.get().add(chainId, address, { from, to })
+        return logs
+      }
+    })()
 
     const preparedLogs = []
     for (const log of logs) {
@@ -83,7 +90,7 @@ export class EvmLogsExtractor implements Processor {
         chainId,
         topic: log.topics[0],
         hooks: hookResults,
-        blockTime: await getBlockTime(chainId, log.blockNumber)
+        blockTime: await getBlockTime(chainId, log.blockNumber || undefined)
       })
     }
 

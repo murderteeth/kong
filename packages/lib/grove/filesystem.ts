@@ -1,10 +1,10 @@
 import { promises as fs } from 'fs'
 import _path from 'path'
-import { Grove } from '.'
+import { GroveCore } from '.'
 
 const grovePathPrefix = _path.join(__dirname, '../../.grove')
 const grovePath = (path: string) => _path.join(grovePathPrefix, path)
-export const filesystem: Grove = {
+export const filesystem: GroveCore = {
   exists: async (path) => {
     try {
       await fs.access(grovePath(path))
