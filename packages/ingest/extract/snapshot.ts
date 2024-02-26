@@ -19,7 +19,7 @@ export class SnapshotExtractor implements Processor {
 
   async extract(data: { contract: Contract, source: SourceConfig }) {
     const { chainId, address } = SourceConfigSchema.parse(data.source)
-    const { abi: abiPath } = ContractSchema.parse(data.contract)
+    const { abiPath } = ContractSchema.parse(data.contract)
 
     const abi = await abiutil.load(abiPath)
     const fields = abiutil.fields(abi)

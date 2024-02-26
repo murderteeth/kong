@@ -1,14 +1,13 @@
 import { z } from 'zod'
 import { Queue } from 'bullmq'
 import { mq } from 'lib'
-import { Hook } from '..'
 import { Log, parseAbi, toEventSelector } from 'viem'
 import { rpcs } from 'lib/rpcs'
 import { estimateHeight } from 'lib/blocks'
 import { zhexstring } from 'lib/types'
+import { Hook } from '../../..'
 
-export default class VaultHook implements Hook {
-  key = 'vault'
+export default class RegistryHook implements Hook {
   queues: { [key: string]: Queue } = {}
 
   up = async () => {
@@ -19,7 +18,7 @@ export default class VaultHook implements Hook {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  hook = async (chainId: number, address: `0x${string}`, log: Log) => {
+  process = async (chainId: number, address: `0x${string}`, log: Log) => {
     const abi = parseAbi(['event NewEndorsedVault(address indexed vault, address indexed asset, uint256 releaseVersion, uint256 vaultType)'])
     const hookTopic = toEventSelector(abi[0])
     const logTopic = log.topics[0]
@@ -37,7 +36,7 @@ export default class VaultHook implements Hook {
       const multicall = await rpcs.next(chainId).multicall({ contracts: [
         {
           address,
-          abi: parseAbi(['function vaultInfo(address) view returns (address, uint96, uint128, uint128, string)']),
+          abi: parseAbi(['function vaultInfo(address) view returns (address, uint96, uint64, uint128, uint64, string)']),
           functionName: 'vaultInfo',
           args: [vault]
         },

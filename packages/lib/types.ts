@@ -241,7 +241,7 @@ export const EvmLogSchema = z.object({
   eventName: z.string(),
   topic: zhexstring,
   args: z.record(z.any()),
-  hooks: z.record(z.any()),
+  post: z.record(z.any()),
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true }),
   logIndex: z.number(),

@@ -2,6 +2,7 @@ import _path from 'path'
 import { Storage } from '@google-cloud/storage'
 import { GroveCore } from '.'
 import { cache } from '../cache'
+import { removeLeadingSlash } from '../strings'
 
 const getBucket = () => {
   if(!process.env.GROVE_BUCKET) throw new Error('!process.env.GROVE_BUCKET')
@@ -10,7 +11,6 @@ const getBucket = () => {
   return storage.bucket(process.env.GROVE_BUCKET)
 }
 
-const removeLeadingSlash = (path: string) => path.startsWith('/') ? path.slice(1) : path
 export const bucket: GroveCore = {
   exists: async (path) => {
     const __bucket = getBucket()

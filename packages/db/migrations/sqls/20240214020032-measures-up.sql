@@ -4,7 +4,7 @@ CREATE TABLE evmlog (
 	event_name text NOT NULL,
 	topic text NOT NULL,
 	args jsonb NULL,
-	hooks jsonb NULL,
+	post jsonb NULL,
 	block_number int8 NOT NULL,
 	block_time timestamptz NULL,
 	log_index int4 NOT NULL,

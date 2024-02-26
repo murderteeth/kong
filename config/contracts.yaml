@@ -1,6 +1,6 @@
 
 contracts:
-  - abi: 'yearn/3/registry-0'
+  - abiPath: 'yearn/3/registry-0'
     schedule: '0-59/30 * * * *'
     fromIncept: true
     sources: [
@@ -11,7 +11,7 @@ contracts:
       }
     ]
 
-  - abi: 'yearn/3/registry-1'
+  - abiPath: 'yearn/3/registry-1'
     schedule: '0-59/30 * * * *'
     fromIncept: true
     sources: [
@@ -22,7 +22,7 @@ contracts:
       }
     ]
 
-  - abi: 'yearn/3/vault'
+  - abiPath: 'yearn/3/vault'
     schedule: "0-59/30 * * * *"
     things: {
       label: 'vault',

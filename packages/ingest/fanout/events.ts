@@ -1,7 +1,7 @@
 import { setTimeout } from 'timers/promises'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { abiutil, dates, math, mq, strider } from 'lib'
+import { dates, math, mq, strider } from 'lib'
 import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { estimateHeight, getBlockNumber } from 'lib/blocks'
 import { getLocalStrides } from '../db'
@@ -20,9 +20,7 @@ export default class EventsFanout implements Processor {
 
   async fanout(data: { contract: Contract, source: SourceConfig }) {
     const { chainId, address, inceptBlock } = SourceConfigSchema.parse(data.source)
-    const { abi: abiPath, fromIncept } = ContractSchema.parse(data.contract)
-    const abi = await abiutil.load(abiPath)
-    const events = abiutil.events(abi)
+    const { abiPath, fromIncept } = ContractSchema.parse(data.contract)
 
     const defaultStartBlock = await estimateHeight(chainId, dates.DEFAULT_START())
     const from = fromIncept ? inceptBlock : math.max(inceptBlock, defaultStartBlock)
@@ -30,6 +28,9 @@ export default class EventsFanout implements Processor {
 
     const groveStrides = await grove().fetchStrides(chainId, address)
     const localStrides = await getLocalStrides(chainId, address)
+    console.log()
+    console.log('🎌', 'from, to, localStrides', from, to, localStrides)
+    console.log()
     const nextStrides = strider.plan(from, to, localStrides)
 
     for (const stride of nextStrides) {
@@ -37,7 +38,7 @@ export default class EventsFanout implements Processor {
       await walklog(stride, async (from, to) => {
         const useGrove = groveStrides.some(g => strider.contains(g, { from, to }))
         await this.queues[mq.q.extract].add(mq.job.extract.evmlog, {
-          chainId, address, events: JSON.stringify(events), from, to, useGrove
+          abiPath, chainId, address, from, to, useGrove
         })
       })
     }

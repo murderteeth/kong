@@ -36,7 +36,7 @@ const contracts = contractsConfig
   queue.add(mq.job.fanout.contracts, { id: camelToSnake(contract.id) }, {
     repeat: { pattern: contract.schedule }
   }).then(() => {
-    console.log('⬆', 'contracts up', contract.abi)
+    console.log('⬆', 'contracts up', contract.abiPath)
     queue.close().then(resolve).catch(reject)
   })
 }))

@@ -27,7 +27,7 @@ const ThingsConfigSchema = z.object({
 export type ThingsConfig = z.infer<typeof ThingsConfigSchema>
 
 export const ContractSchema = z.object({
-  abi: z.string(),
+  abiPath: z.string(),
   schedule: z.string(),
   start: z.boolean().optional().default(false),
   fromIncept: z.boolean().optional().default(false),
