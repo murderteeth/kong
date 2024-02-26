@@ -1,4 +1,4 @@
-require('lib/json.monkeypatch')
+import 'lib/global'
 import path from 'path'
 import dotenv from 'dotenv'
 import chai from 'chai'

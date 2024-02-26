@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { abiutil, mq } from 'lib'
-import { Contract, ContractSource } from 'lib/contracts'
+import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { rpcs } from 'lib/rpcs'
 import { getBlock } from 'lib/blocks'
 import grove from 'lib/grove'
@@ -17,9 +17,10 @@ export class SnapshotExtractor implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async extract(data: { contract: Contract, source: ContractSource }) {
-    const { chainId, address } = data.source
-    const { abi: abiPath } = data.contract
+  async extract(data: { contract: Contract, source: SourceConfig }) {
+    const { chainId, address } = SourceConfigSchema.parse(data.source)
+    const { abi: abiPath } = ContractSchema.parse(data.contract)
+
     const abi = await abiutil.load(abiPath)
     const fields = abiutil.fields(abi)
 

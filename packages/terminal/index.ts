@@ -1,3 +1,4 @@
+import 'lib/global'
 import dotenv from 'dotenv'
 import path from 'path'
 import figlet from 'figlet'
@@ -11,7 +12,7 @@ dotenv.config({ path: envPath })
 async function main() {
   console.log()
   console.log(chalk.yellowBright(figlet.textSync('KONG', { font: 'Cyberlarge', horizontalLayout: 'fitted' })))
-  console.log(chalk.greenBright(`${chains.map(c => c.name).join(' x ')}`))
+  console.log(chalk.greenBright(`${chains.map(c => c.name.toLowerCase()).join(' x ')}`))
   console.log()
 
   while(true) { await menuPrompt() }

@@ -37,6 +37,8 @@ CREATE TABLE thing (
 	CONSTRAINT thing_pkey PRIMARY KEY (chain_id, address, label)
 );
 
+CREATE INDEX thing_idx_label ON thing(label);
+
 CREATE TABLE measure (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,

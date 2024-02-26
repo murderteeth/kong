@@ -20,7 +20,7 @@ async function __getBlock(chainId: number, blockNumber?: bigint) {
   return await rpcs.next(chainId).getBlock({ blockNumber })
 }
 
-export async function estimateHeight(chainId: number, timestamp: bigint) {
+export async function estimateHeight(chainId: number, timestamp: bigint): Promise<bigint> {
   return cache.wrap(`estimateHeight:${chainId}:${timestamp}`, async () => {
     return BigInt(await __estimateHeight(chainId, timestamp))
   }, 10_000)

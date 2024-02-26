@@ -2,15 +2,33 @@
 contracts:
   - abi: 'yearn/3/registry-0'
     schedule: '0-59/30 * * * *'
-    start: false
     fromIncept: true
-    source: [
+    sources: [
       {
         chainId: 137,
         address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500',
-        incept: 49100596n
+        inceptBlock: 49100596
       }
     ]
+
+  - abi: 'yearn/3/registry-1'
+    schedule: '0-59/30 * * * *'
+    fromIncept: true
+    sources: [
+      {
+        chainId: 137,
+        address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af',
+        inceptBlock: 52488140
+      }
+    ]
+
+  - abi: 'yearn/3/vault'
+    schedule: "0-59/30 * * * *"
+    things: {
+      label: 'vault',
+      filter: [{ field: 'apiVersion', op: '>=', value: '3.0.0' }]
+    }
+
 
     # snapshot: [
     #   {
@@ -19,9 +37,3 @@ contracts:
     #     thing: { label: 'vault' }
     #   }
     # ]
-
-  # - abi: 'yearn/2/vault'
-  #   schedule: "0-59/30 * * * *"
-  #   start: false
-  #   thing: true
-

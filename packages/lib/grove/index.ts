@@ -33,17 +33,14 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
 
   const getLogs = async (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => {
     const result: {}[] = []
-    const topics = await grove.list(`evmlog/${chainId}/${address}`)
-    for (const topic of topics) {
-      const logpaths = await grove.list(topic)
-      for (const logpath of logpaths) {
-        if (logpath.endsWith('strides.json')) continue
-        const segments = logpath.split('/')
-        const [blockNumberString] = segments[segments.length - 1].split('-')
-        const blockNumber = BigInt(blockNumberString)
-        if (blockNumber < from || blockNumber > to) continue
-        result.push(await grove.get(logpath))
-      }
+    const logpaths = await grove.list(`evmlog/${chainId}/${address}`)
+    for (const logpath of logpaths) {
+      if (logpath.endsWith('strides.json')) continue
+      const segments = logpath.split('/')
+      const [blockNumberString] = segments[segments.length - 1].split('-')
+      const blockNumber = BigInt(blockNumberString)
+      if (blockNumber < from || blockNumber > to) continue
+      result.push(await grove.get(logpath))
     }
     return result
   }
@@ -51,8 +48,8 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
   return { ...grove, stridesPath, fetchStrides, storeStrides, getLogs }
 }
 
-export default function grove(): GroveCore & GrovePeriphery {
-  const useBucket = process.env.GROVE_BUCKET !== undefined && process.env.GROVE_STORAGE_KEY !== undefined
+export default function grove(useFiles?: boolean): GroveCore & GrovePeriphery {
+  const useBucket = !useFiles && process.env.GROVE_BUCKET !== undefined && process.env.GROVE_STORAGE_KEY !== undefined
   const result = useBucket ? bucket : filesystem
   return bindPeriphery(result)
 }

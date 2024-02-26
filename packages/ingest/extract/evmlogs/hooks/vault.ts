@@ -1,9 +1,11 @@
+import { z } from 'zod'
 import { Queue } from 'bullmq'
 import { mq } from 'lib'
 import { Hook } from '..'
 import { Log, parseAbi, toEventSelector } from 'viem'
 import { rpcs } from 'lib/rpcs'
 import { estimateHeight } from 'lib/blocks'
+import { zhexstring } from 'lib/types'
 
 export default class VaultHook implements Hook {
   key = 'vault'
@@ -23,7 +25,11 @@ export default class VaultHook implements Hook {
     const logTopic = log.topics[0]
     if(logTopic === hookTopic) {
       const _log = log as Log<bigint, number, boolean, undefined, false, typeof abi>
-      const { vault, vaultType } = _log.args
+      const { vault, vaultType } = z.object({
+        vault: zhexstring.optional(),
+        vaultType: z.bigint({ coerce: true }).optional()
+      }).parse(_log.args)
+
       if(!(vault && vaultType)) return
 
       const label = vaultType === 1n ? 'vault': 'strategy'

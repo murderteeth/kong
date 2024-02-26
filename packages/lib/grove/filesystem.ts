@@ -4,6 +4,21 @@ import { GroveCore } from '.'
 
 const grovePathPrefix = _path.join(__dirname, '../../.grove')
 const grovePath = (path: string) => _path.join(grovePathPrefix, path)
+
+const list = async (path: string): Promise<string[]> => {
+  const fullPath = grovePath(path)
+  const entries = await fs.readdir(fullPath, { withFileTypes: true })
+  const files = await Promise.all(entries.map(async (entry) => {
+    const entryPath = _path.join(fullPath, entry.name)
+    if (entry.isDirectory()) {
+      return list(entryPath.replace(grovePathPrefix, ''))
+    } else {
+      return [entryPath.replace(grovePathPrefix, '')]
+    }
+  }))
+  return files.flat()
+}
+
 export const filesystem: GroveCore = {
   exists: async (path) => {
     try {
@@ -21,9 +36,7 @@ export const filesystem: GroveCore = {
     const data = await fs.readFile(grovePath(path), 'utf-8')
     return JSON.parse(data)
   },
-  list: async (path) => {
-    return (await fs.readdir(grovePath(path))).map(file => _path.join(grovePath(path), file).replace(grovePathPrefix, ''))
-  },
+  list,
   delete: async (path) => {
     try {
       await fs.unlink(grovePath(path))

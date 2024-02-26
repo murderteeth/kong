@@ -2,7 +2,7 @@ import { setTimeout } from 'timers/promises'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { abiutil, dates, math, mq, strider } from 'lib'
-import { Contract, ContractSource } from 'lib/contracts'
+import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { estimateHeight, getBlockNumber } from 'lib/blocks'
 import { getLocalStrides } from '../db'
 import grove from 'lib/grove'
@@ -18,14 +18,14 @@ export default class EventsFanout implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async fanout(data: { contract: Contract, source: ContractSource }) {
-    const { chainId, address, incept } = data.source
-    const { abi: abiPath, fromIncept } = data.contract
+  async fanout(data: { contract: Contract, source: SourceConfig }) {
+    const { chainId, address, inceptBlock } = SourceConfigSchema.parse(data.source)
+    const { abi: abiPath, fromIncept } = ContractSchema.parse(data.contract)
     const abi = await abiutil.load(abiPath)
     const events = abiutil.events(abi)
 
     const defaultStartBlock = await estimateHeight(chainId, dates.DEFAULT_START())
-    const from = fromIncept ? incept : math.max(incept, defaultStartBlock)
+    const from = fromIncept ? inceptBlock : math.max(inceptBlock, defaultStartBlock)
     const to = await getBlockNumber(chainId)
 
     const groveStrides = await grove().fetchStrides(chainId, address)

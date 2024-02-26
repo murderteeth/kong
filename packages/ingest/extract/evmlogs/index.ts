@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { Processor } from 'lib/processor'
@@ -9,9 +10,9 @@ import grove from 'lib/grove'
 import { StrideProcessor } from 'lib/grove/strideProcessor'
 import { Queue } from 'bullmq'
 import { mq } from 'lib'
-import { EvmLogSchema } from 'lib/types'
+import { EvmLogSchema, zhexstring } from 'lib/types'
 import { getBlockTime } from 'lib/blocks'
-import { Log } from 'viem'
+import { Log, getAddress } from 'viem'
 
 export interface Handler extends Processor {
   handle: (chainId: number, address: `0x${string}`, logs: any[]) => Promise<void>
@@ -53,12 +54,22 @@ export class EvmLogsExtractor implements Processor {
   }
 
   async extract(data: any) {
-    const { chainId, address, events: eventsJson, from, to, useGrove, handler } = data
+    const { chainId, address, events: eventsJson, from, to, useGrove, handler } = z.object({
+      chainId: z.number(),
+      address: zhexstring,
+      events: z.string(),
+      from: z.bigint({ coerce: true }),
+      to: z.bigint({ coerce: true }),
+      useGrove: z.boolean().optional().default(false),
+      handler: z.string().optional()
+    }).parse(data)
+
     const events = JSON.parse(eventsJson)
 
     const logs = await (async () => {
       if (useGrove) {
-        return await grove().getLogs(chainId, address, from, to) as Log[]
+        const logs = await grove().getLogs(chainId, address, from, to) as Log[]
+        return logs
       } else {
         const logs = await rpcs.next(chainId, from).getLogs({
           address,
@@ -88,6 +99,7 @@ export class EvmLogsExtractor implements Processor {
       preparedLogs.push({
         ...log,
         chainId,
+        address: getAddress(log.address),
         topic: log.topics[0],
         hooks: hookResults,
         blockTime: await getBlockTime(chainId, log.blockNumber || undefined)

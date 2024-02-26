@@ -1,9 +1,11 @@
+import { z } from 'zod'
 import { mq, strider, strings, types } from 'lib'
 import db, { getBlockPointer, getLocalStrides, setBlockPointer, toUpsertSql } from '../db'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
 import { PoolClient } from 'pg'
+import { zhexstring } from 'lib/types'
 
 export default class Load implements Processor {
   worker?: Worker
@@ -24,11 +26,14 @@ export default class Load implements Processor {
     [mq.job.load.strategy]: async data =>
     await upsertAsOfBlock(data, 'strategy', ['chain_id', 'address']),
 
-    [mq.job.load.withdrawalQueue]: async data => await upsertWithdrawalQueue(data),
+    [mq.job.load.withdrawalQueue]: async data => 
+    await upsertWithdrawalQueue(data),
 
-    [mq.job.load.vaultDebt]: async data => await upsertVaultDebt(data),
+    [mq.job.load.vaultDebt]: async data => 
+    await upsertVaultDebt(data),
 
-    [mq.job.load.strategyLenderStatus]: async data => await upsertStrategyLenderStatus(data),
+    [mq.job.load.strategyLenderStatus]: async data => 
+    await upsertStrategyLenderStatus(data),
 
     [mq.job.load.harvest]: async data => 
     await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index, address'),
@@ -75,14 +80,14 @@ export default class Load implements Processor {
     [mq.job.load.monitor]: async data => 
     await upsert({ singleton: true, latest: data }, 'monitor', 'singleton'),
 
-    [mq.job.load.evmlog]: 
-    async data => await upsertEvmLog(data),
+    [mq.job.load.evmlog]: async data => 
+    await upsertEvmLog(data),
 
-    [mq.job.load.snapshot]: 
-    async data => await upsert(data, 'snapshot', 'chain_id, address'),
+    [mq.job.load.snapshot]: async data => 
+    await upsert(data, 'snapshot', 'chain_id, address'),
 
-    [mq.job.load.thing]: 
-    async data => await upsert(data, 'thing', 'chain_id, address, label'),
+    [mq.job.load.thing]: async data => 
+    await upsert(data, 'thing', 'chain_id, address, label'),
   }
 
   async up() {
@@ -102,7 +107,14 @@ export default class Load implements Processor {
 }
 
 export async function upsertEvmLog(data: any) {
-  const { chainId, address, from, to, batch } = data
+  const { chainId, address, from, to, batch } = z.object({
+    chainId: z.number(),
+    address: zhexstring,
+    from: z.bigint({ coerce: true }),
+    to: z.bigint({ coerce: true }),
+    batch: z.array(types.EvmLogSchema)
+  }).parse(data)
+
   const client = await db.connect()
   try {
     await client.query('BEGIN')

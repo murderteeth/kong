@@ -257,3 +257,12 @@ export const StrideSchema = z.object({
 })
 
 export type Stride = z.infer<typeof StrideSchema>
+
+export const ThingSchema = z.object({
+  chainId: z.number(),
+  address: zhexstring,
+  label: z.string(),
+  defaults: z.record(z.any())
+})
+
+export type Thing = z.infer<typeof ThingSchema>

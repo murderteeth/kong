@@ -1,26 +1,45 @@
+import { z } from 'zod'
 import * as yaml from 'js-yaml'
 import * as fs from 'fs'
 import path from 'path'
 import { keccak256, toBytes } from 'viem'
+import { zhexstring } from './types'
 
-export interface ContractSource {
-  chainId: number,
-  address: '0x${string}',
-  incept: bigint
-}
+export const SourceConfigSchema = z.object({
+  chainId: z.number(),
+  address: zhexstring,
+  inceptBlock: z.bigint({ coerce: true })
+})
 
-export interface Contract {
-  abi: string
-  schedule: string
-  start?: boolean
-  thing?: boolean
-  source?: ContractSource[]
-  fromIncept?: boolean
-}
+export type SourceConfig = z.infer<typeof SourceConfigSchema>
 
-interface YamlConfig {
-  contracts: Contract[]
-}
+const ThingFilterSchema = z.object({
+  field: z.string(),
+  op: z.string(),
+  value: z.string()
+})
+
+const ThingsConfigSchema = z.object({
+  label: z.string(),
+  filter: ThingFilterSchema.array()
+})
+
+export type ThingsConfig = z.infer<typeof ThingsConfigSchema>
+
+export const ContractSchema = z.object({
+  abi: z.string(),
+  schedule: z.string(),
+  start: z.boolean().optional().default(false),
+  fromIncept: z.boolean().optional().default(false),
+  sources: SourceConfigSchema.array().optional().default([]),
+  things: ThingsConfigSchema.optional(),
+})
+
+export type Contract = z.infer<typeof ContractSchema>
+
+const YamlConfigSchema = z.object({
+  contracts: z.array(ContractSchema)
+})
 
 const yamlPath = (() => {
   const local = path.join(__dirname, '../../config', 'contracts.local.yaml')
@@ -30,7 +49,7 @@ const yamlPath = (() => {
 })()
 
 const yamlFile = fs.readFileSync(yamlPath, 'utf8')
-const config = yaml.load(yamlFile) as YamlConfig
+const config = YamlConfigSchema.parse(yaml.load(yamlFile))
 const contracts = config.contracts.map(contract => ({
   ...contract,
   id: keccak256(toBytes(JSON.stringify(contract)))
