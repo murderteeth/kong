@@ -4,7 +4,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
-import { cache, contracts as contractsConfig, crons as cronsConfig, mq } from 'lib'
+import { cache, chains, contracts as contractsConfig, crons as cronsConfig, mq } from 'lib'
 import db from './db'
 import { camelToSnake } from 'lib/strings'
 
@@ -16,6 +16,9 @@ const exportsProcessor = (filePath: string): boolean => {
   const regex = /export default class \S+ implements Processor/
   return regex.test(fileContent)
 }
+
+console.log('🔗', 'chains', `[${chains.map(c => c.name.toLowerCase()).join(' x ')}]`)
+console.log('⚙', 'contracts', `[${contractsConfig.map(c => c.abiPath).join(' x ')}]`)
 
 const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   const tenMinutes = 10 * 60 * 1000
@@ -33,7 +36,7 @@ const contracts = contractsConfig
 .filter(contract => contract.start)
 .map(contract => new Promise((resolve, reject) => {
   const queue = mq.queue(mq.q.fanout)
-  queue.add(mq.job.fanout.contracts, { id: camelToSnake(contract.id) }, {
+  queue.add(mq.job.fanout.contracts, { id: camelToSnake(contract.abiPath) }, {
     repeat: { pattern: contract.schedule }
   }).then(() => {
     console.log('⬆', 'contracts up', contract.abiPath)

@@ -6,6 +6,7 @@ import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/
 import { estimateHeight, getBlockNumber } from 'lib/blocks'
 import { getLocalStrides } from '../db'
 import grove from 'lib/grove'
+import { StrideSchema } from 'lib/types'
 
 export default class EventsFanout implements Processor {
   queues: { [key: string]: Queue } = {}
@@ -28,12 +29,9 @@ export default class EventsFanout implements Processor {
 
     const groveStrides = await grove().fetchStrides(chainId, address)
     const localStrides = await getLocalStrides(chainId, address)
-    console.log()
-    console.log('🎌', 'from, to, localStrides', from, to, localStrides)
-    console.log()
     const nextStrides = strider.plan(from, to, localStrides)
 
-    for (const stride of nextStrides) {
+    for (const stride of StrideSchema.array().parse(nextStrides)) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)
       await walklog(stride, async (from, to) => {
         const useGrove = groveStrides.some(g => strider.contains(g, { from, to }))

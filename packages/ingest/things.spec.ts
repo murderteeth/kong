@@ -28,7 +28,9 @@ describe('things', function() {
       label: 'vault',
       filter: [
         { field: 'apiVersion', op: '>=', value: '3.0.0' }
-      ]
+      ],
+      skip: false,
+      only: false
     })
 
     expect(things.length).to.equal(2)
@@ -42,7 +44,9 @@ describe('things', function() {
       filter: [
         { field: 'apiVersion', op: '>', value: '1.0.0' },
         { field: 'apiVersion', op: '<=', value: '3.0.0' }
-      ]
+      ],
+      skip: false,
+      only: false
     })
 
     expect(things.length).to.equal(2)

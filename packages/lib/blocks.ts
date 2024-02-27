@@ -46,7 +46,7 @@ async function estimateHeightLlama(chainId: number, timestamp: bigint) {
 
 async function estimateHeightManual(chainId: number, timestamp: bigint) {
   const top = await getBlock(chainId)
-  let hi = top.number
+  let hi = BigInt(top.number)
   let lo = 0n
   let block = top
 
@@ -74,7 +74,8 @@ export async function estimateCreationBlock(chainId: number, contract: `0x${stri
 // adapted from https://github.com/BobTheBuidler/ypricemagic/blob/5ba16b25302b47539b4e5a996554ba4c0a70e7c7/y/contracts.py#L68
 async function __estimateCreationBlock(chainId: number, contract: `0x${string}`) {
   let counter = 0
-  console.time()
+  const label = `🕊 __estimateCreationBlock ${chainId} ${contract}`
+  console.time(label)
   const height = await rpcs.next(chainId).getBlockNumber()
   let lo = 0n, hi = height, mid = lo + (hi - lo) / 2n
   while (hi - lo > 1n) {
@@ -84,6 +85,6 @@ async function __estimateCreationBlock(chainId: number, contract: `0x${string}`)
     counter++
   }
   console.log('💥', 'estimateCreationBlock', chainId, contract, counter, hi)
-  console.timeEnd()
+  console.timeEnd(label)
   return await getBlock(chainId, hi)
 }

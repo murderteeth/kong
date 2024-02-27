@@ -112,7 +112,7 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
     const jobs = await queue.count()
     const targetConcurrency = computeConcurrency(jobs, {
       min: 1, max: 50,
-      threshold: 200  
+      threshold: 200
     })
 
     if(targetConcurrency > concurrency) {

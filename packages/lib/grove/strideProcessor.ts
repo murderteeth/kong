@@ -21,17 +21,26 @@ class BatchProcessingUnit {
     const freeze = [...this._batch]
     const current = await grove().fetchStrides(this.chainId, this.address)
     const next = freeze.reduce((acc, stride) => strider.add(stride, acc), current)
-    await grove().storeStrides(this.chainId, this.address, next)
-    for (const stride of freeze) {
-      const index = this._batch.findIndex(s => s.from === stride.from && s.to === stride.to)
-      if (index !== -1) this._batch.splice(index, 1)
+    try {
+      await grove().storeStrides(this.chainId, this.address, next)
+      for (const stride of freeze) {
+        const index = this._batch.findIndex(s => s.from === stride.from && s.to === stride.to)
+        if (index > -1) this._batch.splice(index, 1)
+      }
+    } catch(error) {
+      console.warn('🚨', 'grove().storeStrides(this.chainId, this.address, next)', this.chainId, this.address)
+      console.warn(this._batch)
+      console.warn(freeze)
+      console.warn(next)
+      console.warn(error)
+      console.warn()
     }
   }
 }
 
 export class StrideProcessor {
   private static instance: StrideProcessor
-  private ms: number = 2000
+  private ms: number = 4000
   private interval: NodeJS.Timeout | undefined
   private bpus: { [key: string]: BatchProcessingUnit } = {}
 
