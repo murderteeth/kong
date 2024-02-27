@@ -6,6 +6,8 @@ import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
 import { PoolClient } from 'pg'
 import { zhexstring } from 'lib/types'
+import { StrideProcessor } from 'lib/grove/strideProcessor'
+import grove from 'lib/grove'
 
 export default class Load implements Processor {
   worker?: Worker
@@ -129,6 +131,12 @@ export async function upsertEvmLog(data: any) {
       DO UPDATE SET strides = $3`, 
       [chainId, address, JSON.stringify(next)]
     )
+
+    if (grove().provider() === 'filesystem') {
+      await StrideProcessor.get().store(chainId, address, next)
+    } else {
+      await StrideProcessor.get().batch(chainId, address, { from, to })
+    }
 
     await client.query('COMMIT')
   } catch(error) {

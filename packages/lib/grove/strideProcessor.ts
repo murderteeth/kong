@@ -43,6 +43,7 @@ export class StrideProcessor {
   private ms: number = 4000
   private interval: NodeJS.Timeout | undefined
   private bpus: { [key: string]: BatchProcessingUnit } = {}
+  private bypassBpus = grove().provider() === 'filesystem'
 
   public static get = (): StrideProcessor => {
     if (!this.instance) {
@@ -58,7 +59,15 @@ export class StrideProcessor {
 
   constructor() {}
 
-  add = async (chainId: number, address: `0x${string}`, stride: Stride) => {
+  store = async (chainId: number, address: `0x${string}`, next: Stride[]) => {
+    if(this.bypassBpus) {
+      await grove().storeStrides(chainId, address, next)
+    } else {
+      throw new Error('Hot store only supported on filesystem.')
+    }
+  }
+
+  batch = async (chainId: number, address: `0x${string}`, stride: Stride) => {
     const key = `${chainId}-${address}`
     if (!this.bpus[key]) this.bpus[key] = new BatchProcessingUnit(chainId, address)
     this.bpus[key].batch(stride)

@@ -73,6 +73,7 @@ export class EvmLogsExtractor implements Processor {
         const logs = await grove().getLogs(chainId, address, from, to) as Log[]
         return logs
       } else {
+        console.log('🛸', 'getLogs', chainId, address, from, to)
         const logs = await rpcs.next(chainId, from).getLogs({
           address,
           events,
@@ -85,7 +86,6 @@ export class EvmLogsExtractor implements Processor {
           await grove().store(_path, log)
         }
 
-        await StrideProcessor.get().add(chainId, address, { from, to })
         return logs
       }
     })()

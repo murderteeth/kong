@@ -12,6 +12,7 @@ const getBucket = () => {
 }
 
 export const bucket: GroveCore = {
+  provider: () => 'bucket',
   exists: async (path) => {
     const __bucket = getBucket()
     const file = __bucket.file(removeLeadingSlash(path))

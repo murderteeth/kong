@@ -8,6 +8,7 @@ export type GroveCore = {
   get: (path: string) => Promise<{}>
   list: (path: string) => Promise<string[]>
   delete: (path: string) => Promise<void>
+  provider: () => string
 }
 
 export type GrovePeriphery = {
@@ -22,9 +23,16 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
 
   const fetchStrides = async (chainId: number, address: `0x${string}`) => {
     const path = stridesPath(chainId, address)
-    return await grove.exists(path)
-    ? StrideSchema.array().parse(await grove.get(path)) 
-    : []
+    if (await grove.exists(path)) {
+      try {
+        return StrideSchema.array().parse(await grove.get(path))
+      } catch(error) {
+        console.warn('🚨', 'fetchStrides', path, error)
+        throw error
+      }
+    } else {
+      return []
+    }
   }
 
   const storeStrides = async (chainId: number, address: `0x${string}`, strides: Stride[]) => {

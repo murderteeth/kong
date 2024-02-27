@@ -20,6 +20,7 @@ const list = async (path: string): Promise<string[]> => {
 }
 
 export const filesystem: GroveCore = {
+  provider: () => 'filesystem',
   exists: async (path) => {
     try {
       await fs.access(grovePath(path))
@@ -34,7 +35,12 @@ export const filesystem: GroveCore = {
   },
   get: async (path) => {
     const data = await fs.readFile(grovePath(path), 'utf-8')
-    return JSON.parse(data)
+    try {
+      return JSON.parse(data)
+    } catch(error) {
+      console.warn('🚨', 'get', data, 'eod')
+      throw error
+    }
   },
   list,
   delete: async (path) => {

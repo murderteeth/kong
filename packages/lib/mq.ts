@@ -111,8 +111,8 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
   const timer = setInterval(async () => {
     const jobs = await queue.count()
     const targetConcurrency = computeConcurrency(jobs, {
-      min: 1, max: 50,
-      threshold: 200
+      min: 1, max: (process.env.MQ_CONCURRENCY_MAX_PER_PROCESSOR || 50) as number,
+      threshold: (process.env.MQ_CONCURRENCY_THRESHOLD || 200) as number
     })
 
     if(targetConcurrency > concurrency) {
