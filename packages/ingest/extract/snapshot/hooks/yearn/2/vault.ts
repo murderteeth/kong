@@ -1,20 +1,12 @@
 import { Queue } from 'bullmq'
-import { mq } from 'lib'
 import { parseAbi, zeroAddress } from 'viem'
 import { Hook } from '../../..'
 import { rpcs } from 'lib/rpcs'
 
 export default class VaultHook implements Hook {
   queues: { [key: string]: Queue } = {}
-
-  up = async () => {
-    this.queues[mq.q.load] = mq.queue(mq.q.load)
-  }
-
-  down = async () => {
-    await Promise.all(Object.values(this.queues).map(q => q.close()))
-  }
-
+  up = async () => {}
+  down = async () => {}
   process = async (chainId: number, address: `0x${string}`, _: any) => {
     const abi = parseAbi(['function withdrawalQueue(uint256) view returns (address)'])
 

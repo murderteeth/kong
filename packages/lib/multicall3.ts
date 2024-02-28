@@ -9,6 +9,13 @@ export const activations = {
   [arbitrum.id]: 7654707n
 }
 
+export function getActivation(chainId: number) {
+  if(!Object.keys(activations).includes(chainId.toString())) {
+    throw new Error(`Chain ${chainId} not supported`)
+  }
+  return activations[chainId as keyof typeof activations]
+}
+
 export function supportsBlock(chainId: number, blockNumber: bigint) {
   if(!Object.keys(activations).includes(chainId.toString())) {
     throw new Error(`Chain ${chainId} not supported`)

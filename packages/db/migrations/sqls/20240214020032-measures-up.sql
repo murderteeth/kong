@@ -37,8 +37,8 @@ CREATE TABLE thing (
 	defaults jsonb NULL,
 	CONSTRAINT thing_pkey PRIMARY KEY (chain_id, address, label)
 );
-
 CREATE INDEX thing_idx_label ON thing(label);
+CREATE INDEX thing_idx_chain_id_label ON thing(chain_id, label);
 
 CREATE TABLE measure (
 	chain_id int4 NOT NULL,

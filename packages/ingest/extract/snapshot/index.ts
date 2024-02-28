@@ -25,7 +25,9 @@ export class SnapshotExtractor implements Processor {
       const abiPath = removeLeadingSlash(modulePath.replace(path.join(__dirname, 'hooks'), '').replace('.ts', ''))
       this.postprocessors.push({ abiPath, hook: new module.default() })
     })
+
     this.queues[mq.q.load] = mq.queue(mq.q.load)
+    await Promise.all(Object.values(this.postprocessors).map(p => p.hook.up()))
   }
 
   async down() {

@@ -66,21 +66,12 @@ export default class VaultHook implements Hook {
   }
 
   async addStrategy(chainId: number, strategy: `0x${string}`) {
-    const multicall = await rpcs.next(chainId).multicall({ contracts: [
-      {
-        address: strategy,
-        abi: ['function apiVersion() view returns (string)'],
-        functionName: 'apiVersion'
-      },
-      {
-        address: strategy,
-        abi: ['function api_version() view returns (string)'],
-        functionName: 'api_version'
-      }
-    ]})
-  
-    const apiVersion = multicall[0].result || multicall[1].result
-  
+    const apiVersion = await rpcs.next(chainId).readContract({
+      address: strategy,
+      functionName: 'apiVersion',
+      abi: parseAbi(['function apiVersion() view returns (string)'])
+    })
+    
     const block = await estimateCreationBlock(chainId, strategy)
     const inceptBlock = block.number
     const inceptTime = await getBlockTime(chainId, inceptBlock)
