@@ -5,7 +5,7 @@ import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
 import { PoolClient } from 'pg'
-import { zhexstring } from 'lib/types'
+import { SnapshotSchema, ThingSchema, zhexstring } from 'lib/types'
 import { StrideProcessor } from 'lib/grove/strideProcessor'
 import grove from 'lib/grove'
 
@@ -86,10 +86,10 @@ export default class Load implements Processor {
     await upsertEvmLog(data),
 
     [mq.job.load.snapshot]: async data => 
-    await upsert(data, 'snapshot', 'chain_id, address'),
+    await upsertSnapshot(data),
 
     [mq.job.load.thing]: async data => 
-    await upsert(data, 'thing', 'chain_id, address, label'),
+    await upsertThing(data),
   }
 
   async up() {
@@ -139,6 +139,48 @@ export async function upsertEvmLog(data: any) {
     }
 
     await client.query('COMMIT')
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+export async function upsertSnapshot(data: any) {
+  const { chainId, address, snapshot } = SnapshotSchema.parse(data)
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+    await upsert(data, 'snapshot', 'chain_id, address', undefined, client)
+    await grove().store(`snapshot/${chainId}/${address}/latest.json`, snapshot)
+    await client.query('COMMIT')
+
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+export async function upsertThing(data: any) {
+  const thing = ThingSchema.parse(data)
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+    const currentDefaults: any = (await client.query(
+      'SELECT defaults FROM thing WHERE chain_id = $1 AND address = $2 AND label = $3 FOR UPDATE', 
+      [thing.chainId, thing.address, thing.label]))
+      .rows[0]?.defaults
+    if (currentDefaults) thing.defaults = { ...currentDefaults, ...thing.defaults }
+    await upsert(thing, 'thing', 'chain_id, address, label', undefined, client)
+    await client.query('COMMIT')
+
   } catch(error) {
     await client.query('ROLLBACK')
     throw error

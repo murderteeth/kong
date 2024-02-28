@@ -24,6 +24,7 @@ CREATE TABLE snapshot (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
 	snapshot jsonb NULL,
+	post jsonb NULL,
 	block_number int8 NOT NULL,
 	block_time timestamptz NULL,
 	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address)

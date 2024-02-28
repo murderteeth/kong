@@ -266,3 +266,14 @@ export const ThingSchema = z.object({
 })
 
 export type Thing = z.infer<typeof ThingSchema>
+
+export const SnapshotSchema = z.object({
+  chainId: z.number(),
+  address: zhexstring,
+  snapshot: z.record(z.any()),
+  post: z.record(z.any()),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true })
+})
+
+export type Snapshot = z.infer<typeof SnapshotSchema>
