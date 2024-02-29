@@ -1,16 +1,16 @@
 import { Processor } from 'lib/processor'
 import { rpcs } from '../rpcs'
 import { Queue } from 'bullmq'
-import { mq, types } from 'lib'
+import { mq } from 'lib'
 import { estimateHeight, getBlock } from 'lib/blocks'
 import db from '../db'
 import { parseAbi } from 'viem'
-import { fetchErc20PriceUsd } from 'lib/prices'
 import { extractWithdrawalQueue } from '../extract/vault/version2'
 import { scaleDown } from 'lib/math'
 import { endOfDay } from 'lib/dates'
 import { extractDelegatedAssets } from '../extract/strategy'
 import { MeasureSchema, TVLSchema } from 'lib/types'
+import { fetchErc20PriceUsd } from '../prices'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined

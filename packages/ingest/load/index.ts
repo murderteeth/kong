@@ -92,7 +92,7 @@ export default class Load implements Processor {
     await upsertThing(data),
 
     [mq.job.load.price]: async data => 
-    await grove().storePrice(PriceSchema.parse(data))
+    await upsertPrice(data)
   }
 
   async up() {
@@ -159,6 +159,25 @@ export async function upsertSnapshot(data: any) {
     await client.query('BEGIN')
     await upsert(data, 'snapshot', 'chain_id, address', undefined, client)
     await grove().store(`snapshot/${chainId}/${address}/latest.json`, snapshot)
+    await client.query('COMMIT')
+
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+export async function upsertPrice(data: any) {
+  const price = PriceSchema.parse(data)
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+    await upsert(price, 'price', 'chain_id, address, block_number', '', client)
+    await grove().storePrice(price)
     await client.query('COMMIT')
 
   } catch(error) {

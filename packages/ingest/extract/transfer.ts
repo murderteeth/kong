@@ -1,7 +1,7 @@
 import { mq, types } from 'lib'
 import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { fetchErc20PriceUsd } from 'lib/prices'
+import { fetchErc20PriceUsd } from '../prices'
 import { getErc20 } from '../db'
 import { getBlock } from 'lib/blocks'
 

@@ -3,9 +3,9 @@ import { rpcs } from '../rpcs'
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
 import db from '../db'
-import { fetchErc20PriceUsd } from 'lib/prices'
 import { parseAbi } from 'viem'
 import { getBlock } from 'lib/blocks'
+import { fetchErc20PriceUsd } from '../prices'
 
 export class HarvestExtractor implements Processor {
   queues: { [key: string]: Queue } = {}

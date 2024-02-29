@@ -1,8 +1,12 @@
 import { arbitrum, base, fantom, mainnet, optimism } from 'viem/chains'
 import { parseAbi } from 'viem'
+import { cache } from 'lib/cache'
+import grove from 'lib/grove'
 import { rpcs } from './rpcs'
-import { cache } from './cache'
-import grove from './grove'
+import db from './db'
+import { Price, PriceSchema } from 'lib/types'
+import { mq } from 'lib'
+import { getBlockTime } from 'lib/blocks'
 
 export const lens = {
   [mainnet.id]: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030' as `0x${string}`,
@@ -19,30 +23,41 @@ export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, 
 }
 
 async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint, latest = false) {
-  let result: { priceUsd: number, priceSource: string } = { priceUsd: 0, priceSource: 'none' }
+  let result: Price | undefined
 
   if(latest) {
-    result = await fetchYDaemonPriceUsd(chainId, token)
-    if(result.priceUsd !== 0) return result
+    result = await fetchYDaemonPriceUsd(chainId, token, blockNumber)
+    if(result) return result
   }
 
-  result = await await grove().fetchPrice(chainId, token, blockNumber)
-  if(result.priceUsd !== 0) return { priceUsd: result.priceUsd, priceSource: result.priceSource }
+  result = await grove().fetchPrice(chainId, token, blockNumber)
+  if(result) return result
+
+  result = await fetchDbPriceUsd(chainId, token, blockNumber)
+  if(result) return result
 
   result = await fetchLensPriceUsd(chainId, token, blockNumber)
-  if(result.priceUsd !== 0) return result
+  if(result) {
+    await mq.add(mq.q.load, mq.job.load.price, result)
+    return result
+  }
 
   if(JSON.parse(process.env.YPRICE_ENABLED || 'false')) {
     result = await fetchYPriceUsd(chainId, token, blockNumber)
-    if(result.priceUsd !== 0) return result
+    if(result) {
+      await mq.add(mq.q.load, mq.job.load.price, result)
+      return result
+    }
   }
 
-  console.warn('🚨', 'no price', chainId, token, blockNumber)  
-  return { priceUsd: 0, priceSource: 'none' }
+  console.warn('🚨', 'no price', chainId, token, blockNumber)
+  const empty = { chainId, address: token, priceUsd: 0, priceSource: 'na', blockNumber, blockTime: 0n }
+  await mq.add(mq.q.load, mq.job.load.price, empty)
+  return empty
 }
 
 async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
-  if(!process.env.YPRICE_API) return { priceUsd: 0, priceSource: 'yprice' }
+  if(!process.env.YPRICE_API) return undefined
 
   try {
     const url = `${process.env.YPRICE_API}/get_price/${chainId}/${token}?block=${blockNumber}`
@@ -53,21 +68,45 @@ async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber
       }
     })
 
-    return { priceUsd: Number(await result.json()), priceSource: 'lens' }
+    const priceUsd = Number(await result.json())
+    if(priceUsd === 0) return undefined
+
+    return PriceSchema.parse({ 
+      chainId,
+      address: token,
+      priceUsd,
+      priceSource: 'lens',
+      blockNumber,
+      blockTime: await getBlockTime(chainId, blockNumber)
+    })
 
   } catch(error) {
     console.warn('🚨', 'yprice failed', chainId, token, blockNumber)
-    console.warn()
-    console.warn(error)
-    console.warn()
-    return { priceUsd: 0, priceSource: 'yprice' }
+    return undefined
   }
 }
 
+async function fetchDbPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
+  const result = await db.query(
+    `SELECT
+      chain_id as "chainId",
+      address,
+      price_usd as "priceUsd",
+      price_source as "priceSource",
+      block_number as "blockNumber",
+      block_time as "blockTime"
+    FROM price WHERE chain_id = $1 AND address = $2 AND block_number = $3`,
+    [chainId, token, blockNumber]
+  )
+  if(result.rows.length === 0) return undefined
+  return PriceSchema.parse(result.rows[0])
+}
+
 async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
-  if(!(chainId in lens)) return { priceUsd: 0, priceSource: 'lens' }
+  if(!(chainId in lens)) return undefined
+
   try {
-    const priceUSDC = await rpcs.next(chainId).readContract({
+    const priceUSDC = await rpcs.next(chainId, blockNumber).readContract({
       address: lens[chainId as keyof typeof lens],
       functionName: 'getPriceUsdcRecommended',
       args: [ token ],
@@ -75,11 +114,20 @@ async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNum
       blockNumber
     }) as bigint
 
-    return { priceUsd: Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000, priceSource: 'lens' }
+    if(priceUSDC === 0n) return undefined
+
+    return PriceSchema.parse({
+      chainId,
+      address: token,
+      priceUsd: Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000, 
+      priceSource: 'lens',
+      blockNumber, 
+      blockTime: await getBlockTime(chainId, blockNumber)
+    })
 
   } catch(error) {
-    console.warn('🚨', 'no lens price', chainId, token, blockNumber)
-    return { priceUsd: 0, priceSource: 'lens' }
+    console.warn('🚨', 'lens price failed', error)
+    return undefined
   }
 }
 
@@ -110,14 +158,21 @@ function lowercaseAddresses(data: YDaemonPrices): YDaemonPrices {
   return result
 }
 
-async function fetchYDaemonPriceUsd(chainId: number, token: `0x${string}`) {
+async function fetchYDaemonPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
   try {
     const prices = await fetchAllYDaemonPrices()
     const price = prices[chainId.toString()]?.[token.toLowerCase()] || 0
-    if(isNaN(price)) return { priceUsd: 0, priceSource: 'ydaemon' }
-    return { priceUsd: price, priceSource: 'ydaemon' }
+    if(isNaN(price)) return undefined
+    return PriceSchema.parse({
+      chainId,
+      address: token,
+      priceUsd: price, 
+      priceSource: 'ydaemon',
+      blockNumber, 
+      blockTime: await getBlockTime(chainId, blockNumber)
+    })
   } catch(error) {
-    console.warn('🚨', 'no ydaemon price', chainId, token)
-    return { priceUsd: 0, priceSource: 'ydaemon' }
+    console.warn('🚨', 'ydaemon price failed', error)
+    return undefined
   }
 }

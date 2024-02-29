@@ -17,7 +17,7 @@ CREATE TABLE evmlog_strides (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
 	strides text NOT NULL,
-	CONSTRAINT evmlog_walk_pkey PRIMARY KEY (chain_id, address)
+	CONSTRAINT evmlog_strides_pkey PRIMARY KEY (chain_id, address)
 );
 
 CREATE TABLE snapshot (
@@ -39,6 +39,16 @@ CREATE TABLE thing (
 );
 CREATE INDEX thing_idx_label ON thing(label);
 CREATE INDEX thing_idx_chain_id_label ON thing(chain_id, label);
+
+CREATE TABLE price (
+	chain_id int4 NOT NULL,
+	address text NOT NULL,
+	price_usd numeric NOT NULL,
+	price_source text NOT NULL,
+	block_number int8 NOT NULL,
+	block_time timestamptz NOT NULL,
+	CONSTRAINT price_pkey PRIMARY KEY (chain_id, address, block_number)
+);
 
 CREATE TABLE measure (
 	chain_id int4 NOT NULL,

@@ -88,6 +88,12 @@ const bull = { connection: {
   port: (process.env.REDIS_PORT || 6379) as number,
 }}
 
+export async function add(queueName: string, jobName: string, data: any, options?: any) {
+  const queue = new Queue(queueName, bull)
+  await queue.add(jobName, data, options)
+  await queue.close()
+}
+
 export function queue(name: string, options?: QueueOptions) {
   return new Queue(name, {...bull, ...options})
 }

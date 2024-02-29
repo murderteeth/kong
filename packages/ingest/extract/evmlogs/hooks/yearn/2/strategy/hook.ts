@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { Queue } from 'bullmq'
 import { Log, parseAbi, toEventSelector } from 'viem'
 import { Hook } from '../../../..'
-import { fetchErc20PriceUsd } from 'lib/prices'
+import { fetchErc20PriceUsd } from '../../../../../../prices'
 import { priced } from 'lib/math'
 import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../lib'
 

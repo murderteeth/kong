@@ -12,7 +12,6 @@ import { EvmLogSchema, zhexstring } from 'lib/types'
 import { getBlockTime } from 'lib/blocks'
 import { Log, getAddress } from 'viem'
 import resolveAbiHooks from 'lib/resolveAbiHooks'
-import { removeLeadingSlash } from 'lib/strings'
 
 export interface Handler extends Processor {
   handle: (chainId: number, address: `0x${string}`, logs: any[]) => Promise<void>

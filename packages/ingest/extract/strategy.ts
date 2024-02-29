@@ -5,7 +5,7 @@ import { Queue } from 'bullmq'
 import { rpcs } from '../rpcs'
 import { clean } from 'lib/version'
 import { estimateHeight } from 'lib/blocks'
-import { fetchErc20PriceUsd } from 'lib/prices'
+import { fetchErc20PriceUsd } from '../prices'
 import { scaleDown } from 'lib/math'
 import { compare } from 'compare-versions'
 

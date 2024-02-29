@@ -1,5 +1,6 @@
 import { Price, PriceSchema, Stride, StrideSchema } from '../types'
 import { bucket } from './bucket'
+import { disabled } from './disabled'
 import { filesystem } from './filesystem'
 
 export type GroveCore = {
@@ -16,7 +17,7 @@ export type GrovePeriphery = {
   fetchStrides: (chainId: number, address: `0x${string}`) => Promise<Stride[]>
   storeStrides: (chainId: number, address: `0x${string}`, strides: Stride[]) => Promise<void>
   pricePath: (chainId: number, token: `0x${string}`, blockNumber: bigint) => string
-  fetchPrice: (chainId: number, token: `0x${string}`, blockNumber: bigint) => Promise<Price>
+  fetchPrice: (chainId: number, token: `0x${string}`, blockNumber: bigint) => Promise<Price|undefined>
   storePrice: (price: Price) => Promise<void>
   getLogs: (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => Promise<{}[]>
 }
@@ -47,14 +48,9 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
   const fetchPrice = async (chainId: number, address: `0x${string}`, blockNumber: bigint) => {
     const path = pricePath(chainId, address, blockNumber)
     if (await grove.exists(path)) {
-      try {
-        return PriceSchema.parse(await grove.get(path))
-      } catch(error) {
-        console.warn('🚨', 'fetchPrice', path, error)
-        throw error
-      }
+      return PriceSchema.parse(await grove.get(path))
     } else {
-      return PriceSchema.parse({ chainId, address, priceUsd: 0, priceSource: 'none', blockNumber: 0n, blockTime: 0n})
+      return undefined
     }
   }
 
@@ -86,7 +82,16 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
 }
 
 export default function grove(useFiles?: boolean): GroveCore & GrovePeriphery {
-  const useBucket = !useFiles && process.env.GROVE_BUCKET !== undefined && process.env.GROVE_STORAGE_KEY !== undefined
-  const result = useBucket ? bucket : filesystem
-  return bindPeriphery(result)
+  const mode = process.env.GROVE || 'disabled'
+  switch (mode) {
+    case 'bucket':
+      return bindPeriphery(bucket)
+    case 'filesystem':
+      return bindPeriphery(filesystem)
+    case 'disabled':
+      return bindPeriphery(disabled)
+    default:
+      throw new Error(`Unknown GROVE_MODE: ${mode}`)
+  
+  }
 }
