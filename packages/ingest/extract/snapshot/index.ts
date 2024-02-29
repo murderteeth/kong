@@ -4,9 +4,8 @@ import { abiutil, mq } from 'lib'
 import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { rpcs } from 'lib/rpcs'
 import { getBlock } from 'lib/blocks'
-import resolveModules from 'lib/resolveModules'
+import resolveAbiHooks from 'lib/resolveAbiHooks'
 import path from 'path'
-import { removeLeadingSlash } from 'lib/strings'
 import { SnapshotSchema } from 'lib/types'
 
 export interface Hook extends Processor {
@@ -21,8 +20,7 @@ export class SnapshotExtractor implements Processor {
   }[] = []
 
   async up() {
-    await resolveModules(path.join(__dirname, 'hooks'), (modulePath: string, module: any) => {
-      const abiPath = removeLeadingSlash(modulePath.replace(path.join(__dirname, 'hooks'), '').replace('.ts', ''))
+    await resolveAbiHooks(path.join(__dirname, 'hooks'), (abiPath: string, module: any) => {
       this.postprocessors.push({ abiPath, hook: new module.default() })
     })
 
@@ -64,15 +62,13 @@ export class SnapshotExtractor implements Processor {
     ? await postprocessor.hook.process(chainId, address, _snapshot) || {}
     : {}
 
-    const snapshot = SnapshotSchema.parse({
+    this.queues[mq.q.load].add(mq.job.load.snapshot, SnapshotSchema.parse({
       chainId,
       address,
       snapshot: _snapshot,
       post,
       blockNumber: block.number,
       blockTime: block.timestamp
-    })
-
-    this.queues[mq.q.load].add(mq.job.load.snapshot, snapshot)
+    }))
   }
 }

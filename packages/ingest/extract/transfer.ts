@@ -22,12 +22,12 @@ export class TransferExtractor implements Processor {
     const key = '-' + Object.values(transfer).join('-')
     const { decimals } = await getErc20(transfer.chainId, transfer.address)
     const tokens = Number(BigInt(transfer.amount) * 10_000n / BigInt(10 ** decimals)) / 10_000
-    const { price } = await fetchErc20PriceUsd(
+    const { priceUsd } = await fetchErc20PriceUsd(
       transfer.chainId, 
       transfer.address, 
       BigInt(transfer.blockNumber)
     )
-    const amountUsd =  tokens * price
+    const amountUsd =  tokens * priceUsd
     const { timestamp } = await getBlock(transfer.chainId, BigInt(transfer.blockNumber))
 
     transfer.amountUsd = amountUsd

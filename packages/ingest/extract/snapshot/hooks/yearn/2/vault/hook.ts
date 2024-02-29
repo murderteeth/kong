@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq'
 import { parseAbi, zeroAddress } from 'viem'
-import { Hook } from '../../..'
+import { Hook } from '../../../..'
 import { rpcs } from 'lib/rpcs'
 
 export default class VaultHook implements Hook {

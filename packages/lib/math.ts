@@ -26,3 +26,7 @@ export function scaleDown(value: bigint, decimals: number, precision: number = 1
   const factor = BigInt(10 ** precision)
   return Number(value * factor / BigInt(10 ** decimals)) / Number(factor)
 }
+
+export function priced(amount: bigint, decimals: number, priceUsd: number, precision = 10_000) {
+  return priceUsd * Number(amount * BigInt(precision) / BigInt(10 ** decimals)) / precision
+}

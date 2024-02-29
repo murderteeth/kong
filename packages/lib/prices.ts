@@ -2,6 +2,7 @@ import { arbitrum, base, fantom, mainnet, optimism } from 'viem/chains'
 import { parseAbi } from 'viem'
 import { rpcs } from './rpcs'
 import { cache } from './cache'
+import grove from './grove'
 
 export const lens = {
   [mainnet.id]: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030' as `0x${string}`,
@@ -11,34 +12,37 @@ export const lens = {
   [arbitrum.id]: '0x043518AB266485dC085a1DB095B8d9C2Fc78E9b9' as `0x${string}`
 }
 
-export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint, latest = false) {
+export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint, latest = false): Promise<{ priceUsd: number, priceSource: string }>{
   return cache.wrap(`fetchErc20PriceUsd:${chainId}:${token}:${blockNumber}`, async () => {
     return await __fetchErc20PriceUsd(chainId, token, blockNumber, latest)
-  }, 10_000)
+  }, 30_000)
 }
 
 async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint, latest = false) {
-  let price: number = 0
+  let result: { priceUsd: number, priceSource: string } = { priceUsd: 0, priceSource: 'none' }
 
   if(latest) {
-    price = await fetchYDaemonPriceUsd(chainId, token)
-    if(price !== 0) return { price, source: 'ydaemon' }
+    result = await fetchYDaemonPriceUsd(chainId, token)
+    if(result.priceUsd !== 0) return result
   }
 
-  price = await fetchLensPriceUsd(chainId, token, blockNumber)
-  if(price !== 0) return { price, source: 'lens' }
+  result = await await grove().fetchPrice(chainId, token, blockNumber)
+  if(result.priceUsd !== 0) return { priceUsd: result.priceUsd, priceSource: result.priceSource }
+
+  result = await fetchLensPriceUsd(chainId, token, blockNumber)
+  if(result.priceUsd !== 0) return result
 
   if(JSON.parse(process.env.YPRICE_ENABLED || 'false')) {
-    price = await fetchYPriceUsd(chainId, token, blockNumber)
-    if(price !== 0) return { price, source: 'yprice' }
+    result = await fetchYPriceUsd(chainId, token, blockNumber)
+    if(result.priceUsd !== 0) return result
   }
 
   console.warn('🚨', 'no price', chainId, token, blockNumber)  
-  return { price: 0, source: 'none' }
+  return { priceUsd: 0, priceSource: 'none' }
 }
 
 async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
-  if(!process.env.YPRICE_API) return 0
+  if(!process.env.YPRICE_API) return { priceUsd: 0, priceSource: 'yprice' }
 
   try {
     const url = `${process.env.YPRICE_API}/get_price/${chainId}/${token}?block=${blockNumber}`
@@ -49,19 +53,19 @@ async function fetchYPriceUsd(chainId: number, token: `0x${string}`, blockNumber
       }
     })
 
-    return Number(await result.json())
+    return { priceUsd: Number(await result.json()), priceSource: 'lens' }
 
   } catch(error) {
     console.warn('🚨', 'yprice failed', chainId, token, blockNumber)
     console.warn()
     console.warn(error)
     console.warn()
-    return 0
+    return { priceUsd: 0, priceSource: 'yprice' }
   }
 }
 
 async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint) {
-  if(!(chainId in lens)) return 0
+  if(!(chainId in lens)) return { priceUsd: 0, priceSource: 'lens' }
   try {
     const priceUSDC = await rpcs.next(chainId).readContract({
       address: lens[chainId as keyof typeof lens],
@@ -70,12 +74,12 @@ async function fetchLensPriceUsd(chainId: number, token: `0x${string}`, blockNum
       abi: parseAbi(['function getPriceUsdcRecommended(address tokenAddress) view returns (uint256)']),
       blockNumber
     }) as bigint
-  
-    return Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000
+
+    return { priceUsd: Number(priceUSDC * 10_000n / BigInt(10 ** 6)) / 10_000, priceSource: 'lens' }
 
   } catch(error) {
     console.warn('🚨', 'no lens price', chainId, token, blockNumber)
-    return 0
+    return { priceUsd: 0, priceSource: 'lens' }
   }
 }
 
@@ -110,10 +114,10 @@ async function fetchYDaemonPriceUsd(chainId: number, token: `0x${string}`) {
   try {
     const prices = await fetchAllYDaemonPrices()
     const price = prices[chainId.toString()]?.[token.toLowerCase()] || 0
-    if(isNaN(price)) return 0
-    return price
+    if(isNaN(price)) return { priceUsd: 0, priceSource: 'ydaemon' }
+    return { priceUsd: price, priceSource: 'ydaemon' }
   } catch(error) {
     console.warn('🚨', 'no ydaemon price', chainId, token)
-    return 0
+    return { priceUsd: 0, priceSource: 'ydaemon' }
   }
 }

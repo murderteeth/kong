@@ -277,3 +277,14 @@ export const SnapshotSchema = z.object({
 })
 
 export type Snapshot = z.infer<typeof SnapshotSchema>
+
+export const PriceSchema = z.object({
+  chainId: z.number(),
+  address: zhexstring,
+  priceUsd: z.number({ coerce: true }),
+  priceSource: z.string(),
+  blockNumber: z.bigint({ coerce: true }),
+  blockTime: z.bigint({ coerce: true }),
+})
+
+export type Price = z.infer<typeof PriceSchema>

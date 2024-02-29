@@ -1,4 +1,4 @@
-import { Stride, StrideSchema } from '../types'
+import { Price, PriceSchema, Stride, StrideSchema } from '../types'
 import { bucket } from './bucket'
 import { filesystem } from './filesystem'
 
@@ -15,6 +15,9 @@ export type GrovePeriphery = {
   stridesPath: (chainId: number, address: `0x${string}`) => string
   fetchStrides: (chainId: number, address: `0x${string}`) => Promise<Stride[]>
   storeStrides: (chainId: number, address: `0x${string}`, strides: Stride[]) => Promise<void>
+  pricePath: (chainId: number, token: `0x${string}`, blockNumber: bigint) => string
+  fetchPrice: (chainId: number, token: `0x${string}`, blockNumber: bigint) => Promise<Price>
+  storePrice: (price: Price) => Promise<void>
   getLogs: (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => Promise<{}[]>
 }
 
@@ -39,6 +42,27 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
     await grove.store(stridesPath(chainId, address), strides)
   }
 
+  const pricePath = (chainId: number, address: `0x${string}`, blockNumber: bigint) => `price/${chainId}/${address}/${blockNumber}.json`
+
+  const fetchPrice = async (chainId: number, address: `0x${string}`, blockNumber: bigint) => {
+    const path = pricePath(chainId, address, blockNumber)
+    if (await grove.exists(path)) {
+      try {
+        return PriceSchema.parse(await grove.get(path))
+      } catch(error) {
+        console.warn('🚨', 'fetchPrice', path, error)
+        throw error
+      }
+    } else {
+      return PriceSchema.parse({ chainId, address, priceUsd: 0, priceSource: 'none', blockNumber: 0n, blockTime: 0n})
+    }
+  }
+
+  const storePrice = async (price: Price) => {
+    const path = pricePath(price.chainId, price.address, price.blockNumber)
+    await grove.store(path, price)
+  }
+
   const getLogs = async (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => {
     const result: {}[] = []
     const logpaths = await grove.list(`evmlog/${chainId}/${address}`)
@@ -53,7 +77,12 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
     return result
   }
 
-  return { ...grove, stridesPath, fetchStrides, storeStrides, getLogs }
+  return { 
+    ...grove, 
+    stridesPath, fetchStrides, storeStrides,
+    pricePath, fetchPrice, storePrice,
+    getLogs 
+  }
 }
 
 export default function grove(useFiles?: boolean): GroveCore & GrovePeriphery {

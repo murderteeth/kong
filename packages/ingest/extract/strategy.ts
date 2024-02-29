@@ -72,13 +72,13 @@ export class StrategyExtractor implements Processor {
 
     if(assetAddress === zeroAddress) return 0;
 
-    const { price } = await fetchErc20PriceUsd(strategy.chainId, assetAddress, asOfBlockNumber)
+    const { priceUsd } = await fetchErc20PriceUsd(strategy.chainId, assetAddress, asOfBlockNumber)
     const decimals = await rpcs.next(strategy.chainId).readContract({
       address: assetAddress,
       functionName: 'decimals',
       abi: parseAbi(['function decimals() view returns (uint8)']),
     }) as number
-    return price * Number(scaleDown(totalDebt, decimals))
+    return priceUsd * Number(scaleDown(totalDebt, decimals))
   }
 
   private async extractFields(chainId: number, vault: `0x${string}`, strategy: `0x${string}`, blockNumber: bigint) {

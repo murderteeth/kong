@@ -5,7 +5,7 @@ import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
 import { PoolClient } from 'pg'
-import { SnapshotSchema, ThingSchema, zhexstring } from 'lib/types'
+import { PriceSchema, SnapshotSchema, ThingSchema, zhexstring } from 'lib/types'
 import { StrideProcessor } from 'lib/grove/strideProcessor'
 import grove from 'lib/grove'
 
@@ -90,6 +90,9 @@ export default class Load implements Processor {
 
     [mq.job.load.thing]: async data => 
     await upsertThing(data),
+
+    [mq.job.load.price]: async data => 
+    await grove().storePrice(PriceSchema.parse(data))
   }
 
   async up() {

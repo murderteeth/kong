@@ -36,7 +36,7 @@ export class TvlComputer implements Processor {
       ({ number: blockNumber } = await getBlock(chainId, estimate))
     }
 
-    const { price: priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, blockNumber, latest)
+    const { priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, blockNumber, latest)
     const artificialBlockTime = endOfDay(time)
 
     await this.queue?.add(mq.job.load.tvl, TVLSchema.parse({
@@ -62,7 +62,7 @@ export class TvlComputer implements Processor {
 
 export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint, latest = false) {
   const { assetAddress, decimals } = await getAsset(chainId, address)
-  const { price, source } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber, latest)
+  const { priceUsd, priceSource: source } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber, latest)
 
   const totalAssets = await rpcs.next(chainId, blockNumber).readContract({
     address,
@@ -71,14 +71,14 @@ export async function _compute(chainId: number, address: `0x${string}`, blockNum
     blockNumber
   }) as bigint
 
-  if(totalAssets === 0n) return { price, source, tvl: 0 }
+  if(totalAssets === 0n) return { priceUsd, source, tvl: 0 }
 
   const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
   const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
   const totalDelegatedAssets = delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
-  const tvl = price * (scaleDown(totalAssets, decimals) - scaleDown(totalDelegatedAssets, decimals))
+  const tvl = priceUsd * (scaleDown(totalAssets, decimals) - scaleDown(totalDelegatedAssets, decimals))
 
-  return { price, source, tvl }
+  return { priceUsd, source, tvl }
 }
 
 export async function getAsset(chainId: number, address: string) {

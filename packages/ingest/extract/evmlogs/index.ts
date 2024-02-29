@@ -11,7 +11,7 @@ import { abiutil, mq } from 'lib'
 import { EvmLogSchema, zhexstring } from 'lib/types'
 import { getBlockTime } from 'lib/blocks'
 import { Log, getAddress } from 'viem'
-import resolveModules from 'lib/resolveModules'
+import resolveAbiHooks from 'lib/resolveAbiHooks'
 import { removeLeadingSlash } from 'lib/strings'
 
 export interface Handler extends Processor {
@@ -36,8 +36,7 @@ export class EvmLogsExtractor implements Processor {
   } as { [key: string]: Handler }
 
   async up() {
-    await resolveModules(path.join(__dirname, 'hooks'), (modulePath: string, module: any) => {
-      const abiPath = removeLeadingSlash(modulePath.replace(path.join(__dirname, 'hooks'), '').replace('.ts', ''))
+    await resolveAbiHooks(path.join(__dirname, 'hooks'), (abiPath: string, module: any) => {
       this.postprocessors.push({ abiPath, hook: new module.default() })
     })
 
