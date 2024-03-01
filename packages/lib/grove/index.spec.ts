@@ -20,7 +20,7 @@ describe('grove', function() {
     })
 
     it('gets logs', async function() {
-      const logs = await this.grove.getLogs(chainId, address, 0n, 1n)
+      const logs = await this.grove.fetchLogs(chainId, address, 0n, 1n)
       expect(logs.length).to.equal(1)
       expect(await this.grove.get(logpath)).to.deep.equal({ mushi: 'mushi' })
     })
@@ -41,7 +41,7 @@ describe('grove', function() {
     })
 
     it('gets logs', async function() {
-      const logs = await this.grove.getLogs(chainId, address, 0n, 1n)
+      const logs = await this.grove.fetchLogs(chainId, address, 0n, 1n)
       expect(logs.length).to.equal(1)
       expect(await this.grove.get(logpath)).to.deep.equal({ mushi: 'mushi' })
     })

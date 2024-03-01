@@ -21,7 +21,7 @@ export default class RegistryHook implements Hook {
   process = async (chainId: number, address: `0x${string}`, log: Log) => {
     const abi = parseAbi([`event NewEndorsedVault(address indexed vault, address indexed asset, uint256 releaseVersion, uint256 vaultType)`])
     const hookTopic = toEventSelector(abi[0])
-    const logTopic = log.topics[0]
+    const [logTopic] = log.topics
     if(logTopic === hookTopic) {
       const _log = log as Log<bigint, number, boolean, undefined, false, typeof abi>
       const { vault, asset, vaultType } = z.object({

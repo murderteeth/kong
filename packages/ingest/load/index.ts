@@ -8,6 +8,7 @@ import { PoolClient } from 'pg'
 import { PriceSchema, SnapshotSchema, ThingSchema, zhexstring } from 'lib/types'
 import { StrideProcessor } from 'lib/grove/strideProcessor'
 import grove from 'lib/grove'
+import sync from './sync'
 
 export default class Load implements Processor {
   worker?: Worker
@@ -92,7 +93,10 @@ export default class Load implements Processor {
     await upsertThing(data),
 
     [mq.job.load.price]: async data => 
-    await upsertPrice(data)
+    await upsertPrice(data),
+
+    [mq.job.load.sync]: async data => 
+    await sync(data)
   }
 
   async up() {
@@ -123,7 +127,7 @@ export async function upsertEvmLog(data: any) {
   const client = await db.connect()
   try {
     await client.query('BEGIN')
-    await upsertBatch(batch, 'evmlog', 'chain_id, address, topic, block_number, log_index, transaction_hash, transaction_index', undefined, client)
+    await upsertBatch(batch, 'evmlog', 'chain_id, address, signature, block_number, log_index, transaction_hash', undefined, client)
 
     const current = await getLocalStrides(chainId, address, client)
     const next = strider.add({ from, to }, current)
@@ -134,12 +138,6 @@ export async function upsertEvmLog(data: any) {
       DO UPDATE SET strides = $3`, 
       [chainId, address, JSON.stringify(next)]
     )
-
-    if (grove().provider() === 'filesystem') {
-      await StrideProcessor.get().store(chainId, address, next)
-    } else {
-      await StrideProcessor.get().batch(chainId, address, { from, to })
-    }
 
     await client.query('COMMIT')
   } catch(error) {

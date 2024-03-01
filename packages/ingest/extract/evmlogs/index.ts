@@ -9,7 +9,7 @@ import grove from 'lib/grove'
 import { Queue } from 'bullmq'
 import { abiutil, mq } from 'lib'
 import { EvmLogSchema, zhexstring } from 'lib/types'
-import { getBlockTime } from 'lib/blocks'
+import { getBlockTime, getDefaultStartBlockNumber } from 'lib/blocks'
 import { Log, getAddress } from 'viem'
 import resolveAbiHooks from 'lib/resolveAbiHooks'
 
@@ -62,13 +62,16 @@ export class EvmLogsExtractor implements Processor {
     }).parse(data)
 
     const abi = await abiutil.load(abiPath)
-    const events = abiutil.events(abi)
-    const postprocessor = this.postprocessors.find(p => p.abiPath === abiPath)
+    const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
+    const exlcludeTransfers = from < defaultStartBlockNumber
+
+    const events = exlcludeTransfers
+    ? abiutil.exclude('Transfer', abiutil.events(abi))
+    : abiutil.events(abi)
 
     const logs = await (async () => {
       if (useGrove) {
-        const logs = await grove().getLogs(chainId, address, from, to) as Log[]
-        return logs
+        return await grove().fetchLogs(chainId, address, from, to) as Log[]
       } else {
         console.log('🛸', 'getLogs', chainId, address, from, to)
         const logs = await rpcs.next(chainId, from).getLogs({
@@ -78,26 +81,22 @@ export class EvmLogsExtractor implements Processor {
           toBlock: BigInt(to)
         })
 
-        for (const log of logs) {
-          const _path = `evmlog/${chainId}/${address}/${log.topics[0]}/${log.blockNumber}-${log.logIndex}-${log.transactionHash}-${log.transactionIndex}.json`
-          await grove().store(_path, log)
-        }
-
         return logs
       }
     })()
 
-    const preparedLogs = []
+    const postprocessor = this.postprocessors.find(p => p.abiPath === abiPath)
+    const processedLogs = []
     for (const log of logs) {
       const post = postprocessor 
       ? await postprocessor.hook.process(chainId, address, log) || {}
       : {}
 
-      preparedLogs.push({
+      processedLogs.push({
         ...log,
         chainId,
         address: getAddress(log.address),
-        topic: log.topics[0],
+        signature: log.topics[0],
         post,
         blockTime: await getBlockTime(chainId, log.blockNumber || undefined)
       })
@@ -105,7 +104,7 @@ export class EvmLogsExtractor implements Processor {
 
     await this.queues[mq.q.load].add(mq.job.load.evmlog, { 
       chainId, address, from, to,
-      batch: EvmLogSchema.array().parse(preparedLogs)
+      batch: EvmLogSchema.array().parse(processedLogs)
     }, {
       priority: mq.LOWEST_PRIORITY
     })

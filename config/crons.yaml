@@ -1,5 +1,10 @@
 
 crons:
+  - name: Sync
+    queue: load
+    job: sync
+    schedule: "*/30 * * * * *" # every 30 seconds
+
   - name: LatestBlocks
     queue: extract
     job: block

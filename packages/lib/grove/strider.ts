@@ -6,17 +6,22 @@ export function plan(from: bigint, to: bigint, travelled: Stride[] | undefined):
   travelled.sort((a, b) => Number(a.from - b.from))
 
   const result: Stride[] = []
-  let currentFrom = from
+  let startFrom = from
 
   for (let stride of travelled) {
-    if (currentFrom < stride.from) {
-      result.push({ from: currentFrom, to: stride.from - 1n })
+    if (startFrom < stride.from) {
+      if (stride.from - 1n > to) {
+        result.push({ from: startFrom, to })
+        return result
+      } else {
+        result.push({ from: startFrom, to: stride.from - 1n })
+      }
     }
-    currentFrom = stride.to + 1n
+    startFrom = stride.to + 1n
   }
 
-  if (currentFrom <= to) {
-    result.push({ from: currentFrom, to })
+  if (startFrom <= to) {
+    result.push({ from: startFrom, to })
   }
 
   return result

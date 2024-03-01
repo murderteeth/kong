@@ -1,4 +1,5 @@
-import { Price, PriceSchema, Stride, StrideSchema } from '../types'
+import { Log } from 'viem'
+import { EvmLog, Price, PriceSchema, Stride, StrideSchema } from '../types'
 import { bucket } from './bucket'
 import { disabled } from './disabled'
 import { filesystem } from './filesystem'
@@ -19,7 +20,9 @@ export type GrovePeriphery = {
   pricePath: (chainId: number, token: `0x${string}`, blockNumber: bigint) => string
   fetchPrice: (chainId: number, token: `0x${string}`, blockNumber: bigint) => Promise<Price|undefined>
   storePrice: (price: Price) => Promise<void>
-  getLogs: (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => Promise<{}[]>
+  logPath: (log: EvmLog) => string
+  fetchLogs: (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => Promise<{}[]>
+  storeLog: (log: EvmLog) => Promise<void>
 }
 
 function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
@@ -59,7 +62,11 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
     await grove.store(path, price)
   }
 
-  const getLogs = async (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => {
+  const logPath = (log: EvmLog) => {
+    return `evmlog/${log.chainId}/${log.address}/${log.topics[0]}/${log.blockNumber}-${log.logIndex}-${log.transactionHash}-${log.transactionIndex}.json`
+  }
+
+  const fetchLogs = async (chainId: number, address: `0x${string}`, from: bigint, to: bigint) => {
     const result: {}[] = []
     const logpaths = await grove.list(`evmlog/${chainId}/${address}`)
     for (const logpath of logpaths) {
@@ -73,11 +80,15 @@ function bindPeriphery(grove: GroveCore): GroveCore & GrovePeriphery {
     return result
   }
 
+  const storeLog = async (log: EvmLog) => {
+    await grove.store(logPath(log), log)
+  }
+
   return { 
     ...grove, 
     stridesPath, fetchStrides, storeStrides,
     pricePath, fetchPrice, storePrice,
-    getLogs 
+    logPath, fetchLogs, storeLog
   }
 }
 

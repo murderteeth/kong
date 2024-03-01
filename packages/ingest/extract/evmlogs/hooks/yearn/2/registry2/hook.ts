@@ -22,7 +22,7 @@ export default class RegistryHook implements Hook {
     const abi = parseAbi([
       `event NewVault(address indexed token, uint256 indexed vaultId, uint256 vaultType, address vault, string apiVersion)`
     ])
-    const logTopic = log.topics[0]
+    const [logTopic] = log.topics
     if(logTopic === toEventSelector(abi[0])) {
       const _log = log as Log<bigint, number, boolean, undefined, false, typeof abi>
       const { vault, token, apiVersion } = z.object({

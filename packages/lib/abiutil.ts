@@ -10,8 +10,12 @@ export function events(abi: any) {
   return abi.filter((x: any) => x.type === 'event')
 }
 
+export function exclude(name: string, events: any) {
+  return events.filter((x: any) => x.name !== name)
+}
+
 export function fields(abi: any) {
   return abi.filter((x: any) => x.type === 'function' && x.stateMutability === 'view' && x.inputs.length === 0)
 }
 
-export default { load, events, fields }
+export default { load, events, exclude, fields }

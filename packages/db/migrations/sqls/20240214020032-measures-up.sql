@@ -2,7 +2,8 @@ CREATE TABLE evmlog (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
 	event_name text NOT NULL,
-	topic text NOT NULL,
+	signature text NOT NULL,
+	topics text[] NOT NULL,
 	args jsonb NULL,
 	post jsonb NULL,
 	block_number int8 NOT NULL,
@@ -10,7 +11,7 @@ CREATE TABLE evmlog (
 	log_index int4 NOT NULL,
 	transaction_hash text NOT NULL,
 	transaction_index int4 NOT NULL,
-	CONSTRAINT evmlog_pkey PRIMARY KEY (chain_id, address, topic, block_number, log_index, transaction_hash, transaction_index)
+	CONSTRAINT evmlog_pkey PRIMARY KEY (chain_id, address, signature, block_number, log_index, transaction_hash)
 );
 
 CREATE TABLE evmlog_strides (

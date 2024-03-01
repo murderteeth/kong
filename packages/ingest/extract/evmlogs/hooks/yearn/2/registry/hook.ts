@@ -24,7 +24,7 @@ export default class RegistryHook implements Hook {
       `event NewVault(address indexed token, uint256 indexed deployment_id, address vault, string api_version)`,
       `event NewExperimentalVault(address indexed token, address indexed deployer, address vault, string api_version)`
     ])
-    const logTopic = log.topics[0]
+    const [logTopic] = log.topics
     if(logTopic === toEventSelector(abi[0]) || logTopic === toEventSelector(abi[1])) {
       const _log = log as Log<bigint, number, boolean, undefined, false, typeof abi>
       const { vault, token, api_version } = z.object({

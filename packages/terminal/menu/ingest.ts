@@ -18,6 +18,11 @@ async function action() {
           name: mq.q.fanout,
           job: mq.job.fanout.contracts
         }},
+        { title: 'sync local->grove', value: {
+          name: mq.q.load,
+          job: mq.job.load.sync,
+          data: { direction: 'local->grove' }
+        }},
         { title: 'index registry events', value: {
           name: mq.q.fanout,
           job: mq.job.fanout.registry
@@ -65,7 +70,7 @@ async function action() {
 
   if (confirm) {
     const queue = mq.queue(q.name)
-    await queue.add(q.job, {})
+    await queue.add(q.job, q.data || {})
     await queue.close()
   }
 }

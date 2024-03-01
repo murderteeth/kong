@@ -1,6 +1,7 @@
 import { GetBlockReturnType } from 'viem'
 import { cache } from './cache'
 import { rpcs } from './rpcs'
+import { dates } from '.'
 
 export async function getBlockNumber(chainId: number, blockNumber?: bigint): Promise<bigint> {
   return (await getBlock(chainId, blockNumber)).number
@@ -18,6 +19,12 @@ export async function getBlock(chainId: number, blockNumber?: bigint): Promise<G
 
 async function __getBlock(chainId: number, blockNumber?: bigint) {
   return await rpcs.next(chainId).getBlock({ blockNumber })
+}
+
+export async function getDefaultStartBlockNumber(chainId: number): Promise<bigint> {
+  return cache.wrap(`getDefaultStartBlock:${chainId}`, async () => {
+    return await estimateHeight(chainId, dates.DEFAULT_START())
+  }, 10_000)
 }
 
 export async function estimateHeight(chainId: number, timestamp: bigint): Promise<bigint> {

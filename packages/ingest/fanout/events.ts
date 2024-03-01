@@ -1,9 +1,9 @@
 import { setTimeout } from 'timers/promises'
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
-import { dates, math, mq, multicall3, strider } from 'lib'
+import { math, mq, multicall3, strider } from 'lib'
 import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
-import { estimateHeight, getBlockNumber } from 'lib/blocks'
+import { getBlockNumber, getDefaultStartBlockNumber } from 'lib/blocks'
 import { getLocalStrides } from '../db'
 import grove from 'lib/grove'
 import { StrideSchema } from 'lib/types'
@@ -24,10 +24,10 @@ export default class EventsFanout implements Processor {
     const { abiPath, fromIncept } = ContractSchema.parse(data.contract)
 
     const multicall3Activation = multicall3.getActivation(chainId)
-    const defaultStartBlock = await estimateHeight(chainId, dates.DEFAULT_START())
-    const from = fromIncept 
+    const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
+    const from = fromIncept
       ? inceptBlock 
-      : math.max(inceptBlock, defaultStartBlock, multicall3Activation)
+      : math.max(inceptBlock, defaultStartBlockNumber, multicall3Activation)
     const to = await getBlockNumber(chainId)
 
     const groveStrides = await grove().fetchStrides(chainId, address)

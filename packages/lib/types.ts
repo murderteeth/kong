@@ -239,7 +239,8 @@ export const EvmLogSchema = z.object({
   chainId: z.number(),
   address: zhexstring,
   eventName: z.string(),
-  topic: zhexstring,
+  signature: zhexstring,
+  topics: zhexstring.array(),
   args: z.record(z.any()),
   post: z.record(z.any()),
   blockNumber: z.bigint({ coerce: true }),
@@ -288,3 +289,5 @@ export const PriceSchema = z.object({
 })
 
 export type Price = z.infer<typeof PriceSchema>
+
+export const SyncDirectionEnum = z.enum(['local->grove', 'grove->local'])
