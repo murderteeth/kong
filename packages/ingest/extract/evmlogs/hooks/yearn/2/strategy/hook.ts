@@ -5,12 +5,13 @@ import { Hook } from '../../../..'
 import { fetchErc20PriceUsd } from '../../../../../../prices'
 import { priced } from 'lib/math'
 import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../lib'
+import { EvmLog } from 'lib/types'
 
 export default class StrategyHook implements Hook {
   queues: { [key: string]: Queue } = {}
   up = async () => {}
   down = async () => {}
-  process = async (chainId: number, address: `0x${string}`, log: Log) => {
+  process = async (chainId: number, address: `0x${string}`, log: Log|EvmLog) => {
     if(!log.blockNumber) throw new Error('!log.blockNumber')
 
     const [logTopic] = log.topics

@@ -18,6 +18,11 @@ async function action() {
           name: mq.q.fanout,
           job: mq.job.fanout.contracts
         }},
+        { title: 'fanout replays', value: {
+          name: mq.q.fanout,
+          job: mq.job.fanout.contracts,
+          data: { replay: true }
+        }},
         { title: 'index registry events', value: {
           name: mq.q.fanout,
           job: mq.job.fanout.registry

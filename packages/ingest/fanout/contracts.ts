@@ -15,24 +15,24 @@ export default class ContractsFanout implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async fanout() {
+  async fanout(data: any) {
     for (const contract of contracts) {
       for (const source of contract.sources) {
-        const data = { contract, source }
-        await this.queues[mq.q.fanout].add(mq.job.fanout.events, data)
-        await this.queues[mq.q.extract].add(mq.job.extract.snapshot, data)
+        const _data = { ...data, contract, source }
+        await this.queues[mq.q.fanout].add(mq.job.fanout.events, _data)
+        await this.queues[mq.q.extract].add(mq.job.extract.snapshot, _data)
       }
 
       if(contract.things) {
         const things = await getThings(contract.things)
         for (const _thing of things) {
-          const data = { contract, source: { 
+          const _data = { ...data, contract, source: { 
             chainId: _thing.chainId, 
             address: _thing.address, 
             inceptBlock: _thing.defaults.inceptBlock 
           } }
-          await this.queues[mq.q.fanout].add(mq.job.fanout.events, data)
-          await this.queues[mq.q.extract].add(mq.job.extract.snapshot, data)
+          await this.queues[mq.q.fanout].add(mq.job.fanout.events, _data)
+          await this.queues[mq.q.extract].add(mq.job.extract.snapshot, _data)
         }
       }
     }

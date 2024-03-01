@@ -1,9 +1,10 @@
-import { chains, mq, types } from 'lib'
+import { mq } from 'lib'
 import { Queue } from 'bullmq'
 import { Pool } from 'pg'
 import { Processor } from 'lib/processor'
+import { Price, PriceSchema } from 'lib/types'
+import batchx from 'lib/batchx'
 import { getAddress } from 'viem'
-import { PriceSchema } from 'lib/types'
 
 const db = new Pool({
   host: process.env.WAVEYDB_HOST,
@@ -22,13 +23,9 @@ const db = new Pool({
 export class WaveyDbExtractor implements Processor {
   queues: { [key: string]: Queue } = {}
 
-  async up() {
-    this.queues[mq.q.load] = mq.queue(mq.q.load)
-  }
+  async up() {}
 
-  async down() {
-    await Promise.all(Object.values(this.queues).map(q => q.close()))
-  }
+  async down() {}
 
   async extract() {
     await this.extract_prices_for_v2()
@@ -37,25 +34,23 @@ export class WaveyDbExtractor implements Processor {
   async extract_prices_for_v2() {
     const result = await db.query(`
       SELECT 
-        chain_id,
-        want_token,
-        block,
-        timestamp,
-        want_price_at_block
+        chain_id as "chainId",
+        want_token as "address",
+        block as "blockNumber",
+        timestamp as "blockTime",
+        want_price_at_block as "priceUsd"
       FROM
         reports;
     `)
 
-    for (const row of result.rows) {
-      const price = PriceSchema.parse({
-        chainId: row.chain_id,
-        address: getAddress(row.want_token),
-        priceUsd: row.want_price_at_block,
-        priceSource: 'yprice via waveydb',
-        blockNumber: row.block,
-        blockTime: row.timestamp
-      })
-      await this.queues[mq.q.load].add(mq.job.load.price, price)
-    }
+    const prices = result.rows.map(row => PriceSchema.parse({
+      ...row,
+      address: getAddress(row.address),
+      priceSource: 'yprice via waveydb'
+    }))
+
+    await batchx(prices, 100, async (batch: Price[]) => {
+      await mq.add(mq.q.load, mq.job.load.price, { batch })
+    })
   }
 }

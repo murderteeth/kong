@@ -18,9 +18,10 @@ export default class EventsFanout implements Processor {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  async fanout(data: { contract: Contract, source: SourceConfig }) {
+  async fanout(data: { contract: Contract, source: SourceConfig, replay?: boolean }) {
     const { chainId, address, inceptBlock } = SourceConfigSchema.parse(data.source)
     const { abiPath, fromIncept } = ContractSchema.parse(data.contract)
+    const { replay } = data
 
     const multicall3Activation = multicall3.getActivation(chainId)
     const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
@@ -29,14 +30,14 @@ export default class EventsFanout implements Processor {
       : math.max(inceptBlock, defaultStartBlockNumber, multicall3Activation)
     const to = await getBlockNumber(chainId)
 
-    const localStrides = await getLocalStrides(chainId, address)
+    const localStrides = replay ? undefined : await getLocalStrides(chainId, address)
     const nextStrides = strider.plan(from, to, localStrides)
 
     for (const stride of StrideSchema.array().parse(nextStrides)) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)
       await walklog(stride, async (from, to) => {
         await this.queues[mq.q.extract].add(mq.job.extract.evmlog, {
-          abiPath, chainId, address, from, to
+          abiPath, chainId, address, from, to, replay
         })
       })
     }

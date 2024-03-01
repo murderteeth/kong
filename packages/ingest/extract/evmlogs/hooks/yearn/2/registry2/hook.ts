@@ -3,7 +3,7 @@ import { Queue } from 'bullmq'
 import { mq } from 'lib'
 import { Log, parseAbi, toEventSelector } from 'viem'
 import { estimateCreationBlock, getBlock, getBlockTime } from 'lib/blocks'
-import { ThingSchema, zhexstring } from 'lib/types'
+import { EvmLog, ThingSchema, zhexstring } from 'lib/types'
 import { Hook } from '../../../..'
 import { extractDecimals } from '../lib'
 
@@ -18,7 +18,7 @@ export default class RegistryHook implements Hook {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  process = async (chainId: number, address: `0x${string}`, log: Log) => {
+  process = async (chainId: number, address: `0x${string}`, log: Log|EvmLog) => {
     const abi = parseAbi([
       `event NewVault(address indexed token, uint256 indexed vaultId, uint256 vaultType, address vault, string apiVersion)`
     ])

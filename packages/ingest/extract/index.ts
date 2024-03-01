@@ -33,7 +33,9 @@ export default class Extract implements Processor {
   async up() {
     await Promise.all(Object.values(this.extractors).map(e => e.up()))
     this.worker = mq.worker(mq.q.extract, async job => {
-      const label = `🛸 ${job.name} ${job.id}`
+      const label = job.data.replay 
+      ? `🎭 ${job.name} ${job.id}`
+      : `🛸 ${job.name} ${job.id}`
       console.time(label)
       await this.extractors[job.name].extract(job.data)
       console.timeEnd(label)

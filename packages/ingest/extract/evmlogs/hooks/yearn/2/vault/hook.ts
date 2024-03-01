@@ -3,7 +3,7 @@ import { Queue } from 'bullmq'
 import { mq } from 'lib'
 import { Log, parseAbi, toEventSelector } from 'viem'
 import { estimateCreationBlock, getBlockTime } from 'lib/blocks'
-import { ThingSchema, zhexstring } from 'lib/types'
+import { EvmLog, ThingSchema, zhexstring } from 'lib/types'
 import { Hook } from '../../../..'
 import { rpcs } from 'lib/rpcs'
 import { extractDecimals, fetchAsset, fetchOrExtractAsset, fetchOrExtractDecimals } from '../lib'
@@ -21,7 +21,7 @@ export default class VaultHook implements Hook {
     await Promise.all(Object.values(this.queues).map(q => q.close()))
   }
 
-  process = async (chainId: number, address: `0x${string}`, log: Log) => {
+  process = async (chainId: number, address: `0x${string}`, log: Log|EvmLog) => {
     if(!log.blockNumber) throw new Error('!log.blockNumber')
     const [logTopic] = log.topics
 
