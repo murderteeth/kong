@@ -65,8 +65,7 @@ export const job = {
     evmlog: 'evmlog',
     snapshot: 'snapshot',
     thing: 'thing',
-    price: 'price',
-    sync: 'sync',
+    price: 'price'
   },
 
   probe: {

@@ -5,10 +5,7 @@ import { Queue, Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
 import { PoolClient } from 'pg'
-import { PriceSchema, SnapshotSchema, ThingSchema, zhexstring } from 'lib/types'
-import { StrideProcessor } from 'lib/grove/strideProcessor'
-import grove from 'lib/grove'
-import sync from './sync'
+import { ThingSchema, zhexstring } from 'lib/types'
 
 export default class Load implements Processor {
   worker?: Worker
@@ -87,16 +84,13 @@ export default class Load implements Processor {
     await upsertEvmLog(data),
 
     [mq.job.load.snapshot]: async data => 
-    await upsertSnapshot(data),
+    await upsert(data, 'snapshot', 'chain_id, address'),
 
     [mq.job.load.thing]: async data => 
     await upsertThing(data),
 
     [mq.job.load.price]: async data => 
-    await upsertPrice(data),
-
-    [mq.job.load.sync]: async data => 
-    await sync(data)
+    await upsert(data, 'price', 'chain_id, address, block_number')
   }
 
   async up() {
@@ -140,44 +134,6 @@ export async function upsertEvmLog(data: any) {
     )
 
     await client.query('COMMIT')
-  } catch(error) {
-    await client.query('ROLLBACK')
-    throw error
-
-  } finally {
-    client.release()
-  }
-}
-
-export async function upsertSnapshot(data: any) {
-  const { chainId, address, snapshot } = SnapshotSchema.parse(data)
-  const client = await db.connect()
-
-  try {
-    await client.query('BEGIN')
-    await upsert(data, 'snapshot', 'chain_id, address', undefined, client)
-    await grove().store(`snapshot/${chainId}/${address}/latest.json`, snapshot)
-    await client.query('COMMIT')
-
-  } catch(error) {
-    await client.query('ROLLBACK')
-    throw error
-
-  } finally {
-    client.release()
-  }
-}
-
-export async function upsertPrice(data: any) {
-  const price = PriceSchema.parse(data)
-  const client = await db.connect()
-
-  try {
-    await client.query('BEGIN')
-    await upsert(price, 'price', 'chain_id, address, block_number', '', client)
-    await grove().storePrice(price)
-    await client.query('COMMIT')
-
   } catch(error) {
     await client.query('ROLLBACK')
     throw error

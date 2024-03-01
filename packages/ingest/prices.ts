@@ -1,7 +1,6 @@
 import { arbitrum, base, fantom, mainnet, optimism } from 'viem/chains'
 import { parseAbi } from 'viem'
 import { cache } from 'lib/cache'
-import grove from 'lib/grove'
 import { rpcs } from './rpcs'
 import db from './db'
 import { Price, PriceSchema } from 'lib/types'
@@ -29,9 +28,6 @@ async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, block
     result = await fetchYDaemonPriceUsd(chainId, token, blockNumber)
     if(result) return result
   }
-
-  result = await grove().fetchPrice(chainId, token, blockNumber)
-  if(result) return result
 
   result = await fetchDbPriceUsd(chainId, token, blockNumber)
   if(result) return result

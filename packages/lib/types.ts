@@ -289,5 +289,3 @@ export const PriceSchema = z.object({
 })
 
 export type Price = z.infer<typeof PriceSchema>
-
-export const SyncDirectionEnum = z.enum(['local->grove', 'grove->local'])

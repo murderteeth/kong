@@ -5,7 +5,6 @@ import { math, mq, multicall3, strider } from 'lib'
 import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { getBlockNumber, getDefaultStartBlockNumber } from 'lib/blocks'
 import { getLocalStrides } from '../db'
-import grove from 'lib/grove'
 import { StrideSchema } from 'lib/types'
 
 export default class EventsFanout implements Processor {
@@ -30,16 +29,14 @@ export default class EventsFanout implements Processor {
       : math.max(inceptBlock, defaultStartBlockNumber, multicall3Activation)
     const to = await getBlockNumber(chainId)
 
-    const groveStrides = await grove().fetchStrides(chainId, address)
     const localStrides = await getLocalStrides(chainId, address)
     const nextStrides = strider.plan(from, to, localStrides)
 
     for (const stride of StrideSchema.array().parse(nextStrides)) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)
       await walklog(stride, async (from, to) => {
-        const useGrove = groveStrides.some(g => strider.contains(g, { from, to }))
         await this.queues[mq.q.extract].add(mq.job.extract.evmlog, {
-          abiPath, chainId, address, from, to, useGrove
+          abiPath, chainId, address, from, to
         })
       })
     }

@@ -5,7 +5,6 @@ import { rpcs } from '../../rpcs'
 import { RegistryHandler } from './handlers/registry'
 import { VaultHandler } from './handlers/vault'
 import { DebtManagerFactoryHandler } from './handlers/debtManagerFactory'
-import grove from 'lib/grove'
 import { Queue } from 'bullmq'
 import { abiutil, mq } from 'lib'
 import { EvmLogSchema, zhexstring } from 'lib/types'
@@ -51,13 +50,12 @@ export class EvmLogsExtractor implements Processor {
   }
 
   async extract(data: any) {
-    const { abiPath, chainId, address, from, to, useGrove, handler } = z.object({
+    const { abiPath, chainId, address, from, to, handler } = z.object({
       abiPath: z.string(),
       chainId: z.number(),
       address: zhexstring,
       from: z.bigint({ coerce: true }),
       to: z.bigint({ coerce: true }),
-      useGrove: z.boolean().optional().default(false),
       handler: z.string().optional()
     }).parse(data)
 
@@ -69,21 +67,12 @@ export class EvmLogsExtractor implements Processor {
     ? abiutil.exclude('Transfer', abiutil.events(abi))
     : abiutil.events(abi)
 
-    const logs = await (async () => {
-      if (useGrove) {
-        return await grove().fetchLogs(chainId, address, from, to) as Log[]
-      } else {
-        console.log('🛸', 'getLogs', chainId, address, from, to)
-        const logs = await rpcs.next(chainId, from).getLogs({
-          address,
-          events,
-          fromBlock: BigInt(from),
-          toBlock: BigInt(to)
-        })
-
-        return logs
-      }
-    })()
+    const logs = await rpcs.next(chainId, from).getLogs({
+      address,
+      events,
+      fromBlock: BigInt(from),
+      toBlock: BigInt(to)
+    })
 
     const postprocessor = this.postprocessors.find(p => p.abiPath === abiPath)
     const processedLogs = []
