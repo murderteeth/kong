@@ -242,7 +242,7 @@ export const EvmLogSchema = z.object({
   signature: zhexstring,
   topics: zhexstring.array(),
   args: z.record(z.any()),
-  post: z.record(z.any()),
+  hook: z.record(z.any()),
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true }),
   logIndex: z.number(),
@@ -272,7 +272,7 @@ export const SnapshotSchema = z.object({
   chainId: z.number(),
   address: zhexstring,
   snapshot: z.record(z.any()),
-  post: z.record(z.any()),
+  hook: z.record(z.any()),
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true })
 })

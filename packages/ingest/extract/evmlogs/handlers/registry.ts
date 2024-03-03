@@ -1,8 +1,7 @@
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
-import { Handler } from '..'
 
-export class RegistryHandler implements Handler {
+export class RegistryHandler {
   queues: { [key: string]: Queue } = {}
 
   async up() {

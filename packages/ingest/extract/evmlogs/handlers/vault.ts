@@ -1,9 +1,8 @@
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
-import { Handler } from '..'
 import { HarvestSchema } from 'lib/types'
 
-export class VaultHandler implements Handler {
+export class VaultHandler {
   queues: { [key: string]: Queue } = {}
 
   async up() {

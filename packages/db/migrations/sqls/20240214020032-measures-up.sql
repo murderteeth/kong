@@ -5,7 +5,7 @@ CREATE TABLE evmlog (
 	signature text NOT NULL,
 	topics text[] NOT NULL,
 	args jsonb NULL,
-	post jsonb NULL,
+	hook jsonb NULL,
 	block_number int8 NOT NULL,
 	block_time timestamptz NULL,
 	log_index int4 NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE snapshot (
 	chain_id int4 NOT NULL,
 	address text NOT NULL,
 	snapshot jsonb NULL,
-	post jsonb NULL,
+	hook jsonb NULL,
 	block_number int8 NOT NULL,
 	block_time timestamptz NULL,
 	CONSTRAINT snapshot_pkey PRIMARY KEY (chain_id, address)

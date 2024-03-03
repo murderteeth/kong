@@ -2,6 +2,7 @@
 contracts:
   - abiPath: 'yearn/3/registry'
     schedule: '0-59/30 * * * *'
+    only: true
     fromIncept: true
     sources: [
       { chainId: 137, address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500', inceptBlock: 49100596 }
@@ -17,6 +18,7 @@ contracts:
 
   - abiPath: 'yearn/3/vault'
     schedule: "0-59/30 * * * *"
+    only: true
     things: {
       label: 'vault',
       filter: [{ field: 'apiVersion', op: '>=', value: '3.0.0' }]
@@ -37,25 +39,23 @@ contracts:
     schedule: '0-59/30 * * * *'
     fromIncept: true
     sources: [
-      { only: true, chainId: 1, address: '0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319', inceptBlock: 16215519 },
+      { chainId: 1, address: '0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319', inceptBlock: 16215519 },
       { chainId: 10, address: '0x79286Dd38C9017E5423073bAc11F53357Fc5C128', inceptBlock: 22451152 },
       { chainId: 8453, address: '0xF3885eDe00171997BFadAa98E01E167B53a78Ec5', inceptBlock: 3263730 }
     ]
 
   - abiPath: 'yearn/2/vault'
-    only: true
     schedule: '0-59/30 * * * *'
     fromIncept: true
-    sources: [
-      { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c', inceptBlock: 12588944 }
-    ]
-    # things: {
-    #   label: 'vault',
-    #   filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
-    # }
+    things: {
+      label: 'vault',
+      filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
+    }
+    # sources: [
+    #   { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c', inceptBlock: 12588944 }
+    # ]
 
   - abiPath: 'yearn/2/strategy'
-    only: true
     schedule: '0-59/30 * * * *'
     things: {
       label: 'strategy',

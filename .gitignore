@@ -1,4 +1,5 @@
 .env
+.spec
 config/*.local.yaml
 node_modules/
 build/

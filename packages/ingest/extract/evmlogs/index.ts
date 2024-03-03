@@ -1,56 +1,23 @@
 import { z } from 'zod'
-import path from 'path'
 import { Processor } from 'lib/processor'
 import { rpcs } from '../../rpcs'
-import { RegistryHandler } from './handlers/registry'
-import { VaultHandler } from './handlers/vault'
-import { DebtManagerFactoryHandler } from './handlers/debtManagerFactory'
-import { Queue } from 'bullmq'
-import { abiutil, mq } from 'lib'
-import { EvmLog, EvmLogSchema, zhexstring } from 'lib/types'
+import { mq } from 'lib'
+import { EvmLogSchema, zhexstring } from 'lib/types'
 import { getBlockTime, getDefaultStartBlockNumber } from 'lib/blocks'
-import { Log, getAddress } from 'viem'
-import resolveAbiHooks from 'lib/resolveAbiHooks'
+import { getAddress } from 'viem'
 import db from '../../db'
-
-export interface Handler extends Processor {
-  handle: (chainId: number, address: `0x${string}`, logs: any[]) => Promise<void>
-}
-
-export interface Hook extends Processor {
-  process: (chainId: number, address: `0x${string}`, log: Log|EvmLog) => Promise<any|undefined>
-}
+import { ResolveHooks } from '../../abis/types'
+import { requireHooks } from '../../abis'
+import abiutil from '../../abiutil'
 
 export class EvmLogsExtractor implements Processor {
-  queues: { [key: string]: Queue } = {}
-  postprocessors: {
-    abiPath: string,
-    hook: Hook
-  }[] = []
-
-  handlers = {
-    registry: new RegistryHandler(),
-    vault: new VaultHandler(),
-    debtManagerFactory: new DebtManagerFactoryHandler()
-  } as { [key: string]: Handler }
-
-  async up() {
-    await resolveAbiHooks(path.join(__dirname, 'hooks'), (abiPath: string, module: any) => {
-      this.postprocessors.push({ abiPath, hook: new module.default() })
-    })
-
-    this.queues[mq.q.load] = mq.queue(mq.q.load)
-    await Promise.all(Object.values(this.postprocessors).map(p => p.hook.up()))
-    await Promise.all(Object.values(this.handlers).map(h => h.up()))
-  }
-
-  async down() {
-    await Promise.all(Object.values(this.queues).map(q => q.close()))
-    await Promise.all(Object.values(this.postprocessors).map(p => p.hook.down()))
-    await Promise.all(Object.values(this.handlers).map(h => h.down()))
-  }
+  resolveHooks: ResolveHooks|undefined
+  async up() { this.resolveHooks = await requireHooks() }
+  async down() {}
 
   async extract(data: any) {
+    if (!this.resolveHooks) throw new Error('!resolveHooks')
+
     const { abiPath, chainId, address, from, to, replay, handler } = z.object({
       abiPath: z.string(),
       chainId: z.number(),
@@ -82,31 +49,37 @@ export class EvmLogsExtractor implements Processor {
       }
     })()
 
-    const postprocessor = this.postprocessors.find(p => p.abiPath === abiPath)
+    const hooks = this.resolveHooks(abiPath, 'event')
     const processedLogs = []
     for (const log of logs) {
-      const post = postprocessor 
-      ? await postprocessor.hook.process(chainId, address, log) || {}
-      : {}
+      if(!log.topics[0]) throw new Error('!log.topics[0]')
+      const topic = log.topics[0]
+      const topical = hooks.filter(h => h.module.topics && h.module.topics.includes(topic))
+
+      let hookResult = {}
+      for (const hook of topical) {
+        hookResult = {
+          ...hookResult,
+          ...await hook.module.default(chainId, address, log)
+        }
+      }
 
       processedLogs.push({
         ...log,
         chainId,
         address: getAddress(log.address),
         signature: log.topics[0],
-        post,
+        hook: hookResult,
         blockTime: await getBlockTime(chainId, log.blockNumber || undefined)
       })
     }
 
-    await this.queues[mq.q.load].add(mq.job.load.evmlog, { 
+    await mq.add(mq.q.load, mq.job.load.evmlog, {
       chainId, address, from, to,
       batch: EvmLogSchema.array().parse(processedLogs)
     }, {
       priority: mq.LOWEST_PRIORITY
     })
-
-    // await this.handlers[handler].handle(chainId, address, logs)
   }
 }
 
@@ -119,7 +92,7 @@ async function fetchLogs(chainId: number, address: `0x${string}`, from: bigint, 
       signature,
       topics,
       args,
-      post,
+      hook,
       block_number as "blockNumber",
       block_time as "blockTime",
       log_index as "logIndex",

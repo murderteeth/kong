@@ -1,8 +1,7 @@
 import { Queue } from 'bullmq'
 import { mq, types } from 'lib'
-import { Handler } from '..'
 
-export class DebtManagerFactoryHandler implements Handler {
+export class DebtManagerFactoryHandler {
   queues: { [key: string]: Queue } = {}
 
   async up() {

@@ -1,7 +1,6 @@
 export { chains } from './chains'
 export { contracts } from './contracts'
 export { cache } from './cache'
-export * as abiutil from './abiutil'
 export * as mq from './mq'
 export * as types from './types'
 export * as blocks from './blocks'
