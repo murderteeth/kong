@@ -9,10 +9,11 @@ const snapshotHookRegex = /\/snapshot\/hook.ts$/
 export async function requireHooks(path?: string): Promise<ResolveHooks> {
   const hooks = await __requireHooks(path || __dirname, '')
   return (path: string, type?: 'event'|'snapshot') => {
-    return hooks.filter(h => 
-      (h.abiPath.startsWith(`${path}/`) || h.abiPath === '')
+    const apiPathRegex = new RegExp(`^${path}(/|$)`)
+    return hooks.filter(h => {
+      return (apiPathRegex.test(h.abiPath) || h.abiPath === '' || path === '')
       && (type ? h.type === type : true)
-    )
+    })
   }
 }
 
