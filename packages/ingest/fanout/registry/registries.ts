@@ -113,5 +113,11 @@ export const registries: Registry[] = [
       `event NewExperimentalVault(address indexed token, address indexed deployer, address vault, string api_version)`,
       `event NewVault(address indexed token, uint256 indexed vault_id, address vault, string api_version)`
     ])
+  },
+  {
+    chainId: 42161,
+    address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af' as `0x${string}`,
+    version: 3.1,
+    incept: 171850013n
   }
 ]
