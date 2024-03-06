@@ -35,6 +35,7 @@ contracts:
 
   - abiPath: 'yearn/3/debtManagerFactory'
     schedule: "0-59/30 * * * *"
+    fromIncept: true
     only: true
     sources: [
       { chainId: 137, address: '0x0D1F62247035BBFf16742B0f31e8e2Af3aCd6e67', inceptBlock: 51403739 },
