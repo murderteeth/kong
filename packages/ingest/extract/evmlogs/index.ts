@@ -18,14 +18,13 @@ export class EvmLogsExtractor implements Processor {
   async extract(data: any) {
     if (!this.resolveHooks) throw new Error('!resolveHooks')
 
-    const { abiPath, chainId, address, from, to, replay, handler } = z.object({
+    const { abiPath, chainId, address, from, to, replay } = z.object({
       abiPath: z.string(),
       chainId: z.number(),
       address: zhexstring,
       from: z.bigint({ coerce: true }),
       to: z.bigint({ coerce: true }),
-      replay: z.boolean().optional(),
-      handler: z.string().optional()
+      replay: z.boolean().optional()
     }).parse(data)
 
     const abi = await abiutil.load(abiPath)

@@ -13,7 +13,7 @@ export async function getThings(config: ThingsConfig): Promise<Thing[]> {
     for (const filter of config.filter) {
       const field = thing.defaults[filter.field]
       if (semver.test(filter.value)) {
-        if (!compare(clean(field), filter.value, (filter.op as CompareOperator))) return false
+        if (!(field && compare(clean(field), filter.value, (filter.op as CompareOperator)))) return false
       } else {
         throw new Error('not implemented')
       }

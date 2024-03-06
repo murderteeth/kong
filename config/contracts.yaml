@@ -18,10 +18,34 @@ contracts:
 
   - abiPath: 'yearn/3/vault'
     schedule: "0-59/30 * * * *"
+    fromIncept: true
     only: true
     things: {
       label: 'vault',
       filter: [{ field: 'apiVersion', op: '>=', value: '3.0.0' }]
+    }
+
+  - abiPath: 'yearn/3/accountant'
+    schedule: "0-59/30 * * * *"
+    only: true
+    things: {
+      label: 'accountant',
+      filter: []
+    }
+
+  - abiPath: 'yearn/3/debtManagerFactory'
+    schedule: "0-59/30 * * * *"
+    only: true
+    sources: [
+      { chainId: 137, address: '0x0D1F62247035BBFf16742B0f31e8e2Af3aCd6e67', inceptBlock: 51403739 },
+    ]
+
+  - abiPath: 'yearn/3/debtAllocator'
+    schedule: "0-59/30 * * * *"
+    only: true
+    things: {
+      label: 'debtAllocator',
+      filter: []
     }
 
   - abiPath: 'yearn/2/registry'
