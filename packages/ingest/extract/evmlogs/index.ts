@@ -57,9 +57,13 @@ export class EvmLogsExtractor implements Processor {
 
       let hookResult = {}
       for (const hook of topical) {
-        hookResult = {
-          ...hookResult,
-          ...await hook.module.default(chainId, address, log)
+        try {
+          hookResult = {
+            ...hookResult,
+            ...await hook.module.default(chainId, address, log)
+          }
+        } catch(error) {
+          console.warn('🚨', 'hook fail', error)
         }
       }
 

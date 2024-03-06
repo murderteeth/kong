@@ -35,6 +35,9 @@ export default class Load implements Processor {
     [mq.job.load.strategyLenderStatus]: async data => 
     await upsertStrategyLenderStatus(data),
 
+    [mq.job.load.strategyChange]: async data => 
+    await upsertStrategyChange(data),
+
     [mq.job.load.harvest]: async data => 
     await upsertBatch(data.batch, 'harvest', 'chain_id, block_number, block_index, address'),
 
@@ -344,6 +347,49 @@ async function upsertStrategyLenderStatus(data: any) {
     await client.query('COMMIT')
 
   } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+async function upsertStrategyChange(data: any) {
+  const { chainId, vault, strategy, changeType } = z.object({
+    chainId: z.number(),
+    vault: zhexstring,
+    strategy: zhexstring,
+    changeType: z.string()
+  }).parse(data)
+
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const defaults: any = (await client.query(
+    'SELECT defaults FROM thing WHERE chain_id = $1 AND address = $2 AND label = $3 FOR UPDATE', 
+    [chainId, vault, 'vault']))
+    .rows[0]?.defaults || {}
+
+    defaults.strategies = defaults.strategies || []
+
+    if (changeType === 'add') {
+      defaults.strategies.push(strategy)
+    } else if (changeType === 'revoke') {
+      const index = defaults.strategies.indexOf(strategy)
+      if (index !== -1) defaults.strategies.splice(index, 1)
+    } else {
+      throw new Error(`bad change type ${changeType}`)
+    }
+  
+    const thing = ThingSchema.parse({ chainId, address: vault, label: 'vault', defaults })
+  
+    await upsert(thing, 'thing', 'chain_id, address, label', undefined, client)
+    await client.query('COMMIT')
+
+  } catch (error) {
     await client.query('ROLLBACK')
     throw error
 

@@ -50,6 +50,7 @@ export const job = {
     withdrawalQueue: 'withdrawal-queue',
     strategy: 'strategy',
     strategyLenderStatus: 'strategy-lender-status',
+    strategyChange: 'strategy-change',
     harvest: 'harvest',
     riskGroup: 'risk',
     tvl: 'tvl',

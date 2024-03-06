@@ -44,9 +44,13 @@ export class SnapshotExtractor implements Processor {
     let hookResult = {}
     const hooks = this.resolveHooks(abiPath, 'snapshot')
     for (const hook of hooks) {
-      hookResult = {
-        ...hookResult,
-        ...await hook.module.default(chainId, address, _snapshot)
+      try {
+        hookResult = {
+          ...hookResult,
+          ...await hook.module.default(chainId, address, _snapshot)
+        }
+      } catch(error) {
+        console.warn('🚨', 'hook fail', error)
       }
     }
 
