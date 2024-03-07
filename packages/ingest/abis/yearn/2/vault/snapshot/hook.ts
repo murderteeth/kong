@@ -1,7 +1,50 @@
-import { parseAbi, zeroAddress } from 'viem'
+import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
+import { zhexstring } from 'lib/types'
+import db from '../../../../../db'
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
+  const strategies = await projectStrategies(chainId, address)
+  const withdrawalQueue = await extractWithdrawalQueue(chainId, address)
+  return { strategies, withdrawalQueue }
+}
+
+export async function projectStrategies(chainId: number, vault: `0x${string}`) {
+  const topics = [
+    toEventSelector('event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)'),
+    toEventSelector('event StrategyMigrated(address indexed oldVersion, address indexed newVersion)'),
+    toEventSelector('event StrategyRevoked(address indexed strategy)')
+  ]
+
+  const events = await db.query(`
+  SELECT signature, args
+  FROM evmlog
+  WHERE chain_id = $1 AND address = $2 AND signature = ANY($3)
+  ORDER BY block_number, log_index ASC`,
+  [chainId, vault, topics])
+  if(events.rows.length === 0) return []
+
+  const result: `0x${string}`[] = []
+
+  for (const event of events.rows) {
+    switch (event.signature) {
+      case topics[0]:
+        result.push(zhexstring.parse(event.args.strategy))
+        break
+      case topics[1]:
+        result.push(zhexstring.parse(event.args.newVersion))
+        result.splice(result.indexOf(zhexstring.parse(event.args.oldVersion)), 1)
+        break
+      case topics[2]:
+        result.splice(result.indexOf(zhexstring.parse(event.args.strategy)), 1)
+        break
+    }
+  }
+
+  return result
+}
+
+async function extractWithdrawalQueue(chainId: number, address: `0x${string}`) {
   const abi = parseAbi(['function withdrawalQueue(uint256) view returns (address)'])
 
   const multicall = await rpcs.next(chainId).multicall({ contracts: [
@@ -27,8 +70,6 @@ export default async function process(chainId: number, address: `0x${string}`, d
     { args: [19n], address, functionName: 'withdrawalQueue', abi }
   ]})
 
-  const withdrawalQueue = multicall.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
+  return multicall.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
   .map(result => result.result as `0x${string}`)
-
-  return { withdrawalQueue }
 }

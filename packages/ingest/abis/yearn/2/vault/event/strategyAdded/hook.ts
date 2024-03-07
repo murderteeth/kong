@@ -13,12 +13,15 @@ export const topics = [
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const vault = address
-  const { strategy, newVersion } = z.object({
-    strategy: zhexstring.optional(),
-    newVersion: zhexstring.optional()
-  }).parse(data.args)
+  const { args } = z.object({
+    blockNumber: z.bigint({ coerce: true }),
+    args: z.object({
+      strategy: zhexstring.optional(),
+      newVersion: zhexstring.optional()
+    })
+  }).parse(data)
 
-  const newStrategy = (strategy || newVersion)!
+  const newStrategy = (args.strategy || args.newVersion)!
 
   const apiVersion = await rpcs.next(chainId).readContract({
     address: newStrategy,
@@ -33,7 +36,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const inceptTime = await getBlockTime(chainId, inceptBlock)
   await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
     chainId,
-    address: strategy,
+    address: newStrategy,
     label: 'strategy',
     defaults: {
       vault,

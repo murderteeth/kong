@@ -2,7 +2,6 @@
 contracts:
   - abiPath: 'yearn/3/registry'
     schedule: '0-59/30 * * * *'
-    only: true
     fromIncept: true
     sources: [
       { chainId: 137, address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500', inceptBlock: 49100596 }
@@ -19,7 +18,6 @@ contracts:
   - abiPath: 'yearn/3/vault'
     schedule: "0-59/30 * * * *"
     fromIncept: true
-    only: true
     things: {
       label: 'vault',
       filter: [{ field: 'apiVersion', op: '>=', value: '3.0.0' }]
@@ -27,7 +25,6 @@ contracts:
 
   - abiPath: 'yearn/3/accountant'
     schedule: "0-59/30 * * * *"
-    only: true
     things: {
       label: 'accountant',
       filter: []
@@ -36,14 +33,12 @@ contracts:
   - abiPath: 'yearn/3/debtManagerFactory'
     schedule: "0-59/30 * * * *"
     fromIncept: true
-    only: true
     sources: [
       { chainId: 137, address: '0x0D1F62247035BBFf16742B0f31e8e2Af3aCd6e67', inceptBlock: 51403739 },
     ]
 
   - abiPath: 'yearn/3/debtAllocator'
     schedule: "0-59/30 * * * *"
-    only: true
     things: {
       label: 'debtAllocator',
       filter: []
@@ -72,13 +67,14 @@ contracts:
   - abiPath: 'yearn/2/vault'
     schedule: '0-59/30 * * * *'
     fromIncept: true
-    things: {
-      label: 'vault',
-      filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
-    }
-    # sources: [
-    #   { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c', inceptBlock: 12588944 }
-    # ]
+    only: true
+    sources: [
+      { chainId: 1, address: '0xa258C4606Ca8206D8aA700cE2143D7db854D168c', inceptBlock: 12588944 }
+    ]
+    # things: {
+    #   label: 'vault',
+    #   filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
+    # }
 
   - abiPath: 'yearn/2/strategy'
     schedule: '0-59/30 * * * *'

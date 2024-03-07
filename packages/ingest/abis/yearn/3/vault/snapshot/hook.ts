@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { parseAbi, zeroAddress } from 'viem'
+import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
 import { ThingSchema, zhexstring } from 'lib/types'
 import { mq } from 'lib'
@@ -15,8 +15,10 @@ type Snapshot = z.infer<typeof SnapshotSchema>
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const snapshot = SnapshotSchema.parse(data)
-  const fees = await extractFeesBps(chainId, address, snapshot)
+  const strategies = await projectStrategies(chainId, address)
+  const allocator = await projectDebtAllocator(chainId, address)
   const debts = await extractDebts(chainId, address, snapshot)
+  const fees = await extractFeesBps(chainId, address, snapshot)
 
   if (snapshot.accountant) {
     const incept = await estimateCreationBlock(chainId, snapshot.accountant)
@@ -31,7 +33,41 @@ export default async function process(chainId: number, address: `0x${string}`, d
     }))
   }
 
-  return { fees, debts }
+  return { strategies, allocator, debts, fees }
+}
+
+export async function projectStrategies(chainId: number, vault: `0x${string}`) {
+  const changeType = { [2 ** 0]: 'add', [2 ** 1]: 'revoke' }
+  const topic = toEventSelector('event StrategyChanged(address indexed strategy, uint256 change_type)')
+  const events = await db.query(`
+  SELECT args
+  FROM evmlog
+  WHERE chain_id = $1 AND address = $2 AND signature = $3
+  ORDER BY block_number, log_index ASC`,
+  [chainId, vault, topic])
+  if(events.rows.length === 0) return []
+  const result: `0x${string}`[] = []
+  for (const event of events.rows) {
+    if (changeType[event.args.change_type] === 'add') {
+      result.push(zhexstring.parse(event.args.strategy))
+    } else {
+      result.splice(result.indexOf(zhexstring.parse(event.args.strategy)), 1)
+    }
+  }
+  return result
+}
+
+export async function projectDebtAllocator(chainId: number, vault: `0x${string}`) {
+  const topic = toEventSelector('event NewDebtAllocator(address indexed allocator, address indexed vault)')
+  const events = await db.query(`
+  SELECT args 
+  FROM evmlog 
+  WHERE chain_id = $1 AND signature = $2 AND args->>'vault' = $3
+  ORDER BY block_number, log_index DESC
+  LIMIT 1`, 
+  [chainId, topic, vault])
+  if(events.rows.length === 0) return undefined
+  return zhexstring.parse(events.rows[0].args.allocator)
 }
 
 export async function extractDebts(chainId: number, vault: `0x${string}`, snapshot: Snapshot) {
@@ -45,19 +81,19 @@ export async function extractDebts(chainId: number, vault: `0x${string}`, snapsh
 
   const defaults = await db.query(
     `SELECT 
-      defaults->'strategies' AS strategies,
-      defaults->'debtAllocator' AS "debtAllocator"
-    FROM thing 
-    WHERE chain_id = $1 AND address = $2 AND label = $3`,
-    [chainId, vault, 'vault']
+      hook->'strategies' AS strategies,
+      hook->'allocator' AS allocator
+    FROM snapshot
+    WHERE chain_id = $1 AND address = $2`,
+    [chainId, vault]
   )
 
-  const { strategies, debtAllocator } = z.object({
-    strategies: zhexstring.array().optional(),
-    debtAllocator: zhexstring.optional()
+  const { strategies, allocator } = z.object({
+    strategies: zhexstring.array().nullish(),
+    allocator: zhexstring.nullish()
   }).parse(defaults.rows[0])
 
-  if(strategies) {
+  if (strategies) {
     for (const strategy of strategies) {
       const multicall = await rpcs.next(chainId).multicall({ contracts: [
         {
@@ -65,19 +101,19 @@ export async function extractDebts(chainId: number, vault: `0x${string}`, snapsh
           abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)'])
         },
         {
-          address: debtAllocator || zeroAddress, functionName: 'getStrategyTargetRatio', args: [strategy],
+          address: allocator || zeroAddress, functionName: 'getStrategyTargetRatio', args: [strategy],
           abi: parseAbi(['function getStrategyTargetRatio(address) view returns (uint256)'])
         }, 
         {
-          address: debtAllocator || zeroAddress, functionName: 'getStrategyMaxRatio', args: [strategy],
+          address: allocator || zeroAddress, functionName: 'getStrategyMaxRatio', args: [strategy],
           abi: parseAbi(['function getStrategyMaxRatio(address) view returns (uint256)'])
         }
       ]})
 
       if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
       const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result!
-      const targetDebtRatio = debtAllocator ? Number(multicall[1].result!) : undefined
-      const maxDebtRatio = debtAllocator ? Number(multicall[2].result!) : undefined
+      const targetDebtRatio = allocator ? Number(multicall[1].result!) : undefined
+      const maxDebtRatio = allocator ? Number(multicall[2].result!) : undefined
 
       results.push({
         strategy,

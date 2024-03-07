@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { mq } from 'lib'
 import { toEventSelector } from 'viem'
-import { estimateCreationBlock, getBlockTime } from 'lib/blocks'
+import { estimateCreationBlock } from 'lib/blocks'
 import { ThingSchema, zhexstring } from 'lib/types'
 
 export const topics = [
@@ -9,7 +9,7 @@ export const topics = [
 ].map(e => toEventSelector(e))
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
-  const { allocator, vault } = z.object({
+  const { allocator } = z.object({
     allocator: zhexstring,
     vault: zhexstring
   }).parse(data.args)
@@ -26,12 +26,5 @@ export default async function process(chainId: number, address: `0x${string}`, d
       inceptBlock,
       inceptTime
     }
-  }))
-
-  await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
-    chainId,
-    address: vault,
-    label: 'vault',
-    defaults: { debtAllocator: allocator }
   }))
 }
