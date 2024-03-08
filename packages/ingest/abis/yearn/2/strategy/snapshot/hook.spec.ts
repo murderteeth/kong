@@ -1,15 +1,13 @@
 import { expect } from 'chai'
 import { mainnet } from 'viem/chains'
-import { extractLenderStatuses } from './strategy'
+import { extractLenderStatuses } from './hook'
 
-describe('strategy', function() {
+describe('abis/yearn/2/strategy/snapshot/hook', function() {
   it('extracts some lender statuses', async function() {
     const statuses = await extractLenderStatuses(mainnet.id, '0x2216E44fA633ABd2540dB72Ad34b42C7F1557cd4', 18530014n)
     expect(statuses).to.be.an('array')
     expect(statuses).to.have.length(2)
     expect(statuses[1]).to.deep.equal({
-      chainId: 1,
-      strategyAddress: '0x2216E44fA633ABd2540dB72Ad34b42C7F1557cd4',
       name: 'GenericCompV3',
       assets: 1125403759558n,
       rate: 63939160081334480n,
