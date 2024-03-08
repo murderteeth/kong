@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { toEventSelector } from 'viem'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
-import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../../lib'
+import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../../../lib'
 
 export const topics = [
   `event Harvested(uint256 profit, uint256 loss, uint256 debtPayment, uint256 debtOutstanding)`

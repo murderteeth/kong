@@ -5,7 +5,7 @@ import { rpcs } from './rpcs'
 import db from './db'
 import { Price, PriceSchema } from 'lib/types'
 import { mq } from 'lib'
-import { getBlockTime } from 'lib/blocks'
+import { getBlockNumber, getBlockTime } from 'lib/blocks'
 
 export const lens = {
   [mainnet.id]: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030' as `0x${string}`,
@@ -15,9 +15,14 @@ export const lens = {
   [arbitrum.id]: '0x043518AB266485dC085a1DB095B8d9C2Fc78E9b9' as `0x${string}`
 }
 
-export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber: bigint, latest = false): Promise<{ priceUsd: number, priceSource: string }>{
+export async function fetchErc20PriceUsd(chainId: number, token: `0x${string}`, blockNumber?: bigint, latest = false): Promise<{ priceUsd: number, priceSource: string }>{
+  if (!blockNumber) {
+    blockNumber = await getBlockNumber(chainId)
+    latest = true
+  }
+
   return cache.wrap(`fetchErc20PriceUsd:${chainId}:${token}:${blockNumber}`, async () => {
-    return await __fetchErc20PriceUsd(chainId, token, blockNumber, latest)
+    return await __fetchErc20PriceUsd(chainId, token, blockNumber!, latest)
   }, 30_000)
 }
 

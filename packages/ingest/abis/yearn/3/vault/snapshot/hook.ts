@@ -5,10 +5,11 @@ import { ThingSchema, zhexstring } from 'lib/types'
 import { mq } from 'lib'
 import { estimateCreationBlock } from 'lib/blocks'
 import db from '../../../../../db'
+import { fetchErc20PriceUsd } from '../../../../../prices'
+import { priced } from 'lib/math'
 
 export const SnapshotSchema = z.object({
-  accountant: zhexstring.optional(),
-  totalDebt: z.bigint({ coerce: true })
+  accountant: zhexstring.optional()
 })
 
 type Snapshot = z.infer<typeof SnapshotSchema>
@@ -17,7 +18,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const snapshot = SnapshotSchema.parse(data)
   const strategies = await projectStrategies(chainId, address)
   const allocator = await projectDebtAllocator(chainId, address)
-  const debts = await extractDebts(chainId, address, snapshot)
+  const debts = await extractDebts(chainId, address)
   const fees = await extractFeesBps(chainId, address, snapshot)
 
   if (snapshot.accountant) {
@@ -70,17 +71,21 @@ export async function projectDebtAllocator(chainId: number, vault: `0x${string}`
   return zhexstring.parse(events.rows[0].args.allocator)
 }
 
-export async function extractDebts(chainId: number, vault: `0x${string}`, snapshot: Snapshot) {
+export async function extractDebts(chainId: number, vault: `0x${string}`) {
   const results: {
     strategy: `0x${string}`,
     currentDebt: bigint,
+    currentDebtUsd: number,
     maxDebt: bigint,
+    maxDebtUsd: number,
     targetDebtRatio: number | undefined,
     maxDebtRatio: number | undefined
   }[] = []
 
-  const defaults = await db.query(
-    `SELECT 
+  const snapshot = await db.query(
+    `SELECT
+      snapshot->'asset' AS asset,
+      snapshot->'decimals' AS decimals,
       hook->'strategies' AS strategies,
       hook->'allocator' AS allocator
     FROM snapshot
@@ -88,12 +93,14 @@ export async function extractDebts(chainId: number, vault: `0x${string}`, snapsh
     [chainId, vault]
   )
 
-  const { strategies, allocator } = z.object({
+  const { asset, decimals, strategies, allocator } = z.object({
+    asset: zhexstring.nullish(),
+    decimals: z.number().nullish(),
     strategies: zhexstring.array().nullish(),
     allocator: zhexstring.nullish()
-  }).parse(defaults.rows[0])
+  }).parse(snapshot.rows[0] || {})
 
-  if (strategies) {
+  if (asset && decimals && strategies && allocator) {
     for (const strategy of strategies) {
       const multicall = await rpcs.next(chainId).multicall({ contracts: [
         {
@@ -114,11 +121,14 @@ export async function extractDebts(chainId: number, vault: `0x${string}`, snapsh
       const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result!
       const targetDebtRatio = allocator ? Number(multicall[1].result!) : undefined
       const maxDebtRatio = allocator ? Number(multicall[2].result!) : undefined
+      const price = await fetchErc20PriceUsd(chainId, asset)
 
       results.push({
         strategy,
         currentDebt,
+        currentDebtUsd: priced(currentDebt, decimals, price.priceUsd),
         maxDebt,
+        maxDebtUsd: priced(maxDebt, decimals, price.priceUsd),
         targetDebtRatio,
         maxDebtRatio
       })

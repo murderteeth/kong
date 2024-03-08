@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { toEventSelector } from 'viem'
-import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../../../lib'
+import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../../../../lib'
 import { fetchErc20PriceUsd } from '../../../../../../prices'
 import { priced } from 'lib/math'
 

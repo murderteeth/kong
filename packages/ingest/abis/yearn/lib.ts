@@ -1,6 +1,6 @@
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
-import db from '../../../db'
+import db from '../../db'
 
 export async function extractDecimals(chainId: number, address: `0x${string}`) {
   return await extractUint256(chainId, address, 'decimals')

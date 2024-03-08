@@ -4,7 +4,7 @@ import { ThingSchema, zhexstring } from 'lib/types'
 import { estimateCreationBlock, getBlockTime } from 'lib/blocks'
 import { mq } from 'lib'
 import { rpcs } from '../../../../../../rpcs'
-import { extractDecimals, fetchAsset } from '../../../lib'
+import { extractDecimals, fetchAsset } from '../../../../lib'
 
 export const topics = [
   `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,

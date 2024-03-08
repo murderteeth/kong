@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { toEventSelector } from 'viem'
 import { priced } from 'lib/math'
-import { fetchOrExtractDecimals } from '../../../lib'
+import { fetchOrExtractDecimals } from '../../../../lib'
 import { fetchErc20PriceUsd } from '../../../../../../prices'
 
 export const topics = [

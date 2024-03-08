@@ -3,7 +3,7 @@ import { mq } from 'lib'
 import { toEventSelector } from 'viem'
 import { estimateCreationBlock, getBlockTime } from 'lib/blocks'
 import { ThingSchema, zhexstring } from 'lib/types'
-import { extractDecimals } from '../../lib'
+import { extractDecimals } from '../../../lib'
 
 export const topics = [
   `event NewVault(address indexed token, uint256 indexed vaultId, uint256 vaultType, address vault, string apiVersion)`
