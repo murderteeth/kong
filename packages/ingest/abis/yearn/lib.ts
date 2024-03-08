@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
 import db from '../../db'
@@ -44,4 +45,42 @@ export async function extractUint256(chainId: number, address: `0x${string}`, fi
     address, abi: parseAbi([`function ${field}() view returns (uint256)`]),
     functionName: field
   })
+}
+
+export async function fetchOrExtractErc20(chainId: number, address: `0x${string}`) {
+  const result = await fetchErc20(chainId, address)
+  if (result) return result
+  return await extractErc20(chainId, address)
+}
+
+export async function fetchErc20(chainId: number, address: `0x${string}`) {
+  const rows = (await db.query(`
+    SELECT 
+      defaults->'name' AS name, 
+      defaults->'symbol' AS symbol, 
+      defaults->'decimals' AS decimals 
+    FROM thing 
+    WHERE chain_id = $1 AND address = $2 AND label = 'erc20'`,
+    [chainId, address]
+  )).rows
+  if (rows.length === 0) return undefined
+  return z.object({
+    name: z.string(),
+    symbol: z.string(),
+    decimals: z.number()
+  }).parse(rows[0])
+}
+
+export async function extractErc20(chainId: number, address: `0x${string}`) {
+  const multicall = await rpcs.next(chainId).multicall({ contracts: [
+    { address, functionName: 'name', abi: parseAbi(['function name() view returns (string)']) },
+    { address, functionName: 'symbol', abi: parseAbi(['function symbol() view returns (string)']) },
+    { address, functionName: 'decimals', abi: parseAbi(['function decimals() view returns (uint256)']) }
+  ] })
+  if (multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+  return {
+    name: multicall[0].result!,
+    symbol: multicall[1].result!,
+    decimals: multicall[2].result!
+  }
 }

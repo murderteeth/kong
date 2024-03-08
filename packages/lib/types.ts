@@ -289,3 +289,13 @@ export const PriceSchema = z.object({
 })
 
 export type Price = z.infer<typeof PriceSchema>
+
+export const TradeableSchema = z.object({
+  strategy: zhexstring,
+  token: zhexstring,
+  name: z.string(),
+  symbol: z.string(),
+  decimals: z.bigint({ coerce: true })
+})
+
+export type Tradeable = z.infer<typeof TradeableSchema>

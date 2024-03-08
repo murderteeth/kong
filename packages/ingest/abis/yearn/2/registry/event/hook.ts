@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { mq } from 'lib'
 import { toEventSelector } from 'viem'
-import { estimateCreationBlock, getBlockTime } from 'lib/blocks'
+import { estimateCreationBlock } from 'lib/blocks'
 import { ThingSchema, zhexstring } from 'lib/types'
-import { extractDecimals } from '../../../lib'
+import { fetchOrExtractErc20 } from '../../../lib'
 
 export const topics = [
   `event NewVault(address indexed token, uint256 indexed deployment_id, address vault, string api_version)`,
@@ -17,10 +17,15 @@ export default async function process(chainId: number, address: `0x${string}`, d
     api_version: z.string()
   }).parse(data.args)
 
-  const decimals = await extractDecimals(chainId, token)
+  const erc20 = await fetchOrExtractErc20(chainId, token)
+  await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
+    chainId, address: token, label: 'erc20',
+    defaults: erc20
+  }))
+
   const block = await estimateCreationBlock(chainId, vault)
   const inceptBlock = block.number
-  const inceptTime = await getBlockTime(chainId, inceptBlock)
+  const inceptTime = block.timestamp
   await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: vault,
@@ -29,7 +34,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
       apiVersion: api_version,
       registry: address,
       asset: token,
-      decimals,
+      decimals: erc20.decimals,
       inceptBlock,
       inceptTime
     }

@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { types } from 'lib'
-import { getThings } from './things'
+import { get, exist } from './things'
 import { upsertBatch } from './load'
 import db from './db'
 
@@ -24,7 +24,7 @@ describe('things', function() {
   })
 
   it('gets things >=', async function() {
-    const things = await getThings({
+    const things = await get({
       label: 'vault',
       filter: [
         { field: 'apiVersion', op: '>=', value: '3.0.0' }
@@ -39,7 +39,7 @@ describe('things', function() {
   })
 
   it('gets things > and <=', async function() {
-    const things = await getThings({
+    const things = await get({
       label: 'vault',
       filter: [
         { field: 'apiVersion', op: '>', value: '1.0.0' },
@@ -52,5 +52,10 @@ describe('things', function() {
     expect(things.length).to.equal(2)
     expect(things[0]).to.deep.equal(this.things[1])
     expect(things[1]).to.deep.equal(this.things[2])
+  })
+
+  it('knows if things exist', async function() {
+    expect(await exist(1, '0x1', 'vault')).to.be.true
+    expect(await exist(1, '0xNaN', 'vault')).to.be.false
   })
 })

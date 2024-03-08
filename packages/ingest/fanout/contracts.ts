@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { contracts, mq } from 'lib'
-import { getThings } from '../things'
+import * as things from '../things'
 
 export default class ContractsFanout implements Processor {
   queues: { [key: string]: Queue } = {}
@@ -24,8 +24,8 @@ export default class ContractsFanout implements Processor {
       }
 
       if(contract.things) {
-        const things = await getThings(contract.things)
-        for (const _thing of things) {
+        const _things = await things.get(contract.things)
+        for (const _thing of _things) {
           const _data = { ...data, contract, source: { 
             chainId: _thing.chainId, 
             address: _thing.address, 

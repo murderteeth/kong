@@ -33,7 +33,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const decimals = await extractDecimals(chainId, vault)
   const block = await estimateCreationBlock(chainId, newStrategy)
   const inceptBlock = block.number
-  const inceptTime = await getBlockTime(chainId, inceptBlock)
+  const inceptTime = block.timestamp
   await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: newStrategy,
