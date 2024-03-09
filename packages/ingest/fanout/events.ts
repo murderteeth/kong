@@ -19,16 +19,18 @@ export default class EventsFanout implements Processor {
   }
 
   async fanout(data: { contract: Contract, source: SourceConfig, replay?: boolean }) {
-    const { chainId, address, inceptBlock } = SourceConfigSchema.parse(data.source)
+    const { chainId, address, inceptBlock, startBlock, endBlock } = SourceConfigSchema.parse(data.source)
     const { abiPath, fromIncept } = ContractSchema.parse(data.contract)
     const { replay } = data
 
     const multicall3Activation = multicall3.getActivation(chainId)
     const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
-    const from = fromIncept
+    const from = startBlock !== undefined
+    ? startBlock 
+    : fromIncept
       ? inceptBlock 
       : math.max(inceptBlock, defaultStartBlockNumber, multicall3Activation)
-    const to = await getBlockNumber(chainId)
+    const to = endBlock !== undefined ? endBlock : await getBlockNumber(chainId)
 
     const localStrides = replay ? undefined : await getLocalStrides(chainId, address)
     const nextStrides = strider.plan(from, to, localStrides)

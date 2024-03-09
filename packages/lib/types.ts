@@ -299,3 +299,10 @@ export const TradeableSchema = z.object({
 })
 
 export type Tradeable = z.infer<typeof TradeableSchema>
+
+export const InceptSchema = z.object({
+  inceptBlock: z.bigint({ coerce: true }),
+  inceptTime: z.bigint({ coerce: true })
+})
+
+export type Incept = z.infer<typeof InceptSchema>

@@ -10,7 +10,9 @@ export const SourceConfigSchema = z.object({
   address: zhexstring,
   inceptBlock: z.bigint({ coerce: true }),
   skip: z.boolean().optional().default(false),
-  only: z.boolean().optional().default(false)
+  only: z.boolean().optional().default(false),
+  startBlock: z.bigint({ coerce: true }).optional(),
+  endBlock: z.bigint({ coerce: true }).optional()
 })
 
 export type SourceConfig = z.infer<typeof SourceConfigSchema>

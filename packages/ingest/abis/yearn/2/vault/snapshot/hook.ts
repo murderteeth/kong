@@ -37,7 +37,6 @@ export async function projectStrategies(chainId: number, vault: `0x${string}`) {
         break
       case topics[1]:
         result.push(zhexstring.parse(event.args.newVersion))
-        result.splice(result.indexOf(zhexstring.parse(event.args.oldVersion)), 1)
         break
       case topics[2]:
         result.splice(result.indexOf(zhexstring.parse(event.args.strategy)), 1)

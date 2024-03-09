@@ -1,6 +1,5 @@
 import { expect } from 'chai'
 import { Contract, ContractSchema, prune } from './contracts'
-import { z } from 'zod'
 
 describe('contracts', function() {
   it('prunes nothing', async function() {

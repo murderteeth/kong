@@ -8,7 +8,7 @@ import { first } from '../db'
 import { parseAbi } from 'viem'
 import { priced } from 'lib/math'
 import { endOfDay } from 'lib/dates'
-import { OutputSchema, Snapshot, SnapshotSchema, zhexstring } from 'lib/types'
+import { OutputSchema, Snapshot, SnapshotSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
 import { fetchErc20PriceUsd } from '../prices'
 import { fetchOrExtractErc20 } from '../abis/yearn/lib'
 import { compare } from 'compare-versions'
@@ -48,19 +48,18 @@ export class TvlComputer implements Processor {
 }
 
 export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint, latest = false) {
-  const { snapshot } = await first<Snapshot>(
-    SnapshotSchema,
-    'SELECT * FROM snapshot WHERE chain_id = $1 AND address = $2',
-    [chainId, address]
+  const { defaults } = await first<Thing>(
+    ThingSchema,
+    'SELECT * FROM thing WHERE chain_id = $1 AND address = $2 AND label = $3',
+    [chainId, address, 'vault']
   )
 
-  const { apiVersion, asset, token } = z.object({ 
+  const { apiVersion, asset } = z.object({ 
     apiVersion: z.string(),
-    asset: zhexstring.nullish(),
-    token: zhexstring.nullish()
-  }).parse(snapshot)
+    asset: zhexstring
+  }).parse(defaults)
 
-  const erc20 = await fetchOrExtractErc20(chainId, (asset || token)!)
+  const erc20 = await fetchOrExtractErc20(chainId, asset)
 
   const { priceUsd, priceSource: source } = await fetchErc20PriceUsd(chainId, erc20.address, blockNumber, latest)
 

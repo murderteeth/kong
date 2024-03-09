@@ -1,9 +1,10 @@
 import { Queue } from 'bullmq'
-import db from '../db'
+import db, { query } from '../db'
 import { Processor } from 'lib/processor'
 import { chains, dates, math, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
-import { endOfDay } from 'lib/dates'
+import { endOfDay, findMissingTimestamps } from 'lib/dates'
+import { InceptSchema, Thing, ThingSchema } from 'lib/types'
 
 export default class TvlFanout implements Processor {
   queue: Queue | undefined
@@ -17,39 +18,30 @@ export default class TvlFanout implements Processor {
   }
 
   async fanout() {
-    for(const chain of chains) {
-      const throttle = 16
-      const oneDay = BigInt(24 * 60 * 60)
+    const throttle = 16
+    const vaults = await query<Thing>(ThingSchema, 'SELECT * FROM thing WHERE label = $1', ['vault'])
 
-      for(const { address, activation, blockTime } of await getLatestTvlTimes(chain.id)) {
-        const start = endOfDay(math.max(blockTime || 0n, activation, dates.DEFAULT_START()))
-        const end = endOfDay(BigInt(Math.floor(new Date().getTime() / 1000)))
-        for(let time = start; time <= end; time += oneDay) {
-          await this.queue?.add(mq.job.compute.tvl, {
-            chainId: chain.id, address, time
-          })
-          await setTimeout(throttle)
-        }
+    for (const vault of vaults) {
+      const incept = InceptSchema.parse(vault.defaults)
+      const start = endOfDay(math.max(incept.inceptTime, dates.DEFAULT_START()))
+      const end = endOfDay(BigInt(Math.floor(new Date().getTime() / 1000)))
+
+      const computed = (await db.query(`
+      SELECT DISTINCT block_time
+      FROM output
+      WHERE chain_id = $1 AND address = $2 AND label = $3
+      ORDER BY block_time ASC`, 
+      [vault.chainId, vault.address, 'tvl']))
+      .rows.map(row => BigInt(row.block_time))
+
+      const missing = findMissingTimestamps(start, end, computed)
+
+      for (const time of missing) {
+        await this.queue?.add(mq.job.compute.tvl, {
+          chainId: vault.chainId, address: vault.address, time
+        })
+        await setTimeout(throttle)
       }
     }
   }
-}
-
-async function getLatestTvlTimes(chainId: number) {
-  const result = await db.query(`
-    SELECT 
-      v.address,
-      FLOOR(EXTRACT(EPOCH FROM MAX(v.activation_block_time))) as "activation",
-      FLOOR(EXTRACT(EPOCH FROM MAX(tvl.block_time))) as "blockTime"
-    FROM vault v
-    LEFT OUTER JOIN tvl
-    ON v.chain_id = tvl.chain_id AND v.address = tvl.address
-    WHERE v.chain_id = $1
-    GROUP BY v.address, v.activation_block_time;
-  `, [chainId])
-  return result.rows as { 
-    address: `0x${string}`, 
-    activation: bigint,
-    blockTime: bigint | null
-  }[]
 }

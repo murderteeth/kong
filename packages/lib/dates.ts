@@ -26,3 +26,40 @@ export function endOfDayMs(milliseconds: number): number {
 export function endOfDay(blocktime: bigint): bigint {
   return BigInt(Math.floor(endOfDayMs(Number(blocktime) * 1000) / 1000))
 }
+
+export function epoch(date: string) {
+  return BigInt((new Date(date)).getTime() / 1000)
+}
+
+export function endOfStringDay(date: string) {
+  return endOfDay(epoch(date))
+}
+
+export function makeTimeline(start: bigint, end: bigint): bigint[] {
+  start = endOfDay(start)
+  end = endOfDay(end)
+
+  let current = start
+  let result: bigint[] = []
+
+  while (current <= end) {
+    result.push(current)
+    current = endOfDay(BigInt(current + 1n))
+  }
+
+  return result
+}
+
+export function findMissingTimestamps(start: bigint, end: bigint, outputed: bigint[]): bigint[] {
+  const result: bigint[] = []
+  const timeline = makeTimeline(start, end)
+
+  outputed.forEach((time, index) => outputed[index] = endOfDay(time))
+
+  for (const time of timeline) {
+    const index = outputed.indexOf(time)
+    if (index === -1) result.push(time)
+  }
+
+  return result
+}

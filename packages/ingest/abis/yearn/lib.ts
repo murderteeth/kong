@@ -57,7 +57,7 @@ export async function fetchOrExtractErc20(chainId: number, address: `0x${string}
 export async function fetchErc20(chainId: number, address: `0x${string}`) {
   const rows = (await db.query(`
     SELECT 
-      chain_id AS chainId,
+      chain_id AS "chainId",
       address,
       defaults->'name' AS name, 
       defaults->'symbol' AS symbol, 
