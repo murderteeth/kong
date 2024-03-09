@@ -29,15 +29,15 @@ const byStrategy = async (chainId?: number, address?: string, limit?: number) =>
   LIMIT $3;
   `, [chainId, address, limit || 1000])).rows
 
-  const measures = (await db.query(
+  const outputs = (await db.query(
   `SELECT DISTINCT ON(chain_id, address, label, component) * 
-  FROM measure
+  FROM output
   WHERE (chain_id = $1 OR $1 IS NULL) AND (address = $2 OR $2 IS NULL) AND label = 'apr-spot-harvest'
   ORDER BY chain_id, address, label, component, block_number DESC`
   , [chainId, address])).rows
 
   return harvests.map((harvest: any) => {
-    const apr = measures.filter((m: any) => m.label === 'apr-spot-harvest' && m.chain_id === harvest.chainId && m.address === harvest.address)
+    const apr = outputs.filter((m: any) => m.label === 'apr-spot-harvest' && m.chain_id === harvest.chainId && m.address === harvest.address)
     return {
       ...harvest,
       aprGross: apr.find((a: any) => a.component === 'gross')?.value,
@@ -79,15 +79,15 @@ const byVault = async (chainId: number, address: string, limit?: number) => {
 
   const strategies = harvests.map(h => h.strategy_address)
 
-  const measures = (await db.query(
+  const outputs = (await db.query(
   `SELECT DISTINCT ON(chain_id, address, label, component) * 
-  FROM measure
+  FROM output
   WHERE AND chain_id = $1 AND address IN $2 AND label = 'apr-spot-harvest'
   ORDER BY chain_id, address, label, component, block_number DESC`
   , [chainId, strategies])).rows
 
   return harvests.map((harvest: any) => {
-    const apr = measures.filter((m: any) => m.label === 'apr-spot-harvest' && m.chain_id === harvest.chainId && m.address === harvest.address)
+    const apr = outputs.filter((m: any) => m.label === 'apr-spot-harvest' && m.chain_id === harvest.chainId && m.address === harvest.address)
     return {
       ...harvest,
       aprGross: apr.find((a: any) => a.component === 'gross')?.value,

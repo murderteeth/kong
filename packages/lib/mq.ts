@@ -60,7 +60,7 @@ export const job = {
       apy: 'sparkline-apy',
       apr: 'sparkline-apr'
     },
-    measure: 'measure',
+    output: 'output',
     monitor: 'monitor',
     evmlog: 'evmlog',
     snapshot: 'snapshot',

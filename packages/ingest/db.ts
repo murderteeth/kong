@@ -26,7 +26,15 @@ const db = new Pool({
 
 export default db
 
-export function query<T>(schema: z.ZodType<T>) {
+export async function query<T>(schema: z.ZodType<T>, sql: string, params: any[] = []) {
+  return await _query<T>(schema)(sql, params)
+}
+
+export async function first<T>(schema: z.ZodType<T>, sql: string, params: any[] = []) {
+  return (await _query<T>(schema)(sql, params))[0]
+}
+
+function _query<T>(schema: z.ZodType<T>) {
   return async function(sql: string, values: any[]) {
     const rows = (await db.query(sql, values)).rows
     const rowsInCamelCase = rows.map(row => {

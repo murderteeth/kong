@@ -223,7 +223,7 @@ export const VaultDebtSchema = z.object({
 
 export type VaultDebt = z.infer<typeof VaultDebtSchema>
 
-export const MeasureSchema = z.object({
+export const OutputSchema = z.object({
   chainId: z.number(),
   address: zhexstring,
   label: z.string(),
@@ -233,7 +233,7 @@ export const MeasureSchema = z.object({
   blockTime: z.bigint({ coerce: true })
 })
 
-export type Measure = z.infer<typeof MeasureSchema>
+export type Output = z.infer<typeof OutputSchema>
 
 export const EvmLogSchema = z.object({
   chainId: z.number(),

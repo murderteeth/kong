@@ -1,16 +1,18 @@
+import { z } from 'zod'
 import { Processor } from 'lib/processor'
 import { rpcs } from '../rpcs'
 import { Queue } from 'bullmq'
 import { mq } from 'lib'
 import { estimateHeight, getBlock } from 'lib/blocks'
-import db from '../db'
+import { first } from '../db'
 import { parseAbi } from 'viem'
-import { extractWithdrawalQueue } from '../extract/vault/version2'
-import { scaleDown } from 'lib/math'
+import { priced } from 'lib/math'
 import { endOfDay } from 'lib/dates'
-import { extractDelegatedAssets } from '../extract/strategy'
-import { MeasureSchema, TVLSchema } from 'lib/types'
+import { OutputSchema, Snapshot, SnapshotSchema, zhexstring } from 'lib/types'
 import { fetchErc20PriceUsd } from '../prices'
+import { fetchOrExtractErc20 } from '../abis/yearn/lib'
+import { compare } from 'compare-versions'
+import { extractWithdrawalQueue } from '../abis/yearn/2/vault/snapshot/hook'
 
 export class TvlComputer implements Processor {
   queue: Queue | undefined
@@ -36,61 +38,72 @@ export class TvlComputer implements Processor {
       ({ number: blockNumber } = await getBlock(chainId, estimate))
     }
 
-    const { priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, blockNumber, latest)
+    const { source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, blockNumber, latest)
     const artificialBlockTime = endOfDay(time)
 
-    await this.queue?.add(mq.job.load.tvl, TVLSchema.parse({
-      chainId,
-      address,
-      priceUsd,
-      priceSource,
-      tvlUsd,
-      blockNumber,
-      blockTime: artificialBlockTime
+    await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'tvl', component: priceSource, value: tvlUsd
     }))
-
-    {
-      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'tvl', component: 'usd', value: tvlUsd
-      }))
-      await this.queue?.add(mq.job.load.measure, MeasureSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'price', component: priceSource, value: priceUsd
-      }))
-    }
   }
 }
 
 export async function _compute(chainId: number, address: `0x${string}`, blockNumber: bigint, latest = false) {
-  const { assetAddress, decimals } = await getAsset(chainId, address)
-  const { priceUsd, priceSource: source } = await fetchErc20PriceUsd(chainId, assetAddress, blockNumber, latest)
+  const { snapshot } = await first<Snapshot>(
+    SnapshotSchema,
+    'SELECT * FROM snapshot WHERE chain_id = $1 AND address = $2',
+    [chainId, address]
+  )
+
+  const { apiVersion, asset, token } = z.object({ 
+    apiVersion: z.string(),
+    asset: zhexstring.nullish(),
+    token: zhexstring.nullish()
+  }).parse(snapshot)
+
+  const erc20 = await fetchOrExtractErc20(chainId, (asset || token)!)
+
+  const { priceUsd, priceSource: source } = await fetchErc20PriceUsd(chainId, erc20.address, blockNumber, latest)
 
   const totalAssets = await rpcs.next(chainId, blockNumber).readContract({
-    address,
-    functionName: 'totalAssets',
+    address, functionName: 'totalAssets',
     abi: parseAbi(['function totalAssets() view returns (uint256)']),
     blockNumber
   }) as bigint
 
   if(totalAssets === 0n) return { priceUsd, source, tvl: 0 }
 
-  const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
-  const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
-  const totalDelegatedAssets = delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
-  const tvl = priceUsd * (scaleDown(totalAssets, decimals) - scaleDown(totalDelegatedAssets, decimals))
+  const totalDelegatedAssets = compare(apiVersion, '3.0.0', '<')
+  ? await extractTotalDelegatedAssets(chainId, address, blockNumber)
+  : 0n
+
+  const tvl = priced(totalAssets, erc20.decimals, priceUsd) 
+  - priced(totalDelegatedAssets, erc20.decimals, priceUsd)
 
   return { priceUsd, source, tvl }
 }
 
-export async function getAsset(chainId: number, address: string) {
-  const result = await db.query(`
-    SELECT 
-      asset_address as "assetAddress",
-      decimals
-    FROM vault
-    WHERE chain_id = $1 AND address = $2
-  `, [chainId, address])
-  return result.rows[0] as {
-    assetAddress: `0x${string}`, 
-    decimals: number
-  }
+async function extractTotalDelegatedAssets(chainId: number, vault: `0x${string}`, blockNumber: bigint) {
+  const strategies = await extractWithdrawalQueue(chainId, vault, blockNumber)
+  const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
+  return delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
+}
+
+async function extractDelegatedAssets(chainId: number, addresses: `0x${string}` [], blockNumber: bigint) {
+  const results = [] as { address: `0x${string}`, delegatedAssets: bigint } []
+
+  const contracts = addresses.map(address => ({
+    args: [], address, functionName: 'delegatedAssets', abi: parseAbi(['function delegatedAssets() view returns (uint256)'])
+  }))
+
+  const multicallresults = await rpcs.next(chainId, blockNumber).multicall({ contracts, blockNumber})
+
+  multicallresults.forEach((result, index) => {
+    const delegatedAssets = result.status === 'failure'
+    ? 0n
+    : BigInt(result.result as bigint)
+
+    results.push({ address: addresses[index], delegatedAssets })
+  })
+
+  return results
 }

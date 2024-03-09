@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
 import db from '../../db'
+import { zhexstring } from 'lib/types'
 
 export async function extractDecimals(chainId: number, address: `0x${string}`) {
   return await extractUint256(chainId, address, 'decimals')
@@ -56,6 +57,8 @@ export async function fetchOrExtractErc20(chainId: number, address: `0x${string}
 export async function fetchErc20(chainId: number, address: `0x${string}`) {
   const rows = (await db.query(`
     SELECT 
+      chain_id AS chainId,
+      address,
       defaults->'name' AS name, 
       defaults->'symbol' AS symbol, 
       defaults->'decimals' AS decimals 
@@ -65,9 +68,11 @@ export async function fetchErc20(chainId: number, address: `0x${string}`) {
   )).rows
   if (rows.length === 0) return undefined
   return z.object({
+    chainId: z.number(),
+    address: zhexstring,
     name: z.string(),
     symbol: z.string(),
-    decimals: z.number()
+    decimals: z.bigint({ coerce: true })
   }).parse(rows[0])
 }
 
@@ -79,6 +84,8 @@ export async function extractErc20(chainId: number, address: `0x${string}`) {
   ] })
   if (multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
   return {
+    chainId,
+    address,
     name: multicall[0].result!,
     symbol: multicall[1].result!,
     decimals: multicall[2].result!

@@ -128,10 +128,10 @@ async function extractDebts(chainId: number, vault: `0x${string}`) {
   return results
 }
 
-async function extractWithdrawalQueue(chainId: number, address: `0x${string}`) {
+export async function extractWithdrawalQueue(chainId: number, address: `0x${string}`, blockNumber?: bigint) {
   const abi = parseAbi(['function withdrawalQueue(uint256) view returns (address)'])
 
-  const multicall = await rpcs.next(chainId).multicall({ contracts: [
+  const multicall = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     { args: [0n], address, functionName: 'withdrawalQueue', abi },
     { args: [1n], address, functionName: 'withdrawalQueue', abi },
     { args: [2n], address, functionName: 'withdrawalQueue', abi },
@@ -152,7 +152,7 @@ async function extractWithdrawalQueue(chainId: number, address: `0x${string}`) {
     { args: [17n], address, functionName: 'withdrawalQueue', abi },
     { args: [18n], address, functionName: 'withdrawalQueue', abi },
     { args: [19n], address, functionName: 'withdrawalQueue', abi }
-  ]})
+  ], blockNumber })
 
   return multicall.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
   .map(result => result.result as `0x${string}`)

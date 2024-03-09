@@ -207,17 +207,17 @@ export async function getVaults(where: string, values: any[]) {
   `
   const vaults = (await db.query(query, values)).rows
 
-  const measures = (await db.query(
+  const outputs = (await db.query(
   `SELECT DISTINCT ON(chain_id, address, label, component) * 
-  FROM measure v
+  FROM output v
   ${where} AND label in ('apy-bwd-delta-pps', 'tvl', 'price')
   ORDER BY chain_id, address, label, component, block_number DESC`
   , values)).rows
 
   const results = vaults.map((vault: any) => {
-    const apy = measures.filter((m: any) => m.label === 'apy-bwd-delta-pps' && m.chain_id === vault.chainId && m.address === vault.address)
-    const tvl = measures.filter((m: any) => m.label === 'tvl' && m.chain_id === vault.chainId && m.address === vault.address)
-    const price = measures.filter((m: any) => m.label === 'price' && m.chain_id === vault.chainId && m.address === vault.address)
+    const apy = outputs.filter((m: any) => m.label === 'apy-bwd-delta-pps' && m.chain_id === vault.chainId && m.address === vault.address)
+    const tvl = outputs.filter((m: any) => m.label === 'tvl' && m.chain_id === vault.chainId && m.address === vault.address)
+    const price = outputs.filter((m: any) => m.label === 'price' && m.chain_id === vault.chainId && m.address === vault.address)
     return {
       ...vault,
       tvlUsd: tvl[0]?.value,

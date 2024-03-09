@@ -14,7 +14,7 @@ WITH sample AS (
     time_bucket(CAST($3 AS interval), block_time) AS time,
     AVG(value) AS average
   FROM
-    measure
+    output
   WHERE
     chain_id = $1 
     AND address = $2
