@@ -20,6 +20,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const price = await fetchErc20PriceUsd(chainId, address, blockNumber)
   return {
     valueUsd: priced(args.value, decimals, price.priceUsd),
-    ...price
+    priceUsd: price.priceUsd,
+    priceSource: price.priceSource
   }
 }

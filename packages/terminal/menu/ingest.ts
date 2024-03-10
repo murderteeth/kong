@@ -44,7 +44,7 @@ async function action() {
     {
       type: 'confirm',
       name: 'confirm',
-      message: (_, all) => `🤔 ${all.q.name} ${all.q.job}?`,
+      message: (_, all) => `🤔 ${all.q.job.queue}/${all.q.job.name}?`,
     }
   ])
 

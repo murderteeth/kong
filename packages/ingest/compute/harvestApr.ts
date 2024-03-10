@@ -125,7 +125,8 @@ export async function compute__v2(latest: types.Harvest, previous: types.Harvest
 
   const { vault, delegatedAssets } = await getStrategyInfo(latest.chainId, latest.address, latest.blockNumber)
 
-  const fees = { performance: 0, management: 0 } //await extractFees(latest.chainId, vault, latest.blockNumber)
+  // const fees = await extractFees(latest.chainId, vault, latest.blockNumber)
+  const fees = { performance: 0, management: 0 }
 
   const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(previous.totalDebt))
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))

@@ -52,7 +52,7 @@ async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, block
   }
 
   console.warn('🚨', 'no price', chainId, token, blockNumber)
-  const empty = { chainId, address: token, priceUsd: 0, priceSource: 'na', blockNumber, blockTime: 0n }
+  const empty = { chainId, address: token, priceUsd: 0, priceSource: 'na', blockNumber, blockTime: await getBlockTime(chainId, blockNumber) }
   await mq.add(mq.job.load.price, empty)
   return empty
 }

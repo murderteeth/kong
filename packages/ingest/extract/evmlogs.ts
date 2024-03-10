@@ -69,6 +69,7 @@ export class EvmLogsExtractor {
         chainId,
         address: getAddress(log.address),
         signature: log.topics[0],
+        args: (log as any).args || {},
         hook: hookResult,
         blockTime: await getBlockTime(chainId, log.blockNumber || undefined)
       })

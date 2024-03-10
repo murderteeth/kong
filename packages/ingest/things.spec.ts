@@ -12,7 +12,8 @@ describe('things', function() {
       { ...thinglet, address: '0x1', defaults: { apiVersion: '1.0.0' } } as types.Thing,
       { ...thinglet, address: '0x2', defaults: { apiVersion: '2.0.0' } } as types.Thing,
       { ...thinglet, address: '0x3', defaults: { apiVersion: '3.0.0' } } as types.Thing,
-      { ...thinglet, address: '0x4', defaults: { apiVersion: '4.0.0' } } as types.Thing
+      { ...thinglet, address: '0x4', defaults: { apiVersion: '4.0.0' } } as types.Thing,
+      { ...thinglet, address: '0x5', defaults: { label: 'mushi' } } as types.Thing
     ])
     await upsertBatch(this.things, 'thing', 'chain_id, address, label')
   })
@@ -23,7 +24,7 @@ describe('things', function() {
     }
   })
 
-  it('gets things >=', async function() {
+  it('gets things >= apiVersion', async function() {
     const things = await get({
       label: 'vault',
       filter: [
@@ -38,7 +39,7 @@ describe('things', function() {
     expect(things[1]).to.deep.equal(this.things[3])
   })
 
-  it('gets things > and <=', async function() {
+  it('gets things > and <= apiVersion', async function() {
     const things = await get({
       label: 'vault',
       filter: [
@@ -52,6 +53,18 @@ describe('things', function() {
     expect(things.length).to.equal(2)
     expect(things[0]).to.deep.equal(this.things[1])
     expect(things[1]).to.deep.equal(this.things[2])
+  })
+
+  it('gets things by label', async function() {
+    const things = await get({
+      label: 'vault',
+      filter: [{ field: 'label', op: '=', value: 'mushi' }],
+      skip: false,
+      only: false
+    })
+
+    expect(things.length).to.equal(1)
+    expect(things[0]).to.deep.equal(this.things[4])
   })
 
   it('knows if things exist', async function() {

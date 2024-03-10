@@ -3,6 +3,9 @@ import db from '../db'
 
 export default class HarvestAprFanout {
   async fanout() {
+    // git all harvest dates
+    // get computed
+    // find missing
     const harvests = []
     for(const chain of chains) {
       const harvestsMissingAprs = (await db.query(`

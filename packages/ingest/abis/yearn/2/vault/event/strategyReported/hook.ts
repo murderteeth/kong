@@ -22,7 +22,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     })
   }).parse(data)
 
-  const decimals = await fetchOrExtractDecimals(chainId, address, )
+  const decimals = await fetchOrExtractDecimals(chainId, address)
   const asset = await fetchOrExtractAsset(chainId, address, 'vault', 'token')
   const price = await fetchErc20PriceUsd(chainId, asset, blockNumber)
 
@@ -34,6 +34,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     totalLossUsd: priced(args.totalLoss, decimals, price.priceUsd),
     totalDebtUsd: priced(args.totalDebt, decimals, price.priceUsd),
     debtAddedUsd: priced(args.debtAdded, decimals, price.priceUsd),
-    ...price
+    priceUsd: price.priceUsd,
+    priceSource: price.priceSource
   }
 }
