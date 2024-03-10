@@ -1,23 +1,11 @@
 import { setTimeout } from 'timers/promises'
-import { Queue } from 'bullmq'
-import { Processor } from 'lib/processor'
 import { math, mq, multicall3, strider } from 'lib'
 import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { getBlockNumber, getDefaultStartBlockNumber } from 'lib/blocks'
 import { getLocalStrides } from '../db'
 import { StrideSchema } from 'lib/types'
 
-export default class EventsFanout implements Processor {
-  queues: { [key: string]: Queue } = {}
-
-  async up() {
-    this.queues[mq.q.extract] = mq.queue(mq.q.extract)
-  }
-
-  async down() {
-    await Promise.all(Object.values(this.queues).map(q => q.close()))
-  }
-
+export default class EventsFanout {
   async fanout(data: { contract: Contract, source: SourceConfig, replay?: boolean }) {
     const { chainId, address, inceptBlock, startBlock, endBlock } = SourceConfigSchema.parse(data.source)
     const { abiPath, fromIncept } = ContractSchema.parse(data.contract)
@@ -38,7 +26,7 @@ export default class EventsFanout implements Processor {
     for (const stride of StrideSchema.array().parse(nextStrides)) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)
       await walklog(stride, async (from, to) => {
-        await this.queues[mq.q.extract].add(mq.job.extract.evmlog, {
+        await mq.add(mq.job.extract.evmlog, {
           abiPath, chainId, address, from, to, replay
         })
       })

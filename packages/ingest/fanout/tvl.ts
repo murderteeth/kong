@@ -1,22 +1,10 @@
-import { Queue } from 'bullmq'
 import db, { query } from '../db'
-import { Processor } from 'lib/processor'
-import { chains, dates, math, mq } from 'lib'
+import { dates, math, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
 import { endOfDay, findMissingTimestamps } from 'lib/dates'
 import { InceptSchema, Thing, ThingSchema } from 'lib/types'
 
-export default class TvlFanout implements Processor {
-  queue: Queue | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.compute)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export default class TvlFanout {
   async fanout() {
     const throttle = 16
     const vaults = await query<Thing>(ThingSchema, 'SELECT * FROM thing WHERE label = $1', ['vault'])
@@ -37,7 +25,7 @@ export default class TvlFanout implements Processor {
       const missing = findMissingTimestamps(start, end, computed)
 
       for (const time of missing) {
-        await this.queue?.add(mq.job.compute.tvl, {
+        await mq.add(mq.job.compute.tvl, {
           chainId: vault.chainId, address: vault.address, time
         })
         await setTimeout(throttle)

@@ -1,30 +1,18 @@
 import { z } from 'zod'
-import { Processor } from 'lib/processor'
 import { rpcs } from '../rpcs'
-import { Queue } from 'bullmq'
 import { mq } from 'lib'
 import { estimateHeight, getBlock } from 'lib/blocks'
 import { first } from '../db'
 import { parseAbi } from 'viem'
 import { priced } from 'lib/math'
 import { endOfDay } from 'lib/dates'
-import { OutputSchema, Snapshot, SnapshotSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
+import { OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
 import { fetchErc20PriceUsd } from '../prices'
 import { fetchOrExtractErc20 } from '../abis/yearn/lib'
 import { compare } from 'compare-versions'
 import { extractWithdrawalQueue } from '../abis/yearn/2/vault/snapshot/hook'
 
-export class TvlComputer implements Processor {
-  queue: Queue | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.load)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export class TvlComputer {
   async compute({ chainId, address, time }
     : { chainId: number, address: `0x${string}`, time: bigint })
   {
@@ -41,7 +29,7 @@ export class TvlComputer implements Processor {
     const { source: priceSource, tvl: tvlUsd } = await _compute(chainId, address, blockNumber, latest)
     const artificialBlockTime = endOfDay(time)
 
-    await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+    await mq.add(mq.job.load.output, OutputSchema.parse({
       chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'tvl', component: priceSource, value: tvlUsd
     }))
   }

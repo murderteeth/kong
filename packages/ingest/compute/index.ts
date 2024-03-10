@@ -1,22 +1,20 @@
-import { mq, types } from 'lib'
-import { Queue, Worker } from 'bullmq'
+import { mq } from 'lib'
+import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
 import { HarvestAprComputer } from './harvestApr'
 import { TvlComputer } from './tvl'
 import { ApyComputer } from './apy'
 
 export default class Computer implements Processor {
-  queue: Queue | undefined
   worker: Worker | undefined
 
   computers = {
-    [mq.job.compute.tvl]: new TvlComputer(),
-    [mq.job.compute.apy]: new ApyComputer(),
-    [mq.job.compute.harvestApr]: new HarvestAprComputer()
+    [mq.job.compute.tvl.name]: new TvlComputer(),
+    [mq.job.compute.apy.name]: new ApyComputer(),
+    [mq.job.compute.harvestApr.name]: new HarvestAprComputer()
   }
 
   async up() {
-    await Promise.all(Object.values(this.computers).map(c => c.up()))
     this.worker = mq.worker(mq.q.compute, async job => {
       const label = `🧮 ${job.name} ${job.id}`
       console.time(label)
@@ -27,6 +25,5 @@ export default class Computer implements Processor {
 
   async down() {
     await this.worker?.close()
-    await Promise.all(Object.values(this.computers).map(c => c.down()))
   }
 }

@@ -12,7 +12,7 @@ async function action() {
   const choices = [] as choicetype[]
 
   for(const cron of crons.default) {
-    const q = mq.queue(cron.queue)
+    const q = mq.connect(cron.queue)
     const repeatables = await q.getRepeatableJobs()
     const scheduled = repeatables.some(job => job.name === cron.job)
     await q.close()
@@ -50,7 +50,7 @@ async function action() {
     if(name === 'all') {
       if(choices.some(choice => choice.scheduled)) {
         for(const cron of choices.filter(c => c.scheduled)) {
-          const q = mq.queue(cron.queue)
+          const q = mq.connect(cron.queue)
           await q.removeRepeatable(cron.job, { pattern: cron.schedule })
           await q.close()
           cron.scheduled = false
@@ -58,7 +58,7 @@ async function action() {
 
       } else {
         for(const cron of choices) {
-          const q = mq.queue(cron.queue)
+          const q = mq.connect(cron.queue)
           await q.add(cron.job, { id: strings.camelToSnake(cron.name) }, {
             repeat: { pattern: cron.schedule }
           })
@@ -72,13 +72,13 @@ async function action() {
       if(!cron) return
 
       if(cron.scheduled) {
-        const q = mq.queue(cron.queue)
+        const q = mq.connect(cron.queue)
         await q.removeRepeatable(cron.job, { pattern: cron.schedule })
         await q.close()
         cron.scheduled = false
 
       } else {
-        const q = mq.queue(cron.queue)
+        const q = mq.connect(cron.queue)
         await q.add(cron.job, { id: strings.camelToSnake(cron.name) }, {
           repeat: { pattern: cron.schedule }
         })

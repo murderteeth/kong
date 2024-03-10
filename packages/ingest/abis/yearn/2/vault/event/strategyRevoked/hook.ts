@@ -15,7 +15,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     })
   }).parse(data)
 
-  await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
+  await mq.add(mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: args.strategy,
     label: 'strategy',

@@ -17,7 +17,7 @@ export class ProcessorPool<T extends Processor> implements Processor {
   private startRecycling() {
     this.interval = setInterval(async () => {
       console.log('♻️ ', this.Type.name, this.pointer)
-      await this.pool[this.pointer].down()
+      await this.pool[this.pointer].down?.()
       this.pool[this.pointer] = new this.Type()
       await this.pool[this.pointer].up()
       this.pointer = (this.pointer + 1) % this.pool.length
@@ -31,7 +31,7 @@ export class ProcessorPool<T extends Processor> implements Processor {
 
   async down() {
     clearInterval(this.interval)
-    await Promise.all(this.pool.map(p => p.down()))
+    await Promise.all(this.pool.map(p => p.down?.()))
   }
 
   get(index: number) {

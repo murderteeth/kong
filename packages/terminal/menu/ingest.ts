@@ -15,48 +15,28 @@ async function action() {
       message: 'pick an ingest job',
       choices: [
         { title: 'fanout contracts', value: {
-          name: mq.q.fanout,
           job: mq.job.fanout.contracts
         }},
         { title: 'fanout replays', value: {
-          name: mq.q.fanout,
           job: mq.job.fanout.contracts,
           data: { replay: true }
         }},
-        { title: 'index registry events', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.registry
-        }},
-        { title: 'index factory events', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.factory
-        }},
-        { title: 'index vault events', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.vault
-        }},
         { title: 'compute tvls', value: {
-          name: mq.q.fanout,
           job: mq.job.fanout.tvl
         }},
         { title: 'compute apys', value: {
-          name: mq.q.fanout,
           job: mq.job.fanout.apy
         }},
         { title: 'compute harvest aprs', value: {
-          name: mq.q.fanout,
           job: mq.job.fanout.harvestApr
         }},
         { title: 'update risk', value: {
-          name: mq.q.extract,
           job: mq.job.extract.risk
         }},
         { title: 'update meta', value: {
-          name: mq.q.extract,
           job: mq.job.extract.meta
         }},
         { title: 'extract waveydb', value: {
-          name: mq.q.extract,
           job: mq.job.extract.waveydb
         }},
       ]
@@ -69,8 +49,6 @@ async function action() {
   ])
 
   if (confirm) {
-    const queue = mq.queue(q.name)
-    await queue.add(q.job, q.data || {})
-    await queue.close()
+    await mq.add(q.job, q.data || {})
   }
 }

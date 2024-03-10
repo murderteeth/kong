@@ -1,22 +1,19 @@
 import { z } from 'zod'
-import { Processor } from 'lib/processor'
-import { rpcs } from '../../rpcs'
+import { rpcs } from '../rpcs'
 import { mq } from 'lib'
 import { EvmLogSchema, zhexstring } from 'lib/types'
 import { getBlockTime, getDefaultStartBlockNumber } from 'lib/blocks'
 import { getAddress } from 'viem'
-import db from '../../db'
-import { ResolveHooks } from '../../abis/types'
-import { requireHooks } from '../../abis'
-import abiutil from '../../abiutil'
+import db from '../db'
+import { ResolveHooks } from '../abis/types'
+import { requireHooks } from '../abis'
+import abiutil from '../abiutil'
 
-export class EvmLogsExtractor implements Processor {
+export class EvmLogsExtractor {
   resolveHooks: ResolveHooks|undefined
-  async up() { this.resolveHooks = await requireHooks() }
-  async down() {}
 
   async extract(data: any) {
-    if (!this.resolveHooks) throw new Error('!resolveHooks')
+    if (!this.resolveHooks) this.resolveHooks = await requireHooks()
 
     const { abiPath, chainId, address, from, to, replay } = z.object({
       abiPath: z.string(),
@@ -77,7 +74,7 @@ export class EvmLogsExtractor implements Processor {
       })
     }
 
-    await mq.add(mq.q.load, mq.job.load.evmlog, {
+    await mq.add(mq.job.load.evmlog, {
       chainId, address, from, to,
       batch: EvmLogSchema.array().parse(processedLogs)
     }, {

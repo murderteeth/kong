@@ -50,7 +50,7 @@ export class WaveyDbExtractor implements Processor {
     }))
 
     await batchx(prices, 100, async (batch: Price[]) => {
-      await mq.add(mq.q.load, mq.job.load.price, { batch })
+      await mq.add(mq.job.load.price, { batch })
     })
   }
 }

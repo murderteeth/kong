@@ -23,7 +23,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
 
   if (snapshot.accountant) {
     const incept = await estimateCreationBlock(chainId, snapshot.accountant)
-    await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
+    await mq.add(mq.job.load.thing, ThingSchema.parse({
       chainId,
       address: snapshot.accountant,
       label: 'accountant',

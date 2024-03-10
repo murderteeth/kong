@@ -10,7 +10,7 @@ export default {
 async function getQueues() {
   const result = {} as { [key: string]: number }
   for(const queue of Object.keys(mq.q)) {
-    const q = mq.queue(queue)
+    const q = mq.connect(queue)
     result[queue] = (await q.getJobs('failed')).length
     await q.close()
   }
@@ -35,7 +35,7 @@ async function action() {
 
   if(!queue) return
 
-  const q = mq.queue(queue)
+  const q = mq.connect(queue)
   const failed = await q.getJobs('failed')
   for(const job of failed) {
     console.log('------------------------')

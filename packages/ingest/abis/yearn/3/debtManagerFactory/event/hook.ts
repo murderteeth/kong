@@ -18,7 +18,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const inceptBlock = block.number
   const inceptTime = block.timestamp
 
-  await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
+  await mq.add(mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: allocator,
     label: 'debtAllocator',

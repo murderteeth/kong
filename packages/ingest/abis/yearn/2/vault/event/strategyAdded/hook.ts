@@ -34,7 +34,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const block = await estimateCreationBlock(chainId, newStrategy)
   const inceptBlock = block.number
   const inceptTime = block.timestamp
-  await mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
+  await mq.add(mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: newStrategy,
     label: 'strategy',

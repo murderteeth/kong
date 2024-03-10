@@ -2,24 +2,12 @@ import { math, mq, multicall3, types } from 'lib'
 import db, { firstValue, some } from '../db'
 import { rpcs } from '../rpcs'
 import { parseAbi } from 'viem'
-import { Processor } from 'lib/processor'
-import { Queue } from 'bullmq'
 import { getBlock } from 'lib/blocks'
-import { extractFees } from '../extract/vault/version2'
+// import { extractFees } from '../extract/vault/version2'
 import { compare } from 'compare-versions'
 import { HarvestSchema, OutputSchema } from 'lib/types'
 
-export class HarvestAprComputer implements Processor {
-  queue: Queue | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.load)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export class HarvestAprComputer {
   async compute(data: any) {
     const { chainId, address, blockNumber, blockIndex } = data as { chainId: number, address: `0x${string}`, blockNumber: bigint, blockIndex: number }
 
@@ -40,7 +28,7 @@ export class HarvestAprComputer implements Processor {
     const apr = await handler.compute(latest, previous)
 
     const block = await getBlock(chainId, apr.blockNumber)
-    await this.queue?.add(mq.job.load.apr, {
+    await mq.add(mq.job.load.apr, {
       chainId: chainId,
       address: address,
       gross: apr.gross,
@@ -52,10 +40,10 @@ export class HarvestAprComputer implements Processor {
     })
 
     {
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: block.timestamp, label: 'apr-spot-harvest', component: 'gross', value: apr.gross
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: block.timestamp, label: 'apr-spot-harvest', component: 'net', value: apr.net
       }))
     }
@@ -137,7 +125,7 @@ export async function compute__v2(latest: types.Harvest, previous: types.Harvest
 
   const { vault, delegatedAssets } = await getStrategyInfo(latest.chainId, latest.address, latest.blockNumber)
 
-  const fees = await extractFees(latest.chainId, vault, latest.blockNumber)
+  const fees = { performance: 0, management: 0 } //await extractFees(latest.chainId, vault, latest.blockNumber)
 
   const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(previous.totalDebt))
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))

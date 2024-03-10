@@ -1,29 +1,16 @@
 import { chains, mq, types } from 'lib'
-import { Queue, Worker } from 'bullmq'
 import { getAddress } from 'viem'
-import { Processor } from 'lib/processor'
 import db from '../db'
 
-export class RiskExtractor implements Processor {
-  queue: Queue | undefined
-  worker: Worker | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.load)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export class RiskExtractor {
   async extract() {
     for(const chain of chains) {
       const groups = await extractRiskGroups(chain.id)
-      await this.queue?.add(mq.job.load.riskGroup, { batch: groups.map(({ strategies, ...rest }) => rest) })
+      await mq.add(mq.job.load.riskGroup, { batch: groups.map(({ strategies, ...rest }) => rest) })
       const strategies = (await db.query(`SELECT address FROM strategy WHERE chain_id = $1;`, [chain.id])).rows
       for(const strategy of strategies) {
         const group = groups.find(group => group.strategies.includes(strategy.address))
-        await this.queue?.add(mq.job.load.strategy, {
+        await mq.add(mq.job.load.strategy, {
           chainId: chain.id,
           address: strategy.address,
           risk_group: group?.name || null

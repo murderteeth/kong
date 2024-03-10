@@ -1,4 +1,5 @@
-import { Queue, QueueOptions, Worker } from 'bullmq'
+import { Queue, Worker } from 'bullmq'
+import { Job } from './types'
 
 export const q = {
   fanout: 'fanout',
@@ -8,68 +9,50 @@ export const q = {
   probe: 'probe'
 }
 
-export const job = {
+export const job: { [queue: string]: { [job: string]: Job } } = {
   fanout: {
-    registry: 'registry',
-    factory: 'factory',
-    vault: 'vault',
-    strategy: 'strategy',
-    tvl: 'tvl',
-    apy: 'apy',
-    harvestApr: 'harvest-apr',
-    contracts: 'contracts',
-    events: 'events'
+    contracts: { queue: 'fanout', name: 'contracts' },
+    events: { queue: 'fanout', name: 'events' },
+    tvl: { queue: 'fanout', name: 'tvl' },
+    apy: { queue: 'fanout', name: 'apy' },
+    harvestApr: { queue: 'fanout', name: 'harvest-apr' }
   },
 
   extract: {
-    block: 'block',
-    evmlog: 'evmlog',
-    snapshot: 'snapshot',
-    apetax: 'apetax',
-    vault: 'vault',
-    strategy: 'strategy',
-    harvest: 'harvest',
-    transfer: 'transfer',
-    risk: 'risk',
-    meta: 'meta',
-    waveydb: 'waveydb'
+    block: { queue: 'extract', name: 'block' },
+    evmlog: { queue: 'extract', name: 'evmlog' },
+    snapshot: { queue: 'extract', name: 'snapshot' },
+    risk: { queue: 'extract', name: 'risk' },
+    meta: { queue: 'extract', name: 'meta' },
+    waveydb: { queue: 'extract', name: 'waveydb' },
+    apetax: { queue: 'extract', name: 'apetax' },
   },
 
   compute: {
-    tvl: 'tvl',
-    apy: 'apy',
-    harvestApr: 'harvest-apr'
+    tvl: { queue: 'compute', name: 'tvl' },
+    apy: { queue: 'compute', name: 'apy' },
+    harvestApr: { queue: 'compute', name: 'harvest-apr' }
   },
 
   load: {
-    block: 'block',
-    erc20: 'erc20',
-    transfer: 'transfer',
-    vault: 'vault',
-    vaultDebt: 'vault-debt',
-    withdrawalQueue: 'withdrawal-queue',
-    strategy: 'strategy',
-    strategyLenderStatus: 'strategy-lender-status',
-    harvest: 'harvest',
-    riskGroup: 'risk',
-    tvl: 'tvl',
-    apy: 'apy',
-    apr: 'apr',
-    sparkline: {
-      tvl: 'sparkline-tvl',
-      apy: 'sparkline-apy',
-      apr: 'sparkline-apr'
-    },
-    output: 'output',
-    monitor: 'monitor',
-    evmlog: 'evmlog',
-    snapshot: 'snapshot',
-    thing: 'thing',
-    price: 'price'
+    block: { queue: 'load', name: 'block' },
+    riskGroup: { queue: 'load', name: 'risk' },
+    tvl: { queue: 'load', name: 'tvl' },
+    apy: { queue: 'load', name: 'apy' },
+    apr: { queue: 'load', name: 'apr' },
+    ['sparkline-tvl']: { queue: 'load', name: 'sparkline-tvl' },
+    ['sparkline-apy']: { queue: 'load', name: 'sparkline-apy' },
+    ['sparkline-apr']: { queue: 'load', name: 'sparkline-apr' },
+    output: { queue: 'load', name: 'output' },
+    monitor: { queue: 'load', name: 'monitor' },
+    evmlog: { queue: 'load', name: 'evmlog' },
+    snapshot: { queue: 'load', name: 'snapshot' },
+    thing: { queue: 'load', name: 'thing' },
+    price: { queue: 'load', name: 'price' }
   },
 
   probe: {
-    all: 'all'
+    all: { queue: 'probe', name: 'all' }
   }
 }
 
@@ -88,14 +71,15 @@ const bull = { connection: {
   port: (process.env.REDIS_PORT || 6379) as number,
 }}
 
-export async function add(queueName: string, jobName: string, data: any, options?: any) {
-  const queue = new Queue(queueName, bull)
-  await queue.add(jobName, data, options)
-  await queue.close()
+const queues: { [key: string]: Queue } = {}
+
+export function connect(queueName: string) {
+  return new Queue(queueName, bull)
 }
 
-export function queue(name: string, options?: QueueOptions) {
-  return new Queue(name, {...bull, ...options})
+export async function add(job: Job, data: any, options?: any) {
+  if (!queues[job.queue]) queues[job.queue] = connect(job.queue)
+  await queues[job.queue].add(job.name, data, options)
 }
 
 export function worker(queueName: string, handler: (job: any) => Promise<any>) {
@@ -156,3 +140,10 @@ export function computeConcurrency(jobs: number, options: ConcurrencyOptions) {
   const concurrency = Math.floor(m * jobs + options.min)
   return Math.min(Math.max(concurrency, options.min), options.max)
 }
+
+async function down() {
+  await Promise.all(Object.values(queues).map(queue => queue.close()))
+}
+
+process.on('SIGINT', down)
+process.on('SIGTERM', down)

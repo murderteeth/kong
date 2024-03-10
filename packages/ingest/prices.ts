@@ -39,21 +39,21 @@ async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, block
 
   result = await fetchLensPriceUsd(chainId, token, blockNumber)
   if(result) {
-    await mq.add(mq.q.load, mq.job.load.price, result)
+    await mq.add(mq.job.load.price, result)
     return result
   }
 
   if(JSON.parse(process.env.YPRICE_ENABLED || 'false')) {
     result = await fetchYPriceUsd(chainId, token, blockNumber)
     if(result) {
-      await mq.add(mq.q.load, mq.job.load.price, result)
+      await mq.add(mq.job.load.price, result)
       return result
     }
   }
 
   console.warn('🚨', 'no price', chainId, token, blockNumber)
   const empty = { chainId, address: token, priceUsd: 0, priceSource: 'na', blockNumber, blockTime: 0n }
-  await mq.add(mq.q.load, mq.job.load.price, empty)
+  await mq.add(mq.job.load.price, empty)
   return empty
 }
 

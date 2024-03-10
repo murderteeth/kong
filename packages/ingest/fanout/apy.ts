@@ -1,23 +1,11 @@
-import { Queue } from 'bullmq'
 import db from '../db'
-import { Processor } from 'lib/processor'
 import { chains, dates, math, mq } from 'lib'
 import { setTimeout } from 'timers/promises'
 import { endOfDay } from 'lib/dates'
 import { hasAtLeastTwoHarvests } from '../compute/apy'
 import { compare } from 'compare-versions'
 
-export default class ApyFanout implements Processor {
-  queue: Queue | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.compute)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export default class ApyFanout {
   async fanout() {
     for(const chain of chains) {
       const throttle = 16
@@ -28,7 +16,7 @@ export default class ApyFanout implements Processor {
         const start = endOfDay(math.max(blockTime || 0n, activation, dates.DEFAULT_START()))
         const end = endOfDay(BigInt(Math.floor(new Date().getTime() / 1000)))
         for(let time = start; time <= end; time += oneDay) {
-          await this.queue?.add(mq.job.compute.apy, {
+          await mq.add(mq.job.compute.apy, {
             chainId: chain.id, address, time
           })
         }

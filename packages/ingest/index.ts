@@ -35,24 +35,20 @@ const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
 const contracts = contractsConfig
 .filter(contract => contract.start)
 .map(contract => new Promise((resolve, reject) => {
-  const queue = mq.queue(mq.q.fanout)
-  queue.add(mq.job.fanout.contracts, { id: camelToSnake(contract.abiPath) }, {
+  mq.add(mq.job.fanout.contracts, { id: camelToSnake(contract.abiPath) }, {
     repeat: { pattern: contract.schedule }
   }).then(() => {
     console.log('⬆', 'contracts up', contract.abiPath)
-    queue.close().then(resolve).catch(reject)
   })
 }))
 
 const crons = cronsConfig.default
 .filter(cron => cron.start)
 .map(cron => new Promise((resolve, reject) => {
-  const queue = mq.queue(cron.queue)
-  queue.add(cron.job, { id: camelToSnake(cron.name) }, {
+  mq.add(mq.job[cron.queue][cron.job], { id: camelToSnake(cron.name) }, {
     repeat: { pattern: cron.schedule }
   }).then(() => {
     console.log('⬆', 'cron up', cron.name)
-    queue.close().then(resolve).catch(reject)
   })
 }))
 

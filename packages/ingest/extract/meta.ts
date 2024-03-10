@@ -1,20 +1,7 @@
 import { chains, mq } from 'lib'
-import { Queue, Worker } from 'bullmq'
-import { Processor } from 'lib/processor'
 import db from '../db'
 
-export class MetaExtractor implements Processor {
-  queue: Queue | undefined
-  worker: Worker | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.load)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export class MetaExtractor {
   async extract() {
     for(const chain of chains) {
       const tokenMetas = await extractTokenMetas(chain.id)
@@ -22,7 +9,7 @@ export class MetaExtractor implements Processor {
       for(const vault of vaults as { chainId: number, assetAddress: `0x${string}` } []) {
         const meta = tokenMetas[vault.assetAddress] || tokenMetas[vault.assetAddress.toLowerCase()]
         if(meta === undefined) continue
-        await this.queue?.add(mq.job.load.erc20, {
+        await mq.add(mq.job.load.erc20, {
           chainId: vault.chainId,
           address: vault.assetAddress,
           meta_description: meta.description
@@ -37,7 +24,7 @@ export class MetaExtractor implements Processor {
       for(const strategy of strategies as { address: `0x${string}` } []) {
         const meta = metas[strategy.address] || metas[strategy.address.toLowerCase()]
         if(meta === undefined) continue
-        await this.queue?.add(mq.job.load.strategy, {
+        await mq.add(mq.job.load.strategy, {
           chainId: chain.id,
           address: strategy.address,
           meta_description: meta.description

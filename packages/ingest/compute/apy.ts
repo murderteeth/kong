@@ -2,27 +2,15 @@ import { math, mq, multicall3, types } from 'lib'
 import db, { firstRow } from '../db'
 import { rpcs } from '../rpcs'
 import { ReadContractParameters, parseAbi } from 'viem'
-import { Processor } from 'lib/processor'
-import { Queue } from 'bullmq'
 import { estimateHeight, getBlock } from 'lib/blocks'
-import { extractFeesBps, extractWithdrawalQueue } from '../extract/vault/version2'
+// import { extractFeesBps, extractWithdrawalQueue } from '../extract/vault/version2'
 import { mainnet } from 'viem/chains'
 import { compare } from 'compare-versions'
 import { endOfDay } from 'lib/dates'
-import { extractDefaultQueue } from '../extract/vault/version3'
+// import { extractDefaultQueue } from '../extract/vault/version3'
 import { OutputSchema } from 'lib/types'
 
-export class ApyComputer implements Processor {
-  queue: Queue | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.load)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export class ApyComputer {
   async compute({ chainId, address, time }
     : { chainId: number, address: `0x${string}`, time: bigint }) 
   {
@@ -44,45 +32,45 @@ export class ApyComputer implements Processor {
     const artificialBlockTime = endOfDay(time)
     apy.blockTime = artificialBlockTime
 
-    await this.queue?.add(mq.job.load.apy, apy, {
+    await mq.add(mq.job.load.apy, apy, {
       jobId: `${chainId}-${blockNumber}-${address}-apy`
     })
 
     {
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'net', value: apy.net
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'gross-apr', value: apy.grossApr
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'pps', value: apy.pricePerShare
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-net', value: apy.weeklyNet
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-pps', value: apy.weeklyPricePerShare
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-blockNumber', value: apy.weeklyBlockNumber
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-net', value: apy.monthlyNet
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-pps', value: apy.monthlyPricePerShare
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-blockNumber', value: apy.monthlyBlockNumber
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-net', value: apy.inceptionNet
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-pps', value: apy.inceptionPricePerShare
       }))
-      await this.queue?.add(mq.job.load.output, OutputSchema.parse({
+      await mq.add(mq.job.load.output, OutputSchema.parse({
         chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-blockNumber', value: apy.inceptionBlockNumber
       }))
     }
@@ -247,24 +235,28 @@ async function getFirstTwoHarvestBlocks(chainId: number, vault: `0x${string}`) {
 }
 
 export async function extractFees__v2(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
+  // const strategies = await extractWithdrawalQueue(chainId, address, blockNumber)
 
-  const strategiesMulticall = await rpcs.next(chainId, blockNumber).multicall({ contracts: strategies.map(s => ({
-    args: [s as string], address, functionName: 'strategies', abi: parseAbi(['function strategies(address) returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)'])
-  })), blockNumber})
+  // const strategiesMulticall = await rpcs.next(chainId, blockNumber).multicall({ contracts: strategies.map(s => ({
+  //   args: [s as string], address, functionName: 'strategies', abi: parseAbi(['function strategies(address) returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)'])
+  // })), blockNumber})
 
-  const strategistFeesBps = strategiesMulticall.map(strategy => {
-    if(strategy.status === 'failure') return 0n
-    const fees = (strategy.result as bigint [])[0]
-    const debtRatio = (strategy.result as bigint [])[2]
-    return (fees * debtRatio) || 0n
-  }).reduce((a, b) => a + b, 0n)
+  // const strategistFeesBps = strategiesMulticall.map(strategy => {
+  //   if(strategy.status === 'failure') return 0n
+  //   const fees = (strategy.result as bigint [])[0]
+  //   const debtRatio = (strategy.result as bigint [])[2]
+  //   return (fees * debtRatio) || 0n
+  // }).reduce((a, b) => a + b, 0n)
 
-  const vaultFeesBps = await extractFeesBps(chainId, address, blockNumber)
+  // const vaultFeesBps = await extractFeesBps(chainId, address, blockNumber)
 
+  // return {
+  //   performance: math.div(strategistFeesBps + vaultFeesBps.performance, 10_000n),
+  //   management: math.div(vaultFeesBps.management, 10_000n)
+  // }
   return {
-    performance: math.div(strategistFeesBps + vaultFeesBps.performance, 10_000n),
-    management: math.div(vaultFeesBps.management, 10_000n)
+    performance: 0,
+    management: 0
   }
 }
 
@@ -338,97 +330,101 @@ export async function extractLockedProfit__v3(chainId: number, address: `0x${str
 }
 
 export async function extractFees__v3(chainId: number, address: `0x${string}`, blockNumber: bigint) {
-  const accountant = await extractAccountant(chainId, address, blockNumber)
-  if(!accountant) {
-    try {
-      const performanceFeeBps = await rpcs.next(chainId, blockNumber).readContract({
-        address, 
-        abi: parseAbi(['function performanceFee() view returns (uint16)']),
-        functionName: 'performanceFee'    
-      })
-      return {
-        performance: performanceFeeBps / 10_000,
-        management: 0
-      }
-    } catch(error) {
-      console.warn('🚨', '!accountant && !performanceFees')
-      return {
-        performance: 0,
-        management: 0
-      }
-    }
-  }
+  // const accountant = await extractAccountant(chainId, address, blockNumber)
+  // if(!accountant) {
+  //   try {
+  //     const performanceFeeBps = await rpcs.next(chainId, blockNumber).readContract({
+  //       address, 
+  //       abi: parseAbi(['function performanceFee() view returns (uint16)']),
+  //       functionName: 'performanceFee'    
+  //     })
+  //     return {
+  //       performance: performanceFeeBps / 10_000,
+  //       management: 0
+  //     }
+  //   } catch(error) {
+  //     console.warn('🚨', '!accountant && !performanceFees')
+  //     return {
+  //       performance: 0,
+  //       management: 0
+  //     }
+  //   }
+  // }
 
-  const strategies = await extractDefaultQueue({ chainId, address }, blockNumber)
-  if(strategies.length === 0) return {
+  // const strategies = await extractDefaultQueue({ chainId, address }, blockNumber)
+  // if(strategies.length === 0) return {
+  //   performance: 0,
+  //   management: 0
+  // }
+
+  // const strategyMulticalls = strategies.map(s => [
+  //   {
+  //     address,
+  //     abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)']),
+  //     functionName: 'strategies',
+  //     args: [s as string]
+  //   },
+  //   {
+  //     address: accountant,
+  //     abi: parseAbi(['function useCustomConfig(address, address) view returns (bool)']),
+  //     functionName: 'useCustomConfig',
+  //     args: [address, s as string]
+  //   },
+  //   {
+  //     address: accountant,
+  //     abi: parseAbi(['function customConfig(address, address) view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
+  //     functionName: 'customConfig',
+  //     args: [address, s as string]
+  //   }
+  // ]).flat()
+
+  // const extraMulticalls = [
+  //   {
+  //     address: accountant,
+  //     abi: parseAbi(['function defaultConfig() view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
+  //     functionName: 'defaultConfig'
+  //   },
+  //   {
+  //     address,
+  //     abi: parseAbi(['function totalDebt() view returns (uint256)']),
+  //     functionName: 'totalDebt'
+  //   }
+  // ]
+
+  // const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
+  //   ...extraMulticalls,
+  //   ...strategyMulticalls
+  // ], blockNumber})
+
+  // const defaultConfigResult = multicallResult[0]
+  // const defaultManagementFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as readonly [number, number, number, number, number, number])[0] : 0
+  // const defaultPerformanceFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as readonly [number, number, number, number, number, number])[1] : 0
+  // const totalDebt = multicallResult[1].result as bigint
+  // const feesBps = { performance: 0, management: 0 }
+  // for(let i = 0; i < strategies.length; i++) {
+  //   const vaultParameters = multicallResult[i * 3 + 2 + 0]
+  //   const [ activation, lastReport, currentDebt, maxDebt ] = vaultParameters.result as readonly [bigint, bigint, bigint, bigint]
+  //   const debtRatio = math.div(currentDebt, totalDebt)
+
+  //   const useCustomConfigResult = multicallResult[i * 3 + 2 + 1]
+  //   const useCustomConfig = useCustomConfigResult.result as boolean
+  //   if(useCustomConfig) {
+  //     const customConfigResult = multicallResult[i * 3 + 2 + 2]
+  //     const [ managementFee, performanceFee, refundRatio, maxFee, maxGain, maxLoss ] = customConfigResult.result as readonly [number, number, number, number, number, number]
+  //     feesBps.performance += debtRatio * performanceFee
+  //     feesBps.management += debtRatio * managementFee
+  //   } else {
+  //     feesBps.performance += debtRatio * defaultPerformanceFee
+  //     feesBps.management += debtRatio * defaultManagementFee
+  //   }
+  // }
+
+  // return {
+  //   performance: feesBps.performance / 10_000,
+  //   management: feesBps.management / 10_000
+  // }
+  return {
     performance: 0,
     management: 0
-  }
-
-  const strategyMulticalls = strategies.map(s => [
-    {
-      address,
-      abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)']),
-      functionName: 'strategies',
-      args: [s as string]
-    },
-    {
-      address: accountant,
-      abi: parseAbi(['function useCustomConfig(address, address) view returns (bool)']),
-      functionName: 'useCustomConfig',
-      args: [address, s as string]
-    },
-    {
-      address: accountant,
-      abi: parseAbi(['function customConfig(address, address) view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
-      functionName: 'customConfig',
-      args: [address, s as string]
-    }
-  ]).flat()
-
-  const extraMulticalls = [
-    {
-      address: accountant,
-      abi: parseAbi(['function defaultConfig() view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
-      functionName: 'defaultConfig'
-    },
-    {
-      address,
-      abi: parseAbi(['function totalDebt() view returns (uint256)']),
-      functionName: 'totalDebt'
-    }
-  ]
-
-  const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
-    ...extraMulticalls,
-    ...strategyMulticalls
-  ], blockNumber})
-
-  const defaultConfigResult = multicallResult[0]
-  const defaultManagementFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as readonly [number, number, number, number, number, number])[0] : 0
-  const defaultPerformanceFee = defaultConfigResult.status === 'success' ?  (defaultConfigResult.result as readonly [number, number, number, number, number, number])[1] : 0
-  const totalDebt = multicallResult[1].result as bigint
-  const feesBps = { performance: 0, management: 0 }
-  for(let i = 0; i < strategies.length; i++) {
-    const vaultParameters = multicallResult[i * 3 + 2 + 0]
-    const [ activation, lastReport, currentDebt, maxDebt ] = vaultParameters.result as readonly [bigint, bigint, bigint, bigint]
-    const debtRatio = math.div(currentDebt, totalDebt)
-
-    const useCustomConfigResult = multicallResult[i * 3 + 2 + 1]
-    const useCustomConfig = useCustomConfigResult.result as boolean
-    if(useCustomConfig) {
-      const customConfigResult = multicallResult[i * 3 + 2 + 2]
-      const [ managementFee, performanceFee, refundRatio, maxFee, maxGain, maxLoss ] = customConfigResult.result as readonly [number, number, number, number, number, number]
-      feesBps.performance += debtRatio * performanceFee
-      feesBps.management += debtRatio * managementFee
-    } else {
-      feesBps.performance += debtRatio * defaultPerformanceFee
-      feesBps.management += debtRatio * defaultManagementFee
-    }
-  }
-
-  return {
-    performance: feesBps.performance / 10_000,
-    management: feesBps.management / 10_000
   }
 }

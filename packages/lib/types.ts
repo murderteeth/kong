@@ -3,6 +3,13 @@ import { z } from 'zod'
 export const zhexstring = z.custom<`0x${string}`>((val: any) => /^0x/.test(val))
 export const zvaultType = z.enum(['vault', 'strategy'])
 
+export const JobSchema = z.object({
+  queue: z.string(),
+  name: z.string()
+})
+
+export type Job = z.infer<typeof JobSchema>
+
 export interface LatestBlock {
   chainId: number
   blockNumber: bigint

@@ -47,7 +47,7 @@ async function processTradeFactory(chainId: number, snapshot: Snapshot) {
   const block = await estimateCreationBlock(chainId, snapshot.tradeFactory)
   const inceptBlock = block.number
   const inceptTime = block.timestamp
-  mq.add(mq.q.load, mq.job.load.thing, ThingSchema.parse({
+  await mq.add(mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: snapshot.tradeFactory,
     label: 'tradeHandler',

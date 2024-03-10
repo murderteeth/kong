@@ -1,4 +1,3 @@
-import { Processor } from 'lib/processor'
 import { mq } from 'lib'
 import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { rpcs } from 'lib/rpcs'
@@ -8,15 +7,11 @@ import { ResolveHooks } from '../abis/types'
 import { requireHooks } from '../abis'
 import abiutil from '../abiutil'
 
-export class SnapshotExtractor implements Processor {
-  resolveHooks: ResolveHooks|undefined
-
-  async up() { this.resolveHooks = await requireHooks() }
-
-  async down() {}
+export class SnapshotExtractor {
+  resolveHooks: ResolveHooks | undefined
 
   async extract(data: { contract: Contract, source: SourceConfig }) {
-    if(!this.resolveHooks) throw new Error('!resolveHooks')
+    if(!this.resolveHooks) this.resolveHooks = await requireHooks()
 
     const { chainId, address } = SourceConfigSchema.parse(data.source)
     const { abiPath } = ContractSchema.parse(data.contract)
@@ -54,7 +49,7 @@ export class SnapshotExtractor implements Processor {
       }
     }
 
-    await mq.add(mq.q.load, mq.job.load.snapshot, SnapshotSchema.parse({
+    await mq.add(mq.job.load.snapshot, SnapshotSchema.parse({
       chainId,
       address,
       snapshot: _snapshot,

@@ -1,19 +1,7 @@
 import { chains, mq, multicall3 } from 'lib'
-import { Queue } from 'bullmq'
-import { Processor } from 'lib/processor'
 import db from '../db'
 
-export default class HarvestAprFanout implements Processor {
-  queues: { [key: string]: Queue } = {}
-
-  async up() {
-    this.queues[mq.q.compute] = mq.queue(mq.q.compute)
-  }
-
-  async down() {
-    await Promise.all(Object.values(this.queues).map(q => q.close()))
-  }
-
+export default class HarvestAprFanout {
   async fanout() {
     const harvests = []
     for(const chain of chains) {
@@ -50,7 +38,7 @@ export default class HarvestAprFanout implements Processor {
     }
 
     for(const harvest of harvests) {
-      await this.queues[mq.q.compute].add(mq.job.compute.harvestApr, harvest)
+      await mq.add(mq.job.compute.harvestApr, harvest)
     }
   }
 }
