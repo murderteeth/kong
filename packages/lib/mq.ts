@@ -13,6 +13,7 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
   fanout: {
     contracts: { queue: 'fanout', name: 'contracts' },
     events: { queue: 'fanout', name: 'events' },
+    timeseries: { queue: 'fanout', name: 'timeseries' },
     tvl: { queue: 'fanout', name: 'tvl' },
     apy: { queue: 'fanout', name: 'apy' },
     harvestApr: { queue: 'fanout', name: 'harvest-apr' }
@@ -22,6 +23,7 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
     block: { queue: 'extract', name: 'block' },
     evmlog: { queue: 'extract', name: 'evmlog' },
     snapshot: { queue: 'extract', name: 'snapshot' },
+    timeseries: { queue: 'extract', name: 'timeseries' },
     risk: { queue: 'extract', name: 'risk' },
     meta: { queue: 'extract', name: 'meta' },
     waveydb: { queue: 'extract', name: 'waveydb' },
@@ -78,7 +80,9 @@ export function connect(queueName: string) {
 }
 
 export async function add(job: Job, data: any, options?: any) {
-  if (!queues[job.queue]) queues[job.queue] = connect(job.queue)
+  if (!queues[job.queue]) {
+    queues[job.queue] = connect(job.queue)
+  }
   await queues[job.queue].add(job.name, data, options)
 }
 

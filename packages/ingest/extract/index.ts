@@ -8,6 +8,7 @@ import { RiskExtractor } from './risk'
 import { MetaExtractor } from './meta'
 import { WaveyDbExtractor } from './waveydb'
 import { SnapshotExtractor } from './snapshot'
+import { TimeseriesExtractor } from './timeseries'
 
 export default class Extract implements Processor {
   worker: Worker | undefined
@@ -19,7 +20,8 @@ export default class Extract implements Processor {
     [mq.job.extract.risk.name]: new RiskExtractor(),
     [mq.job.extract.meta.name]: new MetaExtractor(),
     [mq.job.extract.waveydb.name]: new WaveyDbExtractor(),
-    [mq.job.extract.snapshot.name]: new SnapshotExtractor()
+    [mq.job.extract.snapshot.name]: new SnapshotExtractor(),
+    [mq.job.extract.timeseries.name]: new TimeseriesExtractor()
   }
 
   async up() {
