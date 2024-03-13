@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { parseAbi, toEventSelector } from 'viem'
 import { ThingSchema, zhexstring } from 'lib/types'
-import { estimateCreationBlock, getBlockTime } from 'lib/blocks'
+import { estimateCreationBlock } from 'lib/blocks'
 import { mq } from 'lib'
 import { rpcs } from '../../../../../../rpcs'
 import { extractDecimals, fetchAsset } from '../../../../lib'

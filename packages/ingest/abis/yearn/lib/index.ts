@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
-import db from '../../db'
+import db from '../../../db'
 import { zhexstring } from 'lib/types'
 
 export async function extractDecimals(chainId: number, address: `0x${string}`) {

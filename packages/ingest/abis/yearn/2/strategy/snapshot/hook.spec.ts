@@ -3,7 +3,7 @@ import { mainnet } from 'viem/chains'
 import { extractLenderStatuses } from './hook'
 
 describe('abis/yearn/2/strategy/snapshot/hook', function() {
-  it('extracts some lender statuses', async function() {
+  it('extracts lender statuses', async function() {
     const statuses = await extractLenderStatuses(mainnet.id, '0x2216E44fA633ABd2540dB72Ad34b42C7F1557cd4', 18530014n)
     expect(statuses).to.be.an('array')
     expect(statuses).to.have.length(2)
