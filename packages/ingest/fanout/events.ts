@@ -2,7 +2,7 @@ import { setTimeout } from 'timers/promises'
 import { math, mq, multicall3, strider } from 'lib'
 import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
 import { getBlockNumber, getDefaultStartBlockNumber } from 'lib/blocks'
-import { getLocalStrides } from '../db'
+import { getTravelledStrides } from '../db'
 import { StrideSchema } from 'lib/types'
 
 export default class EventsFanout {
@@ -20,8 +20,9 @@ export default class EventsFanout {
       : math.max(inceptBlock, defaultStartBlockNumber, multicall3Activation)
     const to = endBlock !== undefined ? endBlock : await getBlockNumber(chainId)
 
-    const localStrides = replay ? undefined : await getLocalStrides(chainId, address)
-    const nextStrides = strider.plan(from, to, localStrides)
+    const replayRange = undefined // [{ from: 19309874n, to: 19309874n }]
+    const travelled = replay ? undefined : await getTravelledStrides(chainId, address)
+    const nextStrides = replayRange ? replayRange : strider.plan(from, to, travelled)
 
     for (const stride of StrideSchema.array().parse(nextStrides)) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)

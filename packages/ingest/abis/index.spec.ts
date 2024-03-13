@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs/promises'
 import { getHookType, isHookPath, parseHookPath, requireHooks } from '.'
 
-describe.only('abis', function() {
+describe('abis', function() {
   describe('hook resolver', function() {
     const root = path.join(__dirname, '.spec')
 

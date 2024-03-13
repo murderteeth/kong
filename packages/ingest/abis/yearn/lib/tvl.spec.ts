@@ -3,7 +3,7 @@ import { _compute } from './tvl'
 import { ThingSchema } from 'lib/types'
 import { addresses } from '../../../test.fixture'
 
-describe.only('abis/yearn/lib/tvl', function() {
+describe('abis/yearn/lib/tvl', function() {
   it('yvWETH 0.4.2 @ block 18417431', async function(this: Mocha.Context) {
     const yvweth = ThingSchema.parse({
       chainId: 1,

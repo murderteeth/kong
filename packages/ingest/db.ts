@@ -75,7 +75,7 @@ export async function getSparkline(chainId: number, address: string, type: strin
   return result.rows as types.SparklinePoint[]
 }
 
-export async function getLocalStrides(chainId: number, address: `0x${string}`, client?: PoolClient) {
+export async function getTravelledStrides(chainId: number, address: `0x${string}`, client?: PoolClient) {
   const result = await (client ?? db).query(
     `SELECT strides FROM evmlog_strides WHERE chain_id = $1 AND address = $2 ${client ? 'FOR UPDATE' : ''};`,
     [chainId, address]

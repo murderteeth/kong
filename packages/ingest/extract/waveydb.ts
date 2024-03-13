@@ -28,10 +28,10 @@ export class WaveyDbExtractor implements Processor {
   async down() {}
 
   async extract() {
-    await this.extract_prices_for_v2()
+    await this.extractPrices()
   }
 
-  async extract_prices_for_v2() {
+  async extractPrices() {
     const result = await db.query(`
       SELECT 
         chain_id as "chainId",

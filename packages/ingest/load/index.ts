@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { mq, strider, types } from 'lib'
-import db, { getLocalStrides, toUpsertSql } from '../db'
+import db, { getTravelledStrides, toUpsertSql } from '../db'
 import { Processor } from 'lib/processor'
 import sparkline from './sparkline'
 import { PoolClient } from 'pg'
@@ -97,7 +97,7 @@ export async function upsertEvmLog(data: any) {
     await client.query('BEGIN')
     await upsertBatch(batch, 'evmlog', 'chain_id, address, signature, block_number, log_index, transaction_hash', undefined, client)
 
-    const current = await getLocalStrides(chainId, address, client)
+    const current = await getTravelledStrides(chainId, address, client)
     const next = strider.add({ from, to }, current)
     await client.query(`
       INSERT INTO evmlog_strides(chain_id, address, strides) 

@@ -45,7 +45,9 @@ export const addresses = {
     aaveV3UsdcLender: '0xdB92B89Ca415c0dab40Dc96E99Fc411C08F20780' as `0x${string}`,
     compoundV3UsdcLender: '0xb1403908F772E4374BB151F7C67E88761a0Eb4f1' as `0x${string}`,
     stargateUsdcStaker: '0x8BBa7AFd0f9B1b664C161EC31d812a8Ec15f7e1a' as `0x${string}`
-  }
+  },
+
+  rando: '0x1B243724A773092Df465B20186aF39Ae0A90fC26' as `0x${string}`
 }
 
 export const yvusdtDb = {
