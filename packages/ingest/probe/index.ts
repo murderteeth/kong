@@ -68,7 +68,6 @@ export default class Probe implements Processor {
   async up() {
     this.queues[mq.q.fanout] = mq.connect(mq.q.fanout)
     this.queues[mq.q.extract] = mq.connect(mq.q.extract)
-    this.queues[mq.q.compute] = mq.connect(mq.q.compute)
     this.queues[mq.q.load] = mq.connect(mq.q.load)
 
     this.worker = mq.worker(mq.q.probe, async job => {

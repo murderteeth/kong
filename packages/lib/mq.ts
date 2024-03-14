@@ -4,7 +4,6 @@ import { Job } from './types'
 export const q = {
   fanout: 'fanout',
   extract: 'extract',
-  compute: 'compute',
   load: 'load',
   probe: 'probe'
 }
@@ -28,12 +27,6 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
     meta: { queue: 'extract', name: 'meta' },
     waveydb: { queue: 'extract', name: 'waveydb' },
     apetax: { queue: 'extract', name: 'apetax' },
-  },
-
-  compute: {
-    tvl: { queue: 'compute', name: 'tvl' },
-    apy: { queue: 'compute', name: 'apy' },
-    harvestApr: { queue: 'compute', name: 'harvest-apr' }
   },
 
   load: {

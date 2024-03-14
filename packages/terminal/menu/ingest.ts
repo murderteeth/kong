@@ -21,15 +21,6 @@ async function action() {
           job: mq.job.fanout.contracts,
           data: { replay: true }
         }},
-        { title: 'compute tvls', value: {
-          job: mq.job.fanout.tvl
-        }},
-        { title: 'compute apys', value: {
-          job: mq.job.fanout.apy
-        }},
-        { title: 'compute harvest aprs', value: {
-          job: mq.job.fanout.harvestApr
-        }},
         { title: 'update risk', value: {
           job: mq.job.extract.risk
         }},

@@ -5,10 +5,11 @@ import { addresses } from '../../../../../../test.fixture'
 function mock() {
   return HarvestSchema.parse({
     chainId: 1,
-    address: addresses.v2.strategystEthAccumulator_v2,
+    address: addresses.v2.yvweth,
     blockNumber: 17613565n,
     blockTime: 1n,
     args: {
+      strategy: addresses.v2.strategystEthAccumulator_v2,
       gain: 122295812297070635612n,
       loss: 0n,
       debtPaid: 0n,
@@ -21,7 +22,7 @@ function mock() {
   })
 }
 
-describe('abis/yearn/2/vault/event/hook', function() {
+describe('abis/yearn/2/vault/event/strategyReported/hook', function() {
   it('zeros apr on zero debt', async function() {
     const zeroDebt = {...mock(), args: { ...mock().args, totalDebt: 0n } }
     const apr = await computeApr(zeroDebt, mock())
@@ -44,7 +45,6 @@ describe('abis/yearn/2/vault/event/hook', function() {
     const apr = await computeApr(latest, mock())
     expect(apr.gross).to.equal(0.039971418235301995)
     expect(apr.net).to.equal(0.0319771345882416)
-    expect(apr.blockNumber).to.equal(18116044n)
   })
 
   it('computes gross and net apr on loss', async function() {
@@ -75,6 +75,5 @@ describe('abis/yearn/2/vault/event/hook', function() {
     const apr = await computeApr(loss, zero)
     expect(apr.gross).to.equal(-0.023979592588218704)
     expect(apr.net).to.equal(apr.gross)
-    expect(apr.blockNumber).to.equal(85961102n)
   })
 })

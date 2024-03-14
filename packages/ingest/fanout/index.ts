@@ -1,9 +1,6 @@
 import { mq } from 'lib'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import HarvestAprFanout from './harvestApr'
-import TvlFanout from './tvl'
-import ApyFanout from './apy'
 import ContractsFanout from './contracts'
 import EventsFanout from './events'
 import TimeseriesFanout from './timeseries'
@@ -12,9 +9,6 @@ export default class Fanout implements Processor {
   worker: Worker | undefined
 
   fanouts = {
-    [mq.job.fanout.tvl.name]: new TvlFanout(),
-    [mq.job.fanout.apy.name]: new ApyFanout(),
-    [mq.job.fanout.harvestApr.name]: new HarvestAprFanout(),
     [mq.job.fanout.contracts.name]: new ContractsFanout(),
     [mq.job.fanout.events.name]: new EventsFanout(),
     [mq.job.fanout.timeseries.name]: new TimeseriesFanout()

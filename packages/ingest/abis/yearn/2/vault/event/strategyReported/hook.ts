@@ -68,10 +68,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
 
 export async function computeApr(latest: Harvest, previous: Harvest | undefined) {
   if(!previous) return { gross: 0, net: 0 }
-
-  if(!(latest.args.totalDebt && previous.args.totalDebt)) return { 
-    gross: 0, net: 0, blockNumber: latest.blockNumber 
-  }
+  if(!(latest.args.totalDebt && previous.args.totalDebt)) return { gross: 0, net: 0 }
 
   const profit = (latest.args.totalGain || 0n) - (previous.args.totalGain || 0n)
   const loss = (latest.args.totalLoss || 0n) - (previous.args.totalLoss || 0n)
@@ -86,30 +83,22 @@ export async function computeApr(latest: Harvest, previous: Harvest | undefined)
 
   if(gross < 0) return { gross, net: gross }
 
-  const { vault, delegatedAssets } = await getStrategyInfo(latest.chainId, latest.address, latest.blockNumber)
-  const fees = await extractFees(latest.chainId, vault, latest.blockNumber)
+  const delegatedAssets = await extractDelegatedAssets(latest.chainId, latest.args.strategy, latest.blockNumber)
+  const fees = await extractFees(latest.chainId, latest.address, latest.blockNumber)
   const ratioOfDelegatedAssets = math.div(BigInt(delegatedAssets), BigInt(previous.args.totalDebt))
   const net = gross * (1 - fees.performance) - (fees.management * (1 - ratioOfDelegatedAssets))
 
   return { gross, net }
 }
 
-async function getStrategyInfo(chainId: number, address: `0x${string}`, blockNumber: bigint) {
+async function extractDelegatedAssets(chainId: number, strategy: `0x${string}`, blockNumber: bigint) {
   const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     {
-      address, functionName: 'vault',
-      abi: parseAbi(['function vault() view returns (address)'])
-    },
-    {
-      address, functionName: 'delegatedAssets',
+      address: strategy, functionName: 'delegatedAssets',
       abi: parseAbi(['function delegatedAssets() view returns (uint256)'])
     }
   ], blockNumber })
-
-  return {
-    vault: multicallResult[0].result as `0x${string}`,
-    delegatedAssets: (multicallResult[1].result || 0n) as bigint
-  }
+  return BigInt(multicallResult[0].result || 0n)
 }
 
 export async function extractFees(chainId: number, address: `0x${string}`, blockNumber: bigint) {
