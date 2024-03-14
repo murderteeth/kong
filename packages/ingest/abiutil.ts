@@ -10,8 +10,8 @@ export function events(abi: any) {
   return abi.filter((x: any) => x.type === 'event')
 }
 
-export function exclude(name: string, events: any) {
-  return events.filter((x: any) => x.name !== name)
+export function exclude(names: string[], events: any) {
+  return events.filter((x: any) => !names.includes(x.name))
 }
 
 export function fields(abi: any) {

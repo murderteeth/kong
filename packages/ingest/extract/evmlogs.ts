@@ -9,6 +9,8 @@ import { ResolveHooks } from '../abis/types'
 import { requireHooks } from '../abis'
 import abiutil from '../abiutil'
 
+const blacklist = ['Approval']
+
 export class EvmLogsExtractor {
   resolveHooks: ResolveHooks|undefined
 
@@ -29,8 +31,8 @@ export class EvmLogsExtractor {
     const exlcludeTransfers = from < defaultStartBlockNumber
 
     const events = exlcludeTransfers
-    ? abiutil.exclude('Transfer', abiutil.events(abi))
-    : abiutil.events(abi)
+    ? abiutil.exclude(['Transfer', ...blacklist], abiutil.events(abi))
+    : abiutil.exclude(blacklist, abiutil.events(abi))
 
     const logs = await (async () => {
       if (replay) {

@@ -23,7 +23,7 @@ describe('abiutil', function() {
     const abi = await abiutil.load('yearn/3/strategy')
     const events = abiutil.events(abi)
     expect(events.length).to.eq(13)
-    const filtered = abiutil.exclude('Transfer', events)
+    const filtered = abiutil.exclude(['Transfer'], events)
     expect(filtered.length).to.eq(12)
   })
 })
