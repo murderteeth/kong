@@ -38,40 +38,52 @@ export class ApyComputer {
 
     {
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'net', value: apy.net
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'net', value: apy.net
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'gross-apr', value: apy.grossApr
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'gross-apr', value: apy.grossApr
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'pps', value: apy.pricePerShare
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'pps', value: apy.pricePerShare
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-net', value: apy.weeklyNet
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'weekly-net', value: apy.weeklyNet
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-pps', value: apy.weeklyPricePerShare
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'weekly-pps', value: apy.weeklyPricePerShare
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'weekly-blockNumber', value: apy.weeklyBlockNumber
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'weekly-blockNumber', value: apy.weeklyBlockNumber
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-net', value: apy.monthlyNet
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'monthly-net', value: apy.monthlyNet
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-pps', value: apy.monthlyPricePerShare
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'monthly-pps', value: apy.monthlyPricePerShare
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'monthly-blockNumber', value: apy.monthlyBlockNumber
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'monthly-blockNumber', value: apy.monthlyBlockNumber
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-net', value: apy.inceptionNet
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'inception-net', value: apy.inceptionNet
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-pps', value: apy.inceptionPricePerShare
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'inception-pps', value: apy.inceptionPricePerShare
       }))
       await mq.add(mq.job.load.output, OutputSchema.parse({
-        chainId, address, blockNumber, blockTime: artificialBlockTime, label: 'apy-bwd-delta-pps', component: 'inception-blockNumber', value: apy.inceptionBlockNumber
+        chainId, address, blockNumber, blockTime: artificialBlockTime, 
+        label: 'apy-bwd-delta-pps', component: 'inception-blockNumber', value: apy.inceptionBlockNumber
       }))
     }
   }

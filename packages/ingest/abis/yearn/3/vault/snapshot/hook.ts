@@ -37,15 +37,15 @@ export default async function process(chainId: number, address: `0x${string}`, d
   return { strategies, allocator, debts, fees }
 }
 
-export async function projectStrategies(chainId: number, vault: `0x${string}`) {
+export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
   const changeType = { [2 ** 0]: 'add', [2 ** 1]: 'revoke' }
   const topic = toEventSelector('event StrategyChanged(address indexed strategy, uint256 change_type)')
   const events = await db.query(`
   SELECT args
   FROM evmlog
-  WHERE chain_id = $1 AND address = $2 AND signature = $3
+  WHERE chain_id = $1 AND address = $2 AND signature = $3 AND (block_number <= $4 OR $4 IS NULL)
   ORDER BY block_number, log_index ASC`,
-  [chainId, vault, topic])
+  [chainId, vault, topic, blockNumber])
   if(events.rows.length === 0) return []
   const result: `0x${string}`[] = []
   for (const event of events.rows) {

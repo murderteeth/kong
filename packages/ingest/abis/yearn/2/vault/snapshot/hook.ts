@@ -13,7 +13,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   return { strategies, withdrawalQueue, debts }
 }
 
-export async function projectStrategies(chainId: number, vault: `0x${string}`) {
+export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
   const topics = [
     toEventSelector('event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)'),
     toEventSelector('event StrategyMigrated(address indexed oldVersion, address indexed newVersion)'),
@@ -23,9 +23,9 @@ export async function projectStrategies(chainId: number, vault: `0x${string}`) {
   const events = await db.query(`
   SELECT signature, args
   FROM evmlog
-  WHERE chain_id = $1 AND address = $2 AND signature = ANY($3)
+  WHERE chain_id = $1 AND address = $2 AND signature = ANY($3) AND (block_number <= $4 OR $4 IS NULL)
   ORDER BY block_number, log_index ASC`,
-  [chainId, vault, topics])
+  [chainId, vault, topics, blockNumber])
   if(events.rows.length === 0) return []
 
   const result: `0x${string}`[] = []

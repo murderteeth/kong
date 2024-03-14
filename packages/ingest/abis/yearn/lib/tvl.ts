@@ -13,7 +13,7 @@ import { first } from '../../../db'
 import { endOfDay } from 'lib/dates'
 
 export default async function _process(chainId: number, address: `0x${string}`, data: Data): Promise<Result[]> {
-  console.info('🧮', 'tvl', chainId, address, (new Date(Number(data.blockTime) * 1000)).toDateString())
+  console.info('🧮', data.outputLabel, chainId, address, (new Date(Number(data.blockTime) * 1000)).toDateString())
 
   let blockNumber: bigint = 0n
   let latest: boolean = false

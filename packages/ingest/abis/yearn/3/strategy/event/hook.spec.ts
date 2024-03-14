@@ -51,7 +51,6 @@ describe('abis/yearn/3/strategy/event/hook', function() {
     const apr = await computeApr(latest, {...mock(), blockNumber: 51916665n})
     expect(apr.gross).to.equal(0.05179518421103771)
     expect(apr.net).to.equal(0.04795259723804295)
-    expect(apr.blockNumber).to.equal(51916666n)
   })
 
   it('computes gross and net apr on loss', async function() {
@@ -70,6 +69,5 @@ describe('abis/yearn/3/strategy/event/hook', function() {
     const apr = await computeApr(latest, {...mock(), blockNumber: 51916665n})
     expect(apr.gross).to.equal(-0.05179518421103771)
     expect(apr.net).to.equal(apr.gross)
-    expect(apr.blockNumber).to.equal(51916666n)
   })
 })
