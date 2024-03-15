@@ -1,11 +1,22 @@
 # Kong
-Real-time and historical ZooTroop indexer
+Real-time/historical ZooTroop indexer
 
 
 ![image](https://github.com/murderteeth/kong/assets/89237203/c9c70016-9de4-418f-a0bb-06b9fd9da549)
 
 
 
+Kong is an indexer designed for 🔥 dev experience.
+- Configure contracts of interest in config/abis.yaml
+- Kong will automatically snapshot contract state and extract all logs
+- Write custom "hooks" to enrich your dataset as you like
+- Hooks come in three flavors: Snapshot, Event, and Timeseries
+- Made a mistake in one of your hooks? Patch your code and replay, no need to re-extract
+
+Architecture
+- postgres x timescaledb x nodejs x bullmq x nextjs x graphql
+- Kong uses event-sourcing to simplify extract and support replay
+- Kong uses message queues to support concurrency and decouple all the moving parts
 
 
 ## quick start
