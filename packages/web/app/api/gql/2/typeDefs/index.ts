@@ -1,5 +1,6 @@
 import gql from 'graphql-tag'
 import vault from './vault'
+import output from './output'
 
 const query = gql`
   scalar BigInt
@@ -17,12 +18,14 @@ const query = gql`
 
   type Query {
     vaults(chainId: Int): [Vault]
+    timeseries(chainId: Int!, address: String!, label: String!, component: String): [Output]
   }
 `
 
 const typeDefs = [
   query,
-  vault
+  vault,
+  output
 ]
 
 export default typeDefs

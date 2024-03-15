@@ -2,7 +2,7 @@
 
 import { useData } from '@/hooks/useData'
 import Panel from './Panel'
-import { fEvmAddress, fPercent, fUSD } from '@/util/format'
+import { fEvmAddress, fPercent, fUSD } from '@/lib/format'
 import Frosty from './Frosty'
 import Minibars from './Minibars'
 import Linechart, { formatters } from './Linechart'

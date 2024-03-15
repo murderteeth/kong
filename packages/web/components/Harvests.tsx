@@ -3,7 +3,7 @@
 import React from 'react'
 import Panel from './Panel'
 import { useData } from '@/hooks/useData'
-import { fEvmAddress, fUSD } from '@/util/format'
+import { fEvmAddress, fUSD } from '@/lib/format'
 import ReactTimeago from 'react-timeago'
 import { Harvest } from '@/hooks/useData/types'
 

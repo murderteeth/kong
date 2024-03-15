@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { strings, types } from 'lib'
 import { StrideSchema } from 'lib/types'
 import { Pool, PoolClient, types as pgTypes } from 'pg'
-import { snakeToCamel } from 'lib/strings'
+import { snakeToCamelCols, snakeToCamel } from 'lib/strings'
 
 // Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
@@ -37,13 +37,7 @@ export async function first<T>(schema: z.ZodType<T>, sql: string, params: any[] 
 function _query<T>(schema: z.ZodType<T>) {
   return async function(sql: string, values: any[]) {
     const rows = (await db.query(sql, values)).rows
-    const rowsInCamelCase = rows.map(row => {
-      const result: { [key: string]: any } = {}
-      for (const key of Object.keys(row)) {
-        result[snakeToCamel(key)] = row[key]
-      }
-      return result
-    })
+    const rowsInCamelCase = snakeToCamelCols(rows)
     return schema.array().parse(rowsInCamelCase)
   }
 }
