@@ -19,39 +19,6 @@ export default class Load implements Processor {
     [mq.job.load.riskGroup.name]: async data => 
     await upsertBatch(data.batch, 'risk_group', 'chain_id, name'),
 
-    [mq.job.load.tvl.name]: async (data: types.TVL) => {
-      await upsertTvl(data)
-      await mq.add(mq.job.load['sparkline-tvl'], { 
-        chainId: data.chainId, address: data.address 
-      })
-    },
-
-    [mq.job.load.apy.name]: async (data: types.APY) => {
-      await upsert(data, 'apy', 'chain_id, address, block_time')
-      await mq.add(mq.job.load['sparkline-apy'], { 
-        chainId: data.chainId, address: data.address 
-      })
-    },
-
-    [mq.job.load.apr.name]: async (data: types.APR) => {
-      await upsert(data, 'apr', 'chain_id, address, block_time')
-      await mq.add(mq.job.load['sparkline-apr'], { 
-        chainId: data.chainId, address: data.address 
-      })
-    },
-
-    [mq.job.load['sparkline-tvl'].name]: async data => 
-    await sparkline.tvl(data),
-
-    [mq.job.load['sparkline-apy'].name]: async data => 
-    await sparkline.apy(data),
-
-    [mq.job.load['sparkline-apr'].name]: async data => 
-    await sparkline.apr(data),
-
-    [mq.job.load.output.name]: async data => 
-    await upsert(data, 'output', 'chain_id, address, label, component, block_time'),
-
     [mq.job.load.monitor.name]: async data => 
     await upsert({ singleton: true, latest: data }, 'monitor', 'singleton'),
 
@@ -63,6 +30,10 @@ export default class Load implements Processor {
 
     [mq.job.load.thing.name]: async data => 
     await upsertThing(data),
+
+    [mq.job.load.output.name]: async data => data.batch
+    ? await upsertBatch(data.batch, 'output', 'chain_id, address, label, component, block_time')
+    : await upsert(data, 'output', 'chain_id, address, label, component, block_time'),
 
     [mq.job.load.price.name]: async data => data.batch 
     ? await upsertBatch(data.batch, 'price', 'chain_id, address, block_number') 

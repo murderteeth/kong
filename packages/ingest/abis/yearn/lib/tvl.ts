@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
+import { Output, OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
 import { fetchOrExtractErc20 } from '.'
 import { fetchErc20PriceUsd } from '../../../prices'
 import { rpcs } from '../../../rpcs'
@@ -7,12 +7,12 @@ import { parseAbi } from 'viem'
 import { compare } from 'compare-versions'
 import { priced } from 'lib/math'
 import { extractWithdrawalQueue } from '../2/vault/snapshot/hook'
-import { Data, Result, ResultSchema } from '../../../extract/timeseries'
+import { Data } from '../../../extract/timeseries'
 import { estimateHeight, getBlock } from 'lib/blocks'
 import { first } from '../../../db'
 import { endOfDay } from 'lib/dates'
 
-export default async function _process(chainId: number, address: `0x${string}`, data: Data): Promise<Result[]> {
+export default async function _process(chainId: number, address: `0x${string}`, data: Data): Promise<Output[]> {
   console.info('🧮', data.outputLabel, chainId, address, (new Date(Number(data.blockTime) * 1000)).toDateString())
 
   let blockNumber: bigint = 0n
@@ -33,7 +33,7 @@ export default async function _process(chainId: number, address: `0x${string}`, 
   const { source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
   const artificialBlockTime = endOfDay(data.blockTime)
 
-  return ResultSchema.array().parse([OutputSchema.parse({
+  return OutputSchema.array().parse([OutputSchema.parse({
     chainId, address, blockNumber, blockTime: artificialBlockTime, label: data.outputLabel, 
     component: priceSource, value: tvlUsd
   })])

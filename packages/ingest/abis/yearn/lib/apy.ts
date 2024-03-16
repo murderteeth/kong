@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { Data, Result, ResultSchema } from '../../../extract/timeseries'
-import { EvmLog, EvmLogSchema, OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
+import { Data } from '../../../extract/timeseries'
+import { EvmLog, EvmLogSchema, Output, OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
 import { first, query } from '../../../db'
 import { estimateHeight, getBlock } from 'lib/blocks'
 import { math, multicall3 } from 'lib'
@@ -34,7 +34,7 @@ export const APYSchema = z.object({
 
 export type APY = z.infer<typeof APYSchema>
 
-export default async function _process(chainId: number, address: `0x${string}`, label: 'vault' | 'strategy', data: Data): Promise<Result[]> {
+export default async function _process(chainId: number, address: `0x${string}`, label: 'vault' | 'strategy', data: Data): Promise<Output[]> {
   console.info('🧮', data.outputLabel, chainId, address, (new Date(Number(data.blockTime) * 1000)).toDateString())
 
   let blockNumber: bigint = 0n
@@ -64,7 +64,7 @@ export default async function _process(chainId: number, address: `0x${string}`, 
   const apy = await _compute(vault, strategies, blockNumber)
   if (!apy) return []
 
-  return ResultSchema.array().parse([
+  return OutputSchema.array().parse([
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
       label: data.outputLabel, component: 'net', value: apy.net

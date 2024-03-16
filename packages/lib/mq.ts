@@ -12,10 +12,7 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
   fanout: {
     contracts: { queue: 'fanout', name: 'contracts' },
     events: { queue: 'fanout', name: 'events' },
-    timeseries: { queue: 'fanout', name: 'timeseries' },
-    tvl: { queue: 'fanout', name: 'tvl' },
-    apy: { queue: 'fanout', name: 'apy' },
-    harvestApr: { queue: 'fanout', name: 'harvest-apr' }
+    timeseries: { queue: 'fanout', name: 'timeseries' }
   },
 
   extract: {
@@ -32,12 +29,6 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
   load: {
     block: { queue: 'load', name: 'block' },
     riskGroup: { queue: 'load', name: 'risk' },
-    tvl: { queue: 'load', name: 'tvl' },
-    apy: { queue: 'load', name: 'apy' },
-    apr: { queue: 'load', name: 'apr' },
-    ['sparkline-tvl']: { queue: 'load', name: 'sparkline-tvl' },
-    ['sparkline-apy']: { queue: 'load', name: 'sparkline-apy' },
-    ['sparkline-apr']: { queue: 'load', name: 'sparkline-apr' },
     output: { queue: 'load', name: 'output' },
     monitor: { queue: 'load', name: 'monitor' },
     evmlog: { queue: 'load', name: 'evmlog' },
