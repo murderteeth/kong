@@ -172,16 +172,23 @@ export interface Transfer {
   transactionHash: `0x${string}`
 }
 
-export interface RiskGroup {
-  name: string
-  auditScore: number,
-  codeReviewScore: number,
-  complexityScore: number,
-  protocolSafetyScore: number,
-  teamKnowledgeScore: number,
-  testingScore: number,
-  strategies: `0x${string}` []
-}
+export const RiskScoreSchema = z.object({
+  label: z.string(),
+  auditScore: z.number(),
+  codeReviewScore: z.number(),
+  complexityScore: z.number(),
+  protocolSafetyScore: z.number(),
+  teamKnowledgeScore: z.number(),
+  testingScore: z.number()
+})
+
+export type RiskScore = z.infer<typeof RiskScoreSchema>
+
+export const RiskGroupSchema = RiskScoreSchema.merge(z.object({
+  strategies: zhexstring.array()
+}))
+
+export type RiskGroup = z.infer<typeof RiskGroupSchema>
 
 export const HarvestSchema = z.object({
   chainId: z.number(),

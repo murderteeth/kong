@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { mq, strider, types } from 'lib'
 import db, { getTravelledStrides, toUpsertSql } from '../db'
 import { Processor } from 'lib/processor'
-import sparkline from './sparkline'
 import { PoolClient } from 'pg'
 import { ThingSchema, zhexstring } from 'lib/types'
 import { Worker } from 'bullmq'
@@ -15,9 +14,6 @@ export default class Load implements Processor {
     await upsert(data, 'latest_block', 'chain_id', 
       'WHERE latest_block.block_number < EXCLUDED.block_number'
     ),
-
-    [mq.job.load.riskGroup.name]: async data => 
-    await upsertBatch(data.batch, 'risk_group', 'chain_id, name'),
 
     [mq.job.load.monitor.name]: async data => 
     await upsert({ singleton: true, latest: data }, 'monitor', 'singleton'),

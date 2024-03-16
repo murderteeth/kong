@@ -7,6 +7,7 @@ import { estimateCreationBlock } from 'lib/blocks'
 import db from '../../../../../db'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
+import { getRiskScore } from '../../../lib/risk'
 
 export const SnapshotSchema = z.object({
   accountant: zhexstring.optional()
@@ -20,6 +21,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const allocator = await projectDebtAllocator(chainId, address)
   const debts = await extractDebts(chainId, address)
   const fees = await extractFeesBps(chainId, address, snapshot)
+  const risk = await getRiskScore(chainId, address)
 
   if (snapshot.accountant) {
     const incept = await estimateCreationBlock(chainId, snapshot.accountant)
@@ -34,7 +36,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     }))
   }
 
-  return { strategies, allocator, debts, fees }
+  return { strategies, allocator, debts, fees, risk }
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {

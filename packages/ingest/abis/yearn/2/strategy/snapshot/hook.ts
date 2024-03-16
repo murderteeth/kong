@@ -9,6 +9,7 @@ import { mq } from 'lib'
 import { estimateCreationBlock } from 'lib/blocks'
 import { fetchOrExtractErc20 } from '../../../lib'
 import db from '../../../../../db'
+import { getRiskScore } from '../../../lib/risk'
 
 const borkedVaults = [
   '0x718AbE90777F5B778B52D553a5aBaa148DD0dc5D'
@@ -37,7 +38,8 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const totalDebtUsd = await computeTotalDebtUsd(chainId, snapshot)
   const lenderStatuses = await extractLenderStatuses(chainId, address)
   const rewards = await computeRewards(chainId, address, snapshot)
-  return { totalDebtUsd, lenderStatuses, rewards }
+  const risk = await getRiskScore(chainId, address)
+  return { totalDebtUsd, lenderStatuses, rewards, risk }
 }
 
 async function processTradeFactory(chainId: number, snapshot: Snapshot) {

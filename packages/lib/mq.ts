@@ -20,7 +20,6 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
     evmlog: { queue: 'extract', name: 'evmlog' },
     snapshot: { queue: 'extract', name: 'snapshot' },
     timeseries: { queue: 'extract', name: 'timeseries' },
-    risk: { queue: 'extract', name: 'risk' },
     meta: { queue: 'extract', name: 'meta' },
     waveydb: { queue: 'extract', name: 'waveydb' },
     apetax: { queue: 'extract', name: 'apetax' },
@@ -28,7 +27,6 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
 
   load: {
     block: { queue: 'load', name: 'block' },
-    riskGroup: { queue: 'load', name: 'risk' },
     output: { queue: 'load', name: 'output' },
     monitor: { queue: 'load', name: 'monitor' },
     evmlog: { queue: 'load', name: 'evmlog' },
