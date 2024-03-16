@@ -10,6 +10,7 @@ import { requireHooks } from '../abis'
 import abiutil from '../abiutil'
 
 const blacklist = ['Approval']
+const limitlist = ['Transfer', 'Deposit', 'Withdraw']
 
 export class EvmLogsExtractor {
   resolveHooks: ResolveHooks|undefined
@@ -28,10 +29,10 @@ export class EvmLogsExtractor {
 
     const abi = await abiutil.load(abiPath)
     const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
-    const exlcludeTransfers = from < defaultStartBlockNumber
+    const excludeLimitlist = from < defaultStartBlockNumber
 
-    const events = exlcludeTransfers
-    ? abiutil.exclude(['Transfer', ...blacklist], abiutil.events(abi))
+    const events = excludeLimitlist
+    ? abiutil.exclude([...blacklist, ...limitlist], abiutil.events(abi))
     : abiutil.exclude(blacklist, abiutil.events(abi))
 
     const logs = await (async () => {
