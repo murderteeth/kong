@@ -20,7 +20,6 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
     evmlog: { queue: 'extract', name: 'evmlog' },
     snapshot: { queue: 'extract', name: 'snapshot' },
     timeseries: { queue: 'extract', name: 'timeseries' },
-    meta: { queue: 'extract', name: 'meta' },
     waveydb: { queue: 'extract', name: 'waveydb' },
     apetax: { queue: 'extract', name: 'apetax' },
   },

@@ -6,7 +6,7 @@ export async function getRiskScore(chainId: number, address: `0x${string}`) {
   address = getAddress(address)
   const groups = await getRiskGroups(chainId)
   const group = groups.find(g => g.strategies.includes(address))
-  return RiskScoreSchema.parse(group)
+  return group ? RiskScoreSchema.parse(group) : undefined
 }
 
 async function getRiskGroups(chainId: number): Promise<RiskGroup[]> {
@@ -17,9 +17,6 @@ async function getRiskGroups(chainId: number): Promise<RiskGroup[]> {
 
 async function extractRiskGroups(chainId: number) {
   if(!process.env.GITHUB_PERSONAL_ACCESS_TOKEN) throw new Error('!process.env.GITHUB_PERSONAL_ACCESS_TOKEN')
-
-  const label = `🛸 extract risk, ${chainId}`
-  console.time(label)
 
   const response = await fetch(
     `https://api.github.com/repos/yearn/ydaemon/contents/data/risks/networks/${chainId}`,
@@ -34,7 +31,6 @@ async function extractRiskGroups(chainId: number) {
     { headers: { Authorization: `Bearer ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}` } }
   )))
 
-  console.timeEnd(label)
   const jsons = await Promise.all(responses.map(response => response.json()))
   return jsons.map(json => RiskGroupSchema.parse({
     ...json, strategies: json.strategies.map((s: string) => getAddress(s))

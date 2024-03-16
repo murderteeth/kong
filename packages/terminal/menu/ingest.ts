@@ -21,12 +21,6 @@ async function action() {
           job: mq.job.fanout.contracts,
           data: { replay: true }
         }},
-        { title: 'update risk', value: {
-          job: mq.job.extract.risk
-        }},
-        { title: 'update meta', value: {
-          job: mq.job.extract.meta
-        }},
         { title: 'extract waveydb', value: {
           job: mq.job.extract.waveydb
         }},

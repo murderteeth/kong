@@ -6,13 +6,16 @@ import db from '../../../../../db'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
+import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const strategies = await projectStrategies(chainId, address)
   const withdrawalQueue = await extractWithdrawalQueue(chainId, address)
   const debts = await extractDebts(chainId, address)
   const risk = await getRiskScore(chainId, address)
-  return { strategies, withdrawalQueue, debts, risk }
+  const meta = await getVaultMeta(chainId, address)
+  const token = await getTokenMeta(chainId, data.token)
+  return { strategies, withdrawalQueue, debts, risk, meta: { ...meta, token } }
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {

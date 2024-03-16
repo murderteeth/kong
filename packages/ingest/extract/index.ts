@@ -4,7 +4,6 @@ import { Processor } from 'lib/processor'
 import { EvmLogsExtractor } from './evmlogs'
 import { ApetaxExtractor } from './apetax'
 import { BlockExtractor } from './block'
-import { MetaExtractor } from './meta'
 import { WaveyDbExtractor } from './waveydb'
 import { SnapshotExtractor } from './snapshot'
 import { TimeseriesExtractor } from './timeseries'
@@ -16,7 +15,6 @@ export default class Extract implements Processor {
     [mq.job.extract.block.name]: new BlockExtractor(),
     [mq.job.extract.evmlog.name]: new EvmLogsExtractor(),
     [mq.job.extract.apetax.name]: new ApetaxExtractor(),
-    [mq.job.extract.meta.name]: new MetaExtractor(),
     [mq.job.extract.waveydb.name]: new WaveyDbExtractor(),
     [mq.job.extract.snapshot.name]: new SnapshotExtractor(),
     [mq.job.extract.timeseries.name]: new TimeseriesExtractor()

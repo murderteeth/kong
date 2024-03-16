@@ -190,6 +190,34 @@ export const RiskGroupSchema = RiskScoreSchema.merge(z.object({
 
 export type RiskGroup = z.infer<typeof RiskGroupSchema>
 
+export const TokenMetaSchema = z.object({
+  type: z.string(),
+  category: z.string(),
+  description: z.string(),
+  displayName: z.string(),
+  displaySymbol: z.string(),
+  icon: z.string()
+})
+
+export type TokenMeta = z.infer<typeof TokenMetaSchema>
+
+export const VaultMetaSchema = z.object({
+  displayName: z.string(),
+  displaySymbol: z.string(),
+  description: z.string(),
+  protocols: z.string().array().nullish()
+})
+
+export type VaultMeta = z.infer<typeof VaultMetaSchema>
+
+export const StrategyMetaSchema = z.object({
+  displayName: z.string(),
+  description: z.string(),
+  protocols: z.string().array().transform(v => v ? v : []).nullish()
+})
+
+export type StrategyMeta = z.infer<typeof StrategyMetaSchema>
+
 export const HarvestSchema = z.object({
   chainId: z.number(),
   address: zhexstring,
