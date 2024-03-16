@@ -235,7 +235,11 @@ export const OutputSchema = z.object({
   address: zhexstring,
   label: z.string(),
   component: z.string().nullish(),
-  value: z.number({ coerce: true }).or(z.nan()).transform((val) => (isFinite(val) ? val : undefined)).nullish(),
+  value: z.any().transform(val => {
+    const result = z.number().safeParse(val)
+    if(result.success && isFinite(result.data)) return result.data
+    return undefined
+  }).nullish(),
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true })
 })

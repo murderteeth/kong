@@ -19,5 +19,7 @@ describe('types', function() {
     expect(OutputSchema.parse({ ...output, value: null }).value).to.be.null
     expect(OutputSchema.parse({ ...output, value: NaN }).value).to.be.undefined
     expect(OutputSchema.parse({ ...output, value: Infinity }).value).to.be.undefined
+    expect(OutputSchema.parse({ ...output, value: 'string' }).value).to.be.undefined
+    expect(OutputSchema.parse({ ...output, value: {} }).value).to.be.undefined
   })
 })
