@@ -1,5 +1,5 @@
 export { chains } from './chains'
-export { contracts } from './contracts'
+export { abis } from './abis'
 export { cache } from './cache'
 export * as mq from './mq'
 export * as types from './types'

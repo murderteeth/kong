@@ -4,7 +4,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
-import { cache, chains, contracts as contractsConfig, crons as cronsConfig, mq } from 'lib'
+import { cache, chains, abis as abisConfig, crons as cronsConfig, mq } from 'lib'
 import db from './db'
 import { camelToSnake } from 'lib/strings'
 
@@ -18,7 +18,7 @@ const exportsProcessor = (filePath: string): boolean => {
 }
 
 console.log('🔗', 'chains', `[${chains.map(c => c.name.toLowerCase()).join(' x ')}]`)
-console.log('⚙', 'contracts', `[${contractsConfig.map(c => c.abiPath).join(' x ')}]`)
+console.log('⚙', 'abis', `[${abisConfig.map(c => c.abiPath).join(' x ')}]`)
 
 const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   const tenMinutes = 10 * 60 * 1000
@@ -32,13 +32,13 @@ const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   }
 }).filter(p => p) as Processor[]
 
-const contracts = contractsConfig
-.filter(contract => contract.start)
-.map(contract => new Promise((resolve, reject) => {
-  mq.add(mq.job.fanout.contracts, { id: camelToSnake(contract.abiPath) }, {
-    repeat: { pattern: contract.schedule }
+const abis = abisConfig
+.filter(abi => abi.start)
+.map(abi => new Promise((resolve, reject) => {
+  mq.add(mq.job.fanout.abis, { id: camelToSnake(abi.abiPath) }, {
+    repeat: { pattern: abi.schedule }
   }).then(() => {
-    console.log('⬆', 'contracts up', contract.abiPath)
+    console.log('⬆', 'abis up', abi.abiPath)
   })
 }))
 
@@ -57,7 +57,7 @@ function up() {
     rpcs.up(),
     cache.up(),
     ...pools.map(pool => pool.up()),
-    ...contracts,
+    ...abis,
     ...crons
   ]).then(() => {
 

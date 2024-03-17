@@ -32,7 +32,7 @@ export const ThingsConfigSchema = z.object({
 
 export type ThingsConfig = z.infer<typeof ThingsConfigSchema>
 
-export const ContractSchema = z.object({
+export const AbiConfigSchema = z.object({
   abiPath: z.string(),
   schedule: z.string(),
   start: z.boolean().optional().default(false),
@@ -43,48 +43,48 @@ export const ContractSchema = z.object({
   only: z.boolean().optional().default(false)
 })
 
-export type Contract = z.infer<typeof ContractSchema>
+export type AbiConfig = z.infer<typeof AbiConfigSchema>
 
 const YamlConfigSchema = z.object({
-  contracts: z.array(ContractSchema)
+  abis: z.array(AbiConfigSchema)
 })
 
 const yamlPath = (() => {
-  const local = path.join(__dirname, '../../config', 'contracts.local.yaml')
-  const production = path.join(__dirname, '../../config', 'contracts.yaml')
+  const local = path.join(__dirname, '../../config', 'abis.local.yaml')
+  const production = path.join(__dirname, '../../config', 'abis.yaml')
   if(fs.existsSync(local)) return local
   return production
 })()
 
 const yamlFile = fs.readFileSync(yamlPath, 'utf8')
 const config = YamlConfigSchema.parse(yaml.load(yamlFile))
-const allContracts = config.contracts.map(contract => ({
-  ...contract,
-  id: keccak256(toBytes(JSON.stringify(contract)))
+const allAbis = config.abis.map(abi => ({
+  ...abi,
+  id: keccak256(toBytes(JSON.stringify(abi)))
 }))
 
-const contracts = prune(allContracts)
+const abis = prune(allAbis)
 
-export { contracts }
-export default contracts
+export { abis }
+export default abis
 
-export function prune(contracts: Contract[]): Contract[] {
-  const copy = ContractSchema.array().parse(JSON.parse(JSON.stringify(contracts)))
-  const someSourceOnly = copy.some(contract => contract.sources.some(source => source.only))
-  const someThingOnly = copy.some(contract => contract.things?.only)
+export function prune(abis: AbiConfig[]): AbiConfig[] {
+  const copy = AbiConfigSchema.array().parse(JSON.parse(JSON.stringify(abis)))
+  const someSourceOnly = copy.some(abi => abi.sources.some(source => source.only))
+  const someThingOnly = copy.some(abi => abi.things?.only)
 
-  let result = copy.map(contract => ({
-    ...contract,
-    sources: contract.sources.filter(source => !source.skip && (contract.only || source.only || !(someSourceOnly || someThingOnly))),
-    things: contract.things && !contract.things.skip && (contract.only || contract.things.only || !(someSourceOnly || someThingOnly))
+  let result = copy.map(abi => ({
+    ...abi,
+    sources: abi.sources.filter(source => !source.skip && (abi.only || source.only || !(someSourceOnly || someThingOnly))),
+    things: abi.things && !abi.things.skip && (abi.only || abi.things.only || !(someSourceOnly || someThingOnly))
     ? ({
-      ...contract.things
+      ...abi.things
     }) : undefined
   }))
 
-  return result.filter(contract => 
-    !contract.skip
-    && (contract.sources.length > 0 || contract.things !== undefined)
-    && (contract.only || contract.sources.some(source => source.only) || contract.things?.only || !copy.some(c => c.only))
+  return result.filter(abi => 
+    !abi.skip
+    && (abi.sources.length > 0 || abi.things !== undefined)
+    && (abi.only || abi.sources.some(source => source.only) || abi.things?.only || !copy.some(c => c.only))
   )
 }

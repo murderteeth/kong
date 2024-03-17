@@ -20,7 +20,7 @@ const SnapshotSchema = z.object({
   vault: zhexstring,
   want: zhexstring,
   totalDebt: z.bigint({ coerce: true }).optional(),
-  tradeFactory: zhexstring
+  tradeFactory: zhexstring.optional()
 })
 
 export type Snapshot = z.infer<typeof SnapshotSchema>

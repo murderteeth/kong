@@ -1,6 +1,6 @@
 import { setTimeout } from 'timers/promises'
 import { math, mq, multicall3 } from 'lib'
-import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
+import { AbiConfig, AbiConfigSchema, SourceConfig, SourceConfigSchema } from 'lib/abis'
 import { getBlockNumber, getBlockTime, getDefaultStartBlockNumber } from 'lib/blocks'
 import db from '../db'
 import { requireHooks } from '../abis'
@@ -10,10 +10,10 @@ import { endOfDay, findMissingTimestamps } from 'lib/dates'
 export default class TimeseriesFanout {
   resolveHooks: ResolveHooks | undefined
 
-  async fanout(data: { contract: Contract, source: SourceConfig, replay?: boolean }) {
+  async fanout(data: { abi: AbiConfig, source: SourceConfig, replay?: boolean }) {
     if (!this.resolveHooks) this.resolveHooks = await requireHooks()
     const { chainId, address, inceptBlock, startBlock, endBlock } = SourceConfigSchema.parse(data.source)
-    const { abiPath } = ContractSchema.parse(data.contract)
+    const { abiPath } = AbiConfigSchema.parse(data.abi)
     const multicall3Activation = multicall3.getActivation(chainId)
     const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
 

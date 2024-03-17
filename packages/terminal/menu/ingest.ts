@@ -14,11 +14,11 @@ async function action() {
       name: 'q',
       message: 'pick an ingest job',
       choices: [
-        { title: 'fanout contracts', value: {
-          job: mq.job.fanout.contracts
+        { title: 'fanout abis', value: {
+          job: mq.job.fanout.abis
         }},
         { title: 'fanout replays', value: {
-          job: mq.job.fanout.contracts,
+          job: mq.job.fanout.abis,
           data: { replay: true }
         }},
         { title: 'extract waveydb', value: {

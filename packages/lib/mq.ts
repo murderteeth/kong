@@ -10,7 +10,7 @@ export const q = {
 
 export const job: { [queue: string]: { [job: string]: Job } } = {
   fanout: {
-    contracts: { queue: 'fanout', name: 'contracts' },
+    abis: { queue: 'fanout', name: 'abis' },
     events: { queue: 'fanout', name: 'events' },
     timeseries: { queue: 'fanout', name: 'timeseries' }
   },

@@ -1,5 +1,5 @@
 import { mq } from 'lib'
-import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
+import { AbiConfig, AbiConfigSchema, SourceConfig, SourceConfigSchema } from 'lib/abis'
 import { rpcs } from 'lib/rpcs'
 import { getBlock } from 'lib/blocks'
 import { SnapshotSchema } from 'lib/types'
@@ -10,11 +10,11 @@ import abiutil from '../abiutil'
 export class SnapshotExtractor {
   resolveHooks: ResolveHooks | undefined
 
-  async extract(data: { contract: Contract, source: SourceConfig }) {
+  async extract(data: { abi: AbiConfig, source: SourceConfig }) {
     if(!this.resolveHooks) this.resolveHooks = await requireHooks()
 
     const { chainId, address } = SourceConfigSchema.parse(data.source)
-    const { abiPath } = ContractSchema.parse(data.contract)
+    const { abiPath } = AbiConfigSchema.parse(data.abi)
 
     const abi = await abiutil.load(abiPath)
     const fields = abiutil.fields(abi)

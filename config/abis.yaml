@@ -1,5 +1,5 @@
 
-contracts:
+abis:
   - abiPath: 'yearn/3/registry'
     schedule: '0-59/30 * * * *'
     fromIncept: true

@@ -72,18 +72,39 @@ export class EvmLogsExtractor {
         chainId,
         address: getAddress(log.address),
         signature: log.topics[0],
-        args: (log as any).args || {},
+        args: extractLogArgs(log),
         hook: hookResult,
         blockTime: await getBlockTime(chainId, log.blockNumber || undefined)
       })
     }
 
-    await mq.add(mq.job.load.evmlog, {
-      chainId, address, from, to,
-      batch: EvmLogSchema.array().parse(processedLogs)
-    }, {
-      priority: mq.LOWEST_PRIORITY
-    })
+    try {
+      await mq.add(mq.job.load.evmlog, {
+        chainId, address, from, to,
+        batch: EvmLogSchema.array().parse(processedLogs)
+      }, {
+        priority: mq.LOWEST_PRIORITY
+      })
+    } catch (error) {
+      console.log('--------')
+      console.log()
+      console.log(processedLogs)
+      console.log()
+      console.log('--------')
+      throw error
+    }
+  }
+}
+
+export function extractLogArgs(log: any) {
+  if (!log.args) return {}
+  if (Array.isArray(log.args)) {
+    return log.args.reduce((acc: any, arg: any, i: number) => {
+      acc[`arg${i}`] = arg
+      return acc
+    }, {})
+  } else {
+    return log.args
   }
 }
 

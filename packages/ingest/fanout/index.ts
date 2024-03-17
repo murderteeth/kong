@@ -1,7 +1,7 @@
 import { mq } from 'lib'
 import { Worker } from 'bullmq'
 import { Processor } from 'lib/processor'
-import ContractsFanout from './contracts'
+import AbisFanout from './abis'
 import EventsFanout from './events'
 import TimeseriesFanout from './timeseries'
 
@@ -9,7 +9,7 @@ export default class Fanout implements Processor {
   worker: Worker | undefined
 
   fanouts = {
-    [mq.job.fanout.contracts.name]: new ContractsFanout(),
+    [mq.job.fanout.abis.name]: new AbisFanout(),
     [mq.job.fanout.events.name]: new EventsFanout(),
     [mq.job.fanout.timeseries.name]: new TimeseriesFanout()
   } as { [key: string]: Processor & { fanout: (data?: any) => Promise<void> } }

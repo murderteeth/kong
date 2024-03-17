@@ -1,5 +1,5 @@
 import { query, some } from './db'
-import { ThingsConfig } from 'lib/contracts'
+import { ThingsConfig } from 'lib/abis'
 import { Thing, ThingSchema } from 'lib/types'
 import { CompareOperator, compare } from 'compare-versions'
 import { clean } from 'lib/version'

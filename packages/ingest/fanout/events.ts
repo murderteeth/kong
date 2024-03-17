@@ -1,14 +1,14 @@
 import { setTimeout } from 'timers/promises'
 import { math, mq, multicall3, strider } from 'lib'
-import { Contract, ContractSchema, SourceConfig, SourceConfigSchema } from 'lib/contracts'
+import { AbiConfig, AbiConfigSchema, SourceConfig, SourceConfigSchema } from 'lib/abis'
 import { getBlockNumber, getDefaultStartBlockNumber } from 'lib/blocks'
 import { getTravelledStrides } from '../db'
 import { StrideSchema } from 'lib/types'
 
 export default class EventsFanout {
-  async fanout(data: { contract: Contract, source: SourceConfig, replay?: boolean }) {
+  async fanout(data: { abi: AbiConfig, source: SourceConfig, replay?: boolean }) {
     const { chainId, address, inceptBlock, startBlock, endBlock } = SourceConfigSchema.parse(data.source)
-    const { abiPath, fromIncept } = ContractSchema.parse(data.contract)
+    const { abiPath, fromIncept } = AbiConfigSchema.parse(data.abi)
     const { replay } = data
 
     const multicall3Activation = multicall3.getActivation(chainId)
