@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
-import { ThingSchema, zhexstring } from 'lib/types'
+import { RiskScoreSchema, ThingSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
 import { mq } from 'lib'
 import { estimateCreationBlock } from 'lib/blocks'
 import db from '../../../../../db'
@@ -9,6 +9,26 @@ import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
+
+export const ResultSchema = z.object({
+  strategies: z.array(zhexstring),
+  allocator: zhexstring.optional(),
+  debts: z.array(z.object({
+    strategy: zhexstring,
+    currentDebt: z.bigint(),
+    currentDebtUsd: z.number(),
+    maxDebt: z.bigint(),
+    maxDebtUsd: z.number(),
+    targetDebtRatio: z.number().optional(),
+    maxDebtRatio: z.number().optional()
+  })),
+  fees: z.object({
+    managementFee: z.number(),
+    performanceFee: z.number()
+  }),
+  risk: RiskScoreSchema,
+  meta: VaultMetaSchema.merge(z.object({ token: TokenMetaSchema }))
+})
 
 export const SnapshotSchema = z.object({
   accountant: zhexstring.optional()
@@ -39,7 +59,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     }))
   }
 
-  return { strategies, allocator, debts, fees, risk, meta: { ...meta, token } }
+  return ResultSchema.parse({ strategies, allocator, debts, fees, risk, meta: { ...meta, token } })
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {

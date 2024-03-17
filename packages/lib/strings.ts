@@ -9,6 +9,8 @@ export const removeTrailingSlash = (str: string) => str.endsWith('/') ? str.slic
 
 export const removeLeadingAndTrailingSlash = (str: string) => removeTrailingSlash(removeLeadingSlash(str))
 
+export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
 export const snakeToCamelCols = (rows: any[]) => {
   return rows.map(row => {
     const result: { [key: string]: any } = {}

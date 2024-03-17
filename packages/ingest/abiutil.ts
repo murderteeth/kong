@@ -15,7 +15,7 @@ export function exclude(names: string[], events: any) {
 }
 
 export function fields(abi: any) {
-  return abi.filter((x: any) => x.type === 'function' && x.stateMutability === 'view' && x.inputs.length === 0)
+  return abi.filter((x: any) => x.type === 'function' && (x.stateMutability === 'view' || x.stateMutability === 'pure') && x.inputs.length === 0)
 }
 
 export default { load, events, exclude, fields }

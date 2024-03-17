@@ -1,12 +1,34 @@
 import { z } from 'zod'
 import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
-import { zhexstring } from 'lib/types'
+import { RiskScoreSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
 import db from '../../../../../db'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
+
+export const ResultSchema = z.object({
+  strategies: z.array(zhexstring),
+  withdrawalQueue: z.array(zhexstring),
+  debts: z.array(z.object({
+    strategy: zhexstring,
+    performanceFee: z.bigint(),
+    activation: z.bigint(),
+    debtRatio: z.bigint(),
+    minDebtPerHarvest: z.bigint(),
+    maxDebtPerHarvest: z.bigint(),
+    lastReport: z.bigint(),
+    totalDebt: z.bigint(),
+    totalDebtUsd: z.number(),
+    totalGain: z.bigint(),
+    totalGainUsd: z.number(),
+    totalLoss: z.bigint(),
+    totalLossUsd: z.number()
+  })),
+  risk: RiskScoreSchema,
+  meta: VaultMetaSchema.merge(z.object({ token: TokenMetaSchema }))
+})
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const strategies = await projectStrategies(chainId, address)
@@ -15,6 +37,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const risk = await getRiskScore(chainId, address)
   const meta = await getVaultMeta(chainId, address)
   const token = await getTokenMeta(chainId, data.token)
+  // return ResultSchema.parse({ strategies, withdrawalQueue, debts, risk, meta: { ...meta, token } })
   return { strategies, withdrawalQueue, debts, risk, meta: { ...meta, token } }
 }
 

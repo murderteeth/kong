@@ -12,8 +12,10 @@ const hookre: { [type in HookType]: RegExp } = {
   timeseries: timeseriesHookRegex
 }
 
+export const defaultRoot = __dirname
+
 export async function requireHooks(path?: string): Promise<ResolveHooks> {
-  const hooks = await __requireHooks(path || __dirname, '')
+  const hooks = await __requireHooks(path || defaultRoot, '')
   return (path: string, type?: HookType) => {
     const abiPathRegex = new RegExp(`^${path}(/|$)`)
     return hooks.filter(h => {
