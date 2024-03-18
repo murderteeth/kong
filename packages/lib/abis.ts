@@ -34,9 +34,6 @@ export type ThingsConfig = z.infer<typeof ThingsConfigSchema>
 
 export const AbiConfigSchema = z.object({
   abiPath: z.string(),
-  schedule: z.string(),
-  start: z.boolean().optional().default(false),
-  fromIncept: z.boolean().optional().default(false),
   sources: SourceConfigSchema.array().optional().default([]),
   things: ThingsConfigSchema.optional(),
   skip: z.boolean().optional().default(false),
@@ -45,7 +42,13 @@ export const AbiConfigSchema = z.object({
 
 export type AbiConfig = z.infer<typeof AbiConfigSchema>
 
+const CronConfigSchema = z.object({
+  start: z.boolean().optional().default(false),
+  schedule: z.string()
+})
+
 const YamlConfigSchema = z.object({
+  cron: CronConfigSchema,
   abis: z.array(AbiConfigSchema)
 })
 
@@ -63,10 +66,10 @@ const allAbis = config.abis.map(abi => ({
   id: keccak256(toBytes(JSON.stringify(abi)))
 }))
 
+const cron = config.cron
 const abis = prune(allAbis)
 
-export { abis }
-export default abis
+export { abis, cron }
 
 export function prune(abis: AbiConfig[]): AbiConfig[] {
   const copy = AbiConfigSchema.array().parse(JSON.parse(JSON.stringify(abis)))

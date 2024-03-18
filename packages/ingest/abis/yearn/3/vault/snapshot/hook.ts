@@ -59,7 +59,8 @@ export default async function process(chainId: number, address: `0x${string}`, d
     }))
   }
 
-  return ResultSchema.parse({ strategies, allocator, debts, fees, risk, meta: { ...meta, token } })
+  // return ResultSchema.parse({ strategies, allocator, debts, fees, risk, meta: { ...meta, token } })
+  return { strategies, allocator, debts, fees, risk, meta: { ...meta, token } }
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {

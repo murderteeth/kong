@@ -54,7 +54,7 @@ Kong implements a convention-based relationship between `abis.yaml` and the spec
 
 - "Things" in kong are analogous to "entities" in conventional etl design.
 
-- Use hooks to create things, then use things as source addresses for indexing contracts.
+- Use hooks to create things. Use things as indexer sources.
 
 - Hooks have a convention-based implementation as well. They are co-located with abis, the hook type indicated by the use of `snapshot`, `event`, or `timeseries` in the path name. The hook itself must always be named `hook.ts`. Kong's hook resolver supports "hoisting" so you can, for example, write one transfer event hook to price transfer events across different contracts.
 

@@ -1,5 +1,5 @@
+export * as abisConfig from './abis'
 export { chains } from './chains'
-export { abis } from './abis'
 export { cache } from './cache'
 export * as mq from './mq'
 export * as types from './types'

@@ -1,10 +1,10 @@
-import { abis, mq } from 'lib'
+import { abisConfig, mq } from 'lib'
 import * as things from '../things'
 import { setTimeout } from 'timers/promises'
 
 export default class AbisFanout {
   async fanout(data: any) {
-    for (const abi of abis) {
+    for (const abi of abisConfig.abis) {
       for (const source of abi.sources) {
         console.info('🤝', 'source', 'abiPath', abi.abiPath, source.chainId, source.address)
         const _data = { ...data, abi, source }
