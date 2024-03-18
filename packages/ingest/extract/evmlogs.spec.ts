@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { extractLogArgs } from './evmlogs'
 
-describe.only('extract/evmlogs', function() {
+describe('extract/evmlogs', function() {
   it('converts log args', async function() {
     expect(extractLogArgs({})).to.deep.equal({})
     expect(extractLogArgs({ args: {} })).to.deep.equal({})
