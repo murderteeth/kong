@@ -120,15 +120,23 @@ Once an index is initialized, `fanout abis` can be run on a schedule, eg every 1
 ### Replay an index
 Made a mistake in one of your hooks? Patch your code and replay, no need to re-extract. From the command line run `make dev`. From the Kong's terminal UI select `ingest` then `fanout replays`.
 
-
 ### Postgres schema
-`evmlog` - raw evm logs + hook data
+`evmlog` - raw evm logs + event hook data
+
 `evmlog_strides` - state of event block coverage
-`snapshot` - latest snapshot of each contract + hook data
+
+`snapshot` - latest snapshot of each contract + snapshot hook data
+
 `thing` - domain object definitions
+
+`output` - timeseries hook data
+
 `price` - price data
+
 `latest_block` - latest block numbers
+
 `monitor` - system stats
+
 
 ## Cheats
 
