@@ -30,6 +30,8 @@ export default async function _process(chainId: number, address: `0x${string}`, 
     [chainId, address, 'vault']
   )
 
+  if (!vault) return []
+
   const { source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
   const artificialBlockTime = endOfDay(data.blockTime)
 

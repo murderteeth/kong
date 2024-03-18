@@ -54,6 +54,8 @@ export default async function _process(chainId: number, address: `0x${string}`, 
     [chainId, address, label]
   )
 
+  if (!vault) return []
+
   const strategies: `0x${string}`[] = []
   if (compare(vault.defaults.apiVersion, '3.0.0', '>=')) {
     strategies.push(...await snapshot__v3.projectStrategies(chainId, address, blockNumber))
