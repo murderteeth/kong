@@ -51,9 +51,9 @@ export default function Vault() {
     {vault.defaultQueue.length > 0 && vault.defaultQueue.map((strategy, index) => 
       <div key={index} className="flex items-center justify-between">
         <div className="text-sm">{strategy.name}</div>
-        <Frosty _key={`vault-tvl-${fPercent(strategy.apyNet)}`}
+        <Frosty _key={`vault-tvl-${fPercent(strategy.apyNet || 0)}`}
           className={'text-sm'}>
-          {`APY ${fPercent(strategy.apyNet)}`}
+          {`APY ${fPercent(strategy.apyNet || 0)}`}
         </Frosty>
       </div>
     )}
