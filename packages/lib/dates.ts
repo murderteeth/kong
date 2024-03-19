@@ -17,6 +17,10 @@ export function startOfDayMs(milliseconds: number): number {
   return date.getTime()
 }
 
+export function startOfDay(blocktime: bigint): bigint {
+  return BigInt(Math.floor(startOfDayMs(Number(blocktime) * 1000) / 1000))
+}
+
 export function endOfDayMs(milliseconds: number): number {
   const date = new Date(milliseconds)
   date.setHours(23, 59, 59, 999)

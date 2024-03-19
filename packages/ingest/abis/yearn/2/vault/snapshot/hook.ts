@@ -7,6 +7,9 @@ import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
+import { getBlockTime } from 'lib/blocks'
+import abi from '../abi.json'
+import { math } from 'lib'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -26,6 +29,9 @@ export const ResultSchema = z.object({
     totalLoss: z.bigint(),
     totalLossUsd: z.number()
   })),
+  unlock: z.object({
+    unlockedAssets: z.bigint()
+  }),
   risk: RiskScoreSchema,
   meta: VaultMetaSchema.merge(z.object({ token: TokenMetaSchema }))
 })
@@ -34,6 +40,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const strategies = await projectStrategies(chainId, address)
   const withdrawalQueue = await extractWithdrawalQueue(chainId, address)
   const debts = await extractDebts(chainId, address)
+  const unlock = await extractUnlock(chainId, address)
   const risk = await getRiskScore(chainId, address)
   const meta = await getVaultMeta(chainId, address)
   const token = await getTokenMeta(chainId, data.token)
@@ -80,7 +87,7 @@ export async function projectStrategies(chainId: number, vault: `0x${string}`, b
   return result
 }
 
-async function extractDebts(chainId: number, vault: `0x${string}`) {
+export async function extractDebts(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
   const results = z.object({
     strategy: zhexstring,
     performanceFee: z.bigint({ coerce: true }),
@@ -100,25 +107,25 @@ async function extractDebts(chainId: number, vault: `0x${string}`) {
   const snapshot = await db.query(
     `SELECT
       snapshot->'token' AS token,
-      snapshot->'decimals' AS decimals,
-      hook->'strategies' AS strategies
+      snapshot->'decimals' AS decimals
     FROM snapshot
     WHERE chain_id = $1 AND address = $2`,
     [chainId, vault]
   )
 
-  const { token, decimals, strategies } = z.object({
+  const { token, decimals } = z.object({
     token: zhexstring.nullish(),
-    decimals: z.number({ coerce: true }).nullish(),
-    strategies: zhexstring.array().nullish()
+    decimals: z.number({ coerce: true }).nullish()
   }).parse(snapshot.rows[0] || {})
+
+  const strategies = await projectStrategies(chainId, vault, blockNumber)
 
   if (!(token && decimals && strategies) || strategies.length === 0) return []
 
   const abi = parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)'])
-  const multicall = await rpcs.next(chainId).multicall({ contracts: strategies.map(strategy => ({
+  const multicall = await rpcs.next(chainId, blockNumber).multicall({ contracts: strategies.map(strategy => ({
     address: vault, functionName: 'strategies', args: [strategy], abi
-  })) })
+  })), blockNumber })
 
   if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
 
@@ -188,4 +195,35 @@ export async function extractWithdrawalQueue(chainId: number, address: `0x${stri
 
   return multicall.filter(result => result.status === 'success' && result.result && result.result !== zeroAddress)
   .map(result => result.result as `0x${string}`)
+}
+
+export async function extractUnlock(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
+  const DAY = 24 * 60 * 60
+  const MAX_BPS_EXTENDED = 1_000_000_000_000n
+  const DEGRADATION_COEFFICIENT = 1_000_000_000_000_000_000n
+  const blockTime = await getBlockTime(chainId, blockNumber)
+
+  const multicall = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
+    { address: vault, abi, functionName: 'lastReport' },
+    { address: vault, abi, functionName: 'lockedProfit' },
+    { address: vault, abi, functionName: 'lockedProfitDegradation' }
+  ], blockNumber })
+
+  if (multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+
+  const lastReport = multicall[0].result! as bigint
+  const lockedProfit = multicall[1].result! as bigint
+  const lockedProfitDegradation = multicall[2].result! as bigint
+  const degradationTime = Math.floor(math.div(DEGRADATION_COEFFICIENT, lockedProfitDegradation))
+  const fullProfitUnlockTime = lastReport + BigInt(degradationTime)
+
+  let unlockedAssets = 0n
+  if ((fullProfitUnlockTime || 0n) > blockTime) {
+    const period = math.min(BigInt(DAY), (fullProfitUnlockTime || 0n) - blockTime)
+    unlockedAssets = (period * (lockedProfit || 0n)) / MAX_BPS_EXTENDED
+  }
+
+  return {
+    unlockedAssets
+  }
 }

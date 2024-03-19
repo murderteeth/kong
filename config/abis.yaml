@@ -9,7 +9,7 @@ cron:
 abis:
   - abiPath: 'yearn/3/registry'
     sources: [
-      { chainId: 137, address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500', inceptBlock: 49100596 }
+      { only: true, startBlock: 49181585, endBlock: 49181585, chainId: 137, address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500', inceptBlock: 49100596 }
     ]
 
   - abiPath: 'yearn/3/registry2'
@@ -65,13 +65,10 @@ abis:
     ]
 
   - abiPath: 'yearn/2/vault'
-    sources: [
-      { chainId: 1, address: '0xa354F35829Ae975e850e23e9615b11Da1B3dC4DE', inceptBlock: 13513457 }
-    ]
-    # things: {
-    #   label: 'vault',
-    #   filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
-    # }
+    things: {
+      label: 'vault',
+      filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
+    }
 
   - abiPath: 'yearn/2/strategy'
     things: {

@@ -5,10 +5,8 @@ import { _compute, extractFees__v2, extractFees__v3, extractLockedProfit__v2, ex
 import { EvmLogSchema, ThingSchema } from 'lib/types'
 import { upsertBatch } from '../../../load'
 import db from '../../../db'
-import { estimateHeight, getBlock } from 'lib/blocks'
-import { rpcs } from '../../../rpcs'
 
-describe('abis/yearn/lib/apy', function() {
+describe.only('abis/yearn/lib/apy', function() {
   this.timeout(10_000)
 
   this.beforeAll(async function() {

@@ -2,13 +2,14 @@ import { z } from 'zod'
 import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
 import { RiskScoreSchema, ThingSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
-import { mq } from 'lib'
-import { estimateCreationBlock } from 'lib/blocks'
+import { math, mq } from 'lib'
+import { estimateCreationBlock, getBlockTime } from 'lib/blocks'
 import db, { getSparkline } from '../../../../../db'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
+import abi from '../abi.json'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -26,6 +27,10 @@ export const ResultSchema = z.object({
     managementFee: z.number(),
     performanceFee: z.number()
   }),
+  unlock: z.object({
+    unlockedShares: z.bigint(),
+    unlockedAssets: z.bigint()
+  }),
   risk: RiskScoreSchema,
   meta: VaultMetaSchema.merge(z.object({ token: TokenMetaSchema }))
 })
@@ -42,6 +47,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const allocator = await projectDebtAllocator(chainId, address)
   const debts = await extractDebts(chainId, address)
   const fees = await extractFeesBps(chainId, address, snapshot)
+  const unlock = await extractUnlock(chainId, address)
   const risk = await getRiskScore(chainId, address)
   const meta = await getVaultMeta(chainId, address)
   const token = await getTokenMeta(chainId, data.asset)
@@ -88,20 +94,20 @@ export async function projectStrategies(chainId: number, vault: `0x${string}`, b
   return result
 }
 
-export async function projectDebtAllocator(chainId: number, vault: `0x${string}`) {
+export async function projectDebtAllocator(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
   const topic = toEventSelector('event NewDebtAllocator(address indexed allocator, address indexed vault)')
   const events = await db.query(`
   SELECT args 
   FROM evmlog 
-  WHERE chain_id = $1 AND signature = $2 AND args->>'vault' = $3
+  WHERE chain_id = $1 AND signature = $2 AND args->>'vault' = $3 AND (block_number <= $4 OR $4 IS NULL)
   ORDER BY block_number, log_index DESC
   LIMIT 1`, 
-  [chainId, topic, vault])
+  [chainId, topic, vault, blockNumber])
   if(events.rows.length === 0) return undefined
   return zhexstring.parse(events.rows[0].args.allocator)
 }
 
-export async function extractDebts(chainId: number, vault: `0x${string}`) {
+export async function extractDebts(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
   const results: {
     strategy: `0x${string}`,
     currentDebt: bigint,
@@ -115,24 +121,23 @@ export async function extractDebts(chainId: number, vault: `0x${string}`) {
   const snapshot = await db.query(
     `SELECT
       snapshot->'asset' AS asset,
-      snapshot->'decimals' AS decimals,
-      hook->'strategies' AS strategies,
-      hook->'allocator' AS allocator
+      snapshot->'decimals' AS decimals
     FROM snapshot
     WHERE chain_id = $1 AND address = $2`,
     [chainId, vault]
   )
 
-  const { asset, decimals, strategies, allocator } = z.object({
+  const { asset, decimals } = z.object({
     asset: zhexstring.nullish(),
-    decimals: z.number().nullish(),
-    strategies: zhexstring.array().nullish(),
-    allocator: zhexstring.nullish()
+    decimals: z.number().nullish()
   }).parse(snapshot.rows[0] || {})
+
+  const strategies = await projectStrategies(chainId, vault, blockNumber)
+  const allocator = await projectDebtAllocator(chainId, vault, blockNumber)
 
   if (asset && decimals && strategies && allocator) {
     for (const strategy of strategies) {
-      const multicall = await rpcs.next(chainId).multicall({ contracts: [
+      const multicall = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
         {
           address: vault, functionName: 'strategies', args: [strategy],
           abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)'])
@@ -145,7 +150,7 @@ export async function extractDebts(chainId: number, vault: `0x${string}`) {
           address: allocator || zeroAddress, functionName: 'getStrategyMaxRatio', args: [strategy],
           abi: parseAbi(['function getStrategyMaxRatio(address) view returns (uint256)'])
         }
-      ]})
+      ], blockNumber })
 
       if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
       const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result!
@@ -189,5 +194,40 @@ export async function extractFeesBps(chainId: number, address: `0x${string}`, sn
       managementFee: 0,
       performanceFee: performanceFee
     }
+  }
+}
+
+export async function extractUnlock(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
+  const DAY = 24 * 60 * 60
+  const MAX_BPS_EXTENDED = 1_000_000_000_000n
+  const blockTime = await getBlockTime(chainId, blockNumber)
+
+  const multicall = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
+    { address: vault, abi, functionName: 'fullProfitUnlockDate' },
+    { address: vault, abi, functionName: 'profitUnlockingRate' }
+  ], blockNumber })
+
+  if (multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+
+  const fullProfitUnlockDate = multicall[0].result! as bigint
+  const profitUnlockingRate = multicall[1].result! as bigint
+
+  let unlockedShares = 0n
+  if((fullProfitUnlockDate || 0n) > blockTime) {
+    const period = math.min(BigInt(DAY), (fullProfitUnlockDate || 0n) - blockTime)
+    unlockedShares = (period * (profitUnlockingRate || 0n)) / MAX_BPS_EXTENDED
+  }
+
+  const unlockedAssets = await rpcs.next(chainId, blockNumber).readContract({
+    address: vault,
+    abi: parseAbi(['function convertToAssets(uint256) view returns (uint256)']),
+    functionName: 'convertToAssets',
+    args: [unlockedShares],
+    blockNumber
+  })
+
+  return { 
+    unlockedShares,
+    unlockedAssets
   }
 }

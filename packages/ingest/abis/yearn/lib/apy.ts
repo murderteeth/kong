@@ -2,8 +2,8 @@ import { z } from 'zod'
 import { Data } from '../../../extract/timeseries'
 import { EvmLog, EvmLogSchema, Output, OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
 import { first, query } from '../../../db'
-import { estimateHeight, getBlock } from 'lib/blocks'
-import { math, multicall3 } from 'lib'
+import { estimateHeight, getBlock, getBlockTime } from 'lib/blocks'
+import { dates, math, multicall3 } from 'lib'
 import { ReadContractParameters, parseAbi } from 'viem'
 import { mainnet } from 'viem/chains'
 import { rpcs } from '../../../rpcs'
@@ -28,6 +28,10 @@ export const APYSchema = z.object({
   grossApr: z.number(),
   pricePerShare: z.bigint({ coerce: true }),
   lockedProfit: z.bigint({ coerce: true }).nullish(),
+  harvestProfit: z.bigint({ coerce: true }),
+  harvestLoss: z.bigint({ coerce: true }),
+  refund: z.bigint({ coerce: true }),
+  unlock: z.bigint({ coerce: true }),
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true })
 })
@@ -56,12 +60,7 @@ export default async function _process(chainId: number, address: `0x${string}`, 
 
   if (!vault) return []
 
-  const strategies: `0x${string}`[] = []
-  if (compare(vault.defaults.apiVersion, '3.0.0', '>=')) {
-    strategies.push(...await snapshot__v3.projectStrategies(chainId, address, blockNumber))
-  } else {
-    strategies.push(...await snapshot__v2.projectStrategies(chainId, address, blockNumber))
-  }
+  const strategies: `0x${string}`[] = await projectStrategies(vault, blockNumber)
 
   const apy = await _compute(vault, strategies, blockNumber)
   if (!apy) return []
@@ -140,6 +139,10 @@ export async function _compute(vault: Thing, strategies: `0x${string}`[], blockN
     net: 0,
     grossApr: 0,
     pricePerShare: 0n,
+    harvestProfit: 0n,
+    harvestLoss: 0n,
+    refund: 0n,
+    unlock: 0n,
     blockNumber: block.number,
     blockTime: block.timestamp,
   })
@@ -209,6 +212,13 @@ export async function _compute(vault: Thing, strategies: `0x${string}`[], blockN
   result.lockedProfit = compare(vault.defaults.apiVersion, '3.0.0', '>=')
   ? await extractLockedProfit__v3(chainId, address, blockNumber)
   : await extractLockedProfit__v2(chainId, address, blockNumber)
+
+  const unlock = await extractUnlock(vault, blockNumber)
+  const pnl = await fetchPnL(vault, blockNumber)
+  result.harvestProfit = pnl.profit
+  result.harvestLoss = pnl.loss
+  result.refund = pnl.refund
+  result.unlock = unlock.unlockedAssets
 
   return result
 }
@@ -428,5 +438,85 @@ export async function extractLockedProfit__v3(chainId: number, address: `0x${str
     console.warn('🚨', 'extractLockedProfit__v3', 'readContract fail', chainId, address, blockNumber)
     console.warn(error)
     return undefined
+  }
+}
+
+async function projectStrategies(vault: Thing, blockNumber: bigint) {
+  if (compare(vault.defaults.apiVersion, '3.0.0', '>=')) {
+    return await snapshot__v3.projectStrategies(vault.chainId, vault.address, blockNumber)
+  } else {
+    return await snapshot__v2.projectStrategies(vault.chainId, vault.address, blockNumber)
+  }
+}
+
+async function extractUnlock(vault: Thing, blockNumber: bigint) {
+  if (compare(vault.defaults.apiVersion, '3.0.0', '>=')) {
+    return await snapshot__v3.extractUnlock(vault.chainId, vault.address, blockNumber)
+  } else {
+    return await snapshot__v2.extractUnlock(vault.chainId, vault.address, blockNumber)
+  }
+}
+
+async function fetchReports(vault: Thing, blockNumber: bigint) {
+  const blockTime = await getBlockTime(vault.chainId, blockNumber)
+  const sod = dates.startOfDay(blockTime)
+  const eod = dates.endOfDay(blockTime)
+
+  if (compare(vault.defaults.apiVersion, '3.0.0', '>=')) {
+    const logs = await query<EvmLog>(EvmLogSchema, `
+    SELECT * FROM evmlog 
+    WHERE chain_id = $1 AND address = $2 AND event_name = $3 
+    AND block_timestamp >= $4 AND block_timestamp <= $5`, 
+    [vault.chainId, vault.address, 'StrategyReported', sod, eod])
+
+    const profit = logs.reduce((a, b) => a + BigInt(b.args.gain), 0n)
+    const loss = logs.reduce((a, b) => a + BigInt(b.args.loss), 0n)
+    const refund = logs.reduce((a, b) => a + BigInt(b.args.total_refunds), 0n)
+    return { profit, loss, refund }
+
+  } else {
+    const logs = await query<EvmLog>(EvmLogSchema, `
+    SELECT * FROM evmlog 
+    WHERE chain_id = $1 AND address = $2 AND event_name = $3 
+    AND block_timestamp >= $4 AND block_timestamp <= $5`, 
+    [vault.chainId, vault.address, 'StrategyReported', sod, eod])
+
+    const profit = logs.reduce((a, b) => a + BigInt(b.args.gain), 0n)
+    const loss = logs.reduce((a, b) => a + BigInt(b.args.loss), 0n)
+    const refund = 0n
+    return { profit, loss, refund }
+
+  }
+}
+
+async function fetchPnL(vault: Thing, blockNumber: bigint) {
+  const blockTime = await getBlockTime(vault.chainId, blockNumber)
+  const sod = dates.startOfDay(blockTime)
+  const eod = dates.endOfDay(blockTime)
+
+  if (compare(vault.defaults.apiVersion, '3.0.0', '>=')) {
+    const logs = await query<EvmLog>(EvmLogSchema, `
+    SELECT * FROM evmlog 
+    WHERE chain_id = $1 AND address = $2 AND event_name = $3 
+    AND block_timestamp >= $4 AND block_timestamp <= $5`, 
+    [vault.chainId, vault.address, 'StrategyReported', sod, eod])
+
+    const profit = logs.reduce((a, b) => a + BigInt(b.args.gain), 0n)
+    const loss = logs.reduce((a, b) => a + BigInt(b.args.loss), 0n)
+    const refund = logs.reduce((a, b) => a + BigInt(b.args.total_refunds), 0n)
+    return { profit, loss, refund }
+
+  } else {
+    const logs = await query<EvmLog>(EvmLogSchema, `
+    SELECT * FROM evmlog 
+    WHERE chain_id = $1 AND address = $2 AND event_name = $3 
+    AND block_timestamp >= $4 AND block_timestamp <= $5`, 
+    [vault.chainId, vault.address, 'StrategyReported', sod, eod])
+
+    const profit = logs.reduce((a, b) => a + BigInt(b.args.gain), 0n)
+    const loss = logs.reduce((a, b) => a + BigInt(b.args.loss), 0n)
+    const refund = 0n
+    return { profit, loss, refund }
+
   }
 }
