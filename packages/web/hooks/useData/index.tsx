@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react'
-import { DEFAULT_CONTEXT, DataContext } from './types'
+import { DEFAULT_CONTEXT, DataContext, DataContextSchema } from './types'
 import useSWR from 'swr'
 
 const endpoint = process.env.NEXT_PUBLIC_GQL || '/api/gql'
@@ -168,7 +168,13 @@ export default function DataProvider({children}: {children: ReactNode}) {
   )
 
   useEffect(() => {
-    setData({...DEFAULT_CONTEXT, ...vault?.data, ...status?.data})
+    const result = DataContextSchema.safeParse({
+      ...DEFAULT_CONTEXT, 
+      ...vault?.data, 
+      ...status?.data
+    })
+    setData(result.success ? result.data : DEFAULT_CONTEXT)
+    if (!result.success) console.error(result.error.errors)
   }, [status, vault, setData])
 
   return <dataContext.Provider value={data}>{children}</dataContext.Provider>

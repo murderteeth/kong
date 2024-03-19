@@ -24,7 +24,7 @@ const QueueSchema_v2 = z.object({
 const QueueSchema_v3 = z.object({
   name: z.string(),
   address: z.string(),
-  apyNet: z.number()
+  apyNet: z.number().nullish()
 })
 
 const APYSparklineSchema = z.object({
@@ -151,7 +151,7 @@ const MonitorSchema = z.object({
 type Monitor = z.infer<typeof MonitorSchema>
 
 export const DataContextSchema = z.object({
-  latestBlocks: z.array(LatestBlockSchema),
+  latestBlocks: z.array(LatestBlockSchema).default([]),
   vault: VaultSchema.nullish(),
   tvls: z.array(TVLSchema).default([]),
   apys: z.array(APYSchema).default([]),

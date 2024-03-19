@@ -40,7 +40,7 @@ function HarvestComponent({ harvest }: { harvest: Harvest }) {
     <div className="w-full flex items-center justify-between">
       <div className="text-xs">{'time'}</div>
       <div className="text-xs text-yellow-700">
-        <ReactTimeago date={Number(harvest.blockTime)} />
+        <ReactTimeago date={new Date(Number(harvest.blockTime.replace('n', '')) * 1000)} />
       </div>
     </div>
   </div>
