@@ -14,40 +14,14 @@ async function action() {
       name: 'q',
       message: 'pick an ingest job',
       choices: [
-        { title: 'index registry events', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.registry
+        { title: 'fanout abis', value: {
+          job: mq.job.fanout.abis
         }},
-        { title: 'index factory events', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.factory
-        }},
-        { title: 'index vault events', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.vault
-        }},
-        { title: 'compute tvls', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.tvl
-        }},
-        { title: 'compute apys', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.apy
-        }},
-        { title: 'compute harvest aprs', value: {
-          name: mq.q.fanout,
-          job: mq.job.fanout.harvestApr
-        }},
-        { title: 'update risk', value: {
-          name: mq.q.extract,
-          job: mq.job.extract.risk
-        }},
-        { title: 'update meta', value: {
-          name: mq.q.extract,
-          job: mq.job.extract.meta
+        { title: 'fanout replays', value: {
+          job: mq.job.fanout.abis,
+          data: { replay: true }
         }},
         { title: 'extract waveydb', value: {
-          name: mq.q.extract,
           job: mq.job.extract.waveydb
         }},
       ]
@@ -55,13 +29,11 @@ async function action() {
     {
       type: 'confirm',
       name: 'confirm',
-      message: (_, all) => `🤔 ${all.q.name} ${all.q.job}?`,
+      message: (_, all) => `🤔 ${all.q.job.queue}/${all.q.job.name}?`,
     }
   ])
 
   if (confirm) {
-    const queue = mq.queue(q.name)
-    await queue.add(q.job, {})
-    await queue.close()
+    await mq.add(q.job, q.data || {})
   }
 }

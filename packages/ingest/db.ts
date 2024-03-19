@@ -1,5 +1,8 @@
+import { z } from 'zod'
 import { strings, types } from 'lib'
+import { StrideSchema } from 'lib/types'
 import { Pool, PoolClient, types as pgTypes } from 'pg'
+import { snakeToCamelCols, snakeToCamel } from 'lib/strings'
 
 // Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
@@ -23,6 +26,22 @@ const db = new Pool({
 
 export default db
 
+export async function query<T>(schema: z.ZodType<T>, sql: string, params: any[] = []) {
+  return await _query<T>(schema)(sql, params)
+}
+
+export async function first<T>(schema: z.ZodType<T>, sql: string, params: any[] = []) {
+  return (await _query<T>(schema)(sql, params))[0]
+}
+
+function _query<T>(schema: z.ZodType<T>) {
+  return async function(sql: string, values: any[]) {
+    const rows = (await db.query(sql, values)).rows
+    const rowsInCamelCase = snakeToCamelCols(rows)
+    return schema.array().parse(rowsInCamelCase)
+  }
+}
+
 export async function some(query: string, params: any[] = [], client?: PoolClient) {
   const result = await (client ?? db).query(query, params)
   return result.rows.length > 0
@@ -38,89 +57,6 @@ export async function firstValue<T>(query: string, params: any[] = [], client?: 
   return result.rows[0] ? result.rows[0][Object.keys(result.rows[0])[0]] as T : undefined
 }
 
-export async function getLatestBlock(chainId: number) {
-  const result = await db.query(`
-    SELECT block_number
-    FROM latest_block
-    WHERE chain_id = $1
-  `, [chainId])
-  return (result.rows[0]?.block_number || 0) as bigint
-}
-
-export async function getAddressPointer(chainId: number, address: string, client?: PoolClient) {
-  return await getBlockPointer(`${chainId}/${address}`, client)
-}
-
-export async function getBlockPointer(pointer: string, client?: PoolClient) {
-  const result = await (client ?? db).query(`
-    SELECT block_number
-    FROM block_pointer
-    WHERE pointer = $1
-  `, [pointer])
-  return BigInt(result.rows[0]?.block_number || 0) as bigint
-}
-
-export async function setAddressPointer(chainId: number, address: string, blockNumber: bigint, client?: PoolClient) {
-  await setBlockPointer(`${chainId}/${address}`, blockNumber, client)
-}
-
-export async function setBlockPointer(pointer: string, blockNumber: bigint, client?: PoolClient) {
-  await (client ?? db).query(`
-    INSERT INTO public.block_pointer (pointer, block_number)
-    VALUES ($1, $2)
-    ON CONFLICT (pointer)
-    DO UPDATE SET
-      block_number = EXCLUDED.block_number;
-  `, [pointer, blockNumber])
-}
-
-export async function getVaultPointers(chainId: number) {
-  const result = await db.query(`
-    SELECT
-      v.address,
-      v.api_version as "apiVersion",
-      COALESCE(v.activation_block_number, 0) AS "activationBlockNumber",
-      COALESCE(p.block_number, 0) AS "blockNumber"
-    FROM vault v
-    LEFT JOIN block_pointer p
-    ON p.pointer = v.chain_id::text || '/' || v.address
-    WHERE v.chain_id = $1;
-  `, [chainId])
-  return result.rows.map(r => ({
-    address: r.address as string,
-    apiVersion: r.apiVersion as string,
-    activationBlockNumber: BigInt(r.activationBlockNumber),
-    blockNumber: BigInt(r.blockNumber)
-  }))
-}
-
-export async function getErc20(chainId: number, address: string) {
-  const result = await db.query(`
-    SELECT 
-      address,
-      name,
-      symbol,
-      decimals
-    FROM erc20
-    WHERE chain_id = $1 AND address = $2;
-  `, [chainId, address])
-  return result.rows[0] as {
-    address: `0x${string}`, 
-    name: string,
-    symbol: string,
-    decimals: number
-  }
-}
-
-export async function getApiVersion(vault: types.Vault) {
-  const result = await firstRow(`
-    SELECT api_version as "apiVersion" FROM vault WHERE chain_id = $1 AND address = $2
-    UNION SELECT api_version as "apiVersion" FROM strategy WHERE chain_id = $1 AND address = $2;`,
-    [vault.chainId, vault.address]
-  )
-  return result?.apiVersion as string | undefined
-}
-
 export async function getSparkline(chainId: number, address: string, type: string) {
   const result = await db.query(`
     SELECT
@@ -131,6 +67,15 @@ export async function getSparkline(chainId: number, address: string, type: strin
     ORDER BY time ASC;
   `, [chainId, address, type])
   return result.rows as types.SparklinePoint[]
+}
+
+export async function getTravelledStrides(chainId: number, address: `0x${string}`, client?: PoolClient) {
+  const result = await (client ?? db).query(
+    `SELECT strides FROM evmlog_strides WHERE chain_id = $1 AND address = $2 ${client ? 'FOR UPDATE' : ''};`,
+    [chainId, address]
+  )
+  const stridesJson = result.rows[0]?.strides
+  return stridesJson ? StrideSchema.array().parse(JSON.parse(stridesJson)) : undefined
 }
 
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {

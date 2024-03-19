@@ -13,7 +13,7 @@ import {
   ChartData, 
   ChartOptions
 } from 'chart.js'
-import { fPercent, fUSD } from '@/util/format'
+import { fPercent, fUSD } from '@/lib/format'
 
 ChartJS.register(
   CategoryScale,

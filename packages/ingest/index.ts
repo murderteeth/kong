@@ -1,10 +1,10 @@
-require('lib/json.monkeypatch')
+import 'lib/global'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
-import { cache, crons as cronsConfig, mq } from 'lib'
+import { cache, chains, abisConfig, crons as cronsConfig, mq } from 'lib'
 import db from './db'
 import { camelToSnake } from 'lib/strings'
 
@@ -16,6 +16,9 @@ const exportsProcessor = (filePath: string): boolean => {
   const regex = /export default class \S+ implements Processor/
   return regex.test(fileContent)
 }
+
+console.log('🔗', 'chains', `[${chains.map(c => c.name.toLowerCase()).join(' x ')}]`)
+console.log('⚙', 'abis', `[${abisConfig.abis.map(c => c.abiPath).join(' x ')}]`)
 
 const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   const tenMinutes = 10 * 60 * 1000
@@ -29,24 +32,31 @@ const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   }
 }).filter(p => p) as Processor[]
 
+
 const crons = cronsConfig.default
 .filter(cron => cron.start)
 .map(cron => new Promise((resolve, reject) => {
-  const queue = mq.queue(cron.queue)
-  queue.add(cron.job, { id: camelToSnake(cron.name) }, {
+  mq.add(mq.job[cron.queue][cron.job], { id: camelToSnake(cron.name) }, {
     repeat: { pattern: cron.schedule }
   }).then(() => {
     console.log('⬆', 'cron up', cron.name)
-    queue.close().then(resolve).catch(reject)
   })
 }))
+
+const abis = abisConfig.cron.start
+? mq.add(mq.job.fanout.abis, { id: 'mq.job.fanout.abis' }, {
+  repeat: { pattern: abisConfig.cron.schedule }
+}).then(() => {
+  console.log('⬆', 'abis up')
+}) : Promise<null>
 
 function up() {
   Promise.all([
     rpcs.up(),
     cache.up(),
     ...pools.map(pool => pool.up()),
-    ...crons
+    ...crons,
+    abis,
   ]).then(() => {
 
     console.log('🐒 ingest up')

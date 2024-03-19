@@ -4,7 +4,7 @@ import React, { useMemo } from 'react'
 import Panel from './Panel'
 import { useData } from '@/hooks/useData'
 import { zeroAddress } from 'viem'
-import { fEvmAddress, fUSD } from '@/util/format'
+import { fEvmAddress, fUSD } from '@/lib/format'
 import ReactTimeago from 'react-timeago'
 import { Transfer } from '@/hooks/useData/types'
 
@@ -39,7 +39,7 @@ function TransferComponent({ transfer }: { transfer: Transfer }) {
     <div className="w-full flex items-center justify-between">
       <div className={`text-xs ${labelColor}`}>{'time'}</div>
       <div className={`text-xs ${amountColor}`}>
-        <ReactTimeago date={Number(transfer.blockTime)} />
+        <ReactTimeago date={Number(transfer.blockTime) * 1000} />
       </div>
     </div>
   </div>

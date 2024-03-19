@@ -1,7 +1,7 @@
 import db from '../../db'
 
 const byStrategy = async (chainId?: number, address?: string, limit?: number) => {
-  const result = await db.query(`
+  const harvests = (await db.query(`
   SELECT
     chain_id AS "chainId",
     address,
@@ -17,9 +17,7 @@ const byStrategy = async (chainId?: number, address?: string, limit?: number) =>
     block_number AS "blockNumber",
     block_index AS "blockIndex",
     block_time AS "blockTime",
-    transaction_hash AS "transactionHash",
-    apr_gross AS "aprGross",
-    apr_net AS "aprNet"
+    transaction_hash AS "transactionHash"
   FROM
     harvest_gql
   WHERE
@@ -29,13 +27,27 @@ const byStrategy = async (chainId?: number, address?: string, limit?: number) =>
   ORDER BY
     chain_id, block_time DESC, block_index DESC
   LIMIT $3;
-      `, [chainId, address, limit || 1000])
+  `, [chainId, address, limit || 1000])).rows
 
-      return result.rows
+  const outputs = (await db.query(
+  `SELECT DISTINCT ON(chain_id, address, label, component) * 
+  FROM output
+  WHERE (chain_id = $1 OR $1 IS NULL) AND (address = $2 OR $2 IS NULL) AND label = 'apr-spot-harvest'
+  ORDER BY chain_id, address, label, component, block_number DESC`
+  , [chainId, address])).rows
+
+  return harvests.map((harvest: any) => {
+    const apr = outputs.filter((m: any) => m.label === 'apr-spot-harvest' && m.chain_id === harvest.chainId && m.address === harvest.address)
+    return {
+      ...harvest,
+      aprGross: apr.find((a: any) => a.component === 'gross')?.value,
+      aprNet: apr.find((a: any) => a.component === 'net')?.value
+    }
+  })
 }
 
 const byVault = async (chainId: number, address: string, limit?: number) => {
-  const result = await db.query(`
+  const harvests = (await db.query(`
   SELECT
     h.chain_id AS "chainId",
     h.address,
@@ -51,9 +63,7 @@ const byVault = async (chainId: number, address: string, limit?: number) => {
     h.block_number AS "blockNumber",
     h.block_index AS "blockIndex",
     h.block_time AS "blockTime",
-    h.transaction_hash AS "transactionHash",
-    h.apr_gross AS "aprGross",
-    h.apr_net AS "aprNet"
+    h.transaction_hash AS "transactionHash"
   FROM
     harvest_gql h
   JOIN withdrawal_queue wq ON h.chain_id = wq.chain_id AND h.address = wq.strategy_address
@@ -65,9 +75,25 @@ const byVault = async (chainId: number, address: string, limit?: number) => {
   ORDER BY
     h.chain_id, h.block_time DESC, h.block_index DESC
   LIMIT $3;
-      `, [chainId, address, limit || 1000])
+  `, [chainId, address, limit || 1000])).rows
 
-      return result.rows
+  const strategies = harvests.map(h => h.strategy_address)
+
+  const outputs = (await db.query(
+  `SELECT DISTINCT ON(chain_id, address, label, component) * 
+  FROM output
+  WHERE AND chain_id = $1 AND address IN $2 AND label = 'apr-spot-harvest'
+  ORDER BY chain_id, address, label, component, block_number DESC`
+  , [chainId, strategies])).rows
+
+  return harvests.map((harvest: any) => {
+    const apr = outputs.filter((m: any) => m.label === 'apr-spot-harvest' && m.chain_id === harvest.chainId && m.address === harvest.address)
+    return {
+      ...harvest,
+      aprGross: apr.find((a: any) => a.component === 'gross')?.value,
+      aprNet: apr.find((a: any) => a.component === 'net')?.value
+    }
+  })
 }
 
 const harvests = async (_: any, args: { chainId?: number, address?: string, limit?: number }) => {

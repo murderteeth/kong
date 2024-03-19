@@ -8,8 +8,10 @@ import harvests from './harvests'
 import transfers from './transfers'
 import monitor from './monitor'
 import riskGroups from './riskGroups'
+import { bigintScalar } from './bigintScalar'
 
 const resolvers = {
+  BigInt: bigintScalar,
   Query: {
     bananas,
     latestBlocks,

@@ -1,5 +1,5 @@
 .env
-.local/
+.spec
 config/*.local.yaml
 node_modules/
 build/

@@ -12,24 +12,28 @@ WITH sample AS (
     CAST($2 AS text) AS address,
     CAST($3 AS text) AS period,
     time_bucket(CAST($3 AS interval), block_time) AS time,
-    AVG(net) AS average
+    AVG(value) AS average
   FROM
-    apy
+    output
   WHERE
-    chain_id = $1 AND address = $2
+    chain_id = $1 
+    AND address = $2
+    AND label = 'apy-bwd-delta-pps'
+    AND component = 'net'
   GROUP BY
     time
   ORDER BY
     time DESC
-  LIMIT $4
+  LIMIT $4  
 )
+
 SELECT * from sample ORDER BY time ASC;
 
     `, [
         chainId, 
         address, 
         PERIOD[(period || 'ONE_DAY')], 
-        Math.min(limit || 30, 30)
+        Math.min(limit || 90, 90)
       ]
     )
 

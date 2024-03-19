@@ -62,9 +62,7 @@ async function action() {
           }
         ] })
         await rpcs.down()
-
-        const queue = mq.queue(mq.q.extract)
-        await queue.add(mq.job.extract.vault, {
+        await mq.add(mq.job.extract.vault, {
           chainId: chainId,
           type: 'vault',
           registryStatus: 'endorsed',
@@ -72,20 +70,17 @@ async function action() {
           apiVersion: multicall[0].result,
           assetAddress: multicall[1].result
         })
-        await queue.close()
         break
       }
 
       case 'extract-apetax-vaults': {
-        const queue = mq.queue(mq.q.extract)
-        await queue.add(mq.job.extract.apetax, {})
-        await queue.close()
+        await mq.add(mq.job.extract.apetax, {})
         break
       }
 
       case 'flush-failed-jobs': {
         for(const key of Object.keys(mq.q)) {
-          const queue = mq.queue(key)
+          const queue = mq.connect(key)
           await queue.clean(0, Number.MAX_SAFE_INTEGER, 'failed')
           await queue.close()
         }

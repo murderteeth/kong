@@ -1,10 +1,5 @@
 import { z } from 'zod'
 
-const bigIntStringNSchema = z.string().transform((str) => {
-  if (str.endsWith('n')) return BigInt(str.slice(0, -1))
-  return BigInt(str)
-})
-
 const LatestBlockSchema = z.object({
   chainId: z.number(),
   blockNumber: z.bigint({ coerce: true }),
@@ -18,7 +13,7 @@ const TVLSparklineSchema = z.object({
 const QueueSchema_v2 = z.object({
   name: z.string(),
   address: z.string(),
-  netApr: z.number()
+  netApr: z.number().nullish()
 })
 
 const QueueSchema_v3 = z.object({
@@ -32,7 +27,7 @@ const APYSparklineSchema = z.object({
   value: z.number()
 })
 
-const VaultSchema = z.object({
+export const VaultSchema = z.object({
   chainId: z.number(),
   address: z.string(),
   name: z.string(),
@@ -54,13 +49,13 @@ const TVLSchema = z.object({
   low: z.number(),
   close: z.number(),
   period: z.string(),
-  time: z.bigint().or(bigIntStringNSchema)
+  time: z.bigint({ coerce: true })
 })
 
 const APYSchema = z.object({
   average: z.number(),
   period: z.string(),
-  time: z.bigint().or(bigIntStringNSchema)
+  time: z.bigint({ coerce: true })
 })
 
 const TransferSchema = z.object({
@@ -69,7 +64,7 @@ const TransferSchema = z.object({
   sender: z.string(),
   receiver: z.string(),
   amountUsd: z.number(),
-  blockTime: z.bigint().or(bigIntStringNSchema),
+  blockTime: z.bigint({ coerce: true }),
   transactionHash: z.string()
 })
 
@@ -94,25 +89,25 @@ const QueueSchema = z.object({
 })
 
 const DbSchema = z.object({
-  databaseSize: z.number(),
-  indexHitRate: z.number(),
-  cacheHitRate: z.number(),
-  clients: z.number()
+  databaseSize: z.number({ coerce: true }),
+  indexHitRate: z.number({ coerce: true }),
+  cacheHitRate: z.number({ coerce: true }),
+  clients: z.number({ coerce: true })
 })
 
 const MemorySchema = z.object({
-  total: z.number(),
-  used: z.number()
+  total: z.number({ coerce: true }),
+  used: z.number({ coerce: true })
 })
 
 const RedisSchema = z.object({
-  uptime: z.number(),
-  clients: z.number(),
+  uptime: z.number({ coerce: true }),
+  clients: z.number({ coerce: true }),
   memory: MemorySchema
 })
 
 const CpuSchema = z.object({
-  usage: z.number()
+  usage: z.number({ coerce: true })
 })
 
 const IngestSchema = z.object({
@@ -132,10 +127,10 @@ const ApetaxSchema = z.object({
   withdraw: z.number()
 })
 
-const StatsSchema = z.object({
-  total: z.number(),
-  endorsed: z.number(),
-  experimental: z.number(),
+export const StatsSchema = z.object({
+  total: z.number({ coerce: true }),
+  endorsed: z.number({ coerce: true }),
+  experimental: z.number({ coerce: true }),
   networks: z.array(NetworksSchema).default([]),
   apetax: ApetaxSchema
 })
@@ -153,10 +148,10 @@ type Monitor = z.infer<typeof MonitorSchema>
 export const DataContextSchema = z.object({
   latestBlocks: z.array(LatestBlockSchema),
   vault: VaultSchema.nullish(),
-  tvls: z.array(TVLSchema).default([]),
-  apys: z.array(APYSchema).default([]),
-  transfers: z.array(TransferSchema).default([]),
-  harvests: z.array(HarvestSchema).default([]),
+  tvls: z.array(TVLSchema).nullish().transform(data => data ?? []),
+  apys: z.array(APYSchema).nullish().transform(data => data ?? []),
+  transfers: z.array(TransferSchema).nullish().transform(data => data ?? []),
+  harvests: z.array(HarvestSchema).nullish().transform(data => data ?? []),
   monitor: MonitorSchema
 })
 

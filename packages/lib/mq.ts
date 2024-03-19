@@ -1,67 +1,41 @@
-import { Queue, QueueOptions, Worker } from 'bullmq'
+import { Queue, Worker } from 'bullmq'
+import { Job } from './types'
 
 export const q = {
   fanout: 'fanout',
   extract: 'extract',
-  compute: 'compute',
   load: 'load',
   probe: 'probe'
 }
 
-export const job = {
+export const job: { [queue: string]: { [job: string]: Job } } = {
   fanout: {
-    registry: 'registry',
-    factory: 'factory',
-    vault: 'vault',
-    strategy: 'strategy',
-    tvl: 'tvl',
-    apy: 'apy',
-    harvestApr: 'harvest-apr'
+    abis: { queue: 'fanout', name: 'abis' },
+    events: { queue: 'fanout', name: 'events' },
+    timeseries: { queue: 'fanout', name: 'timeseries' }
   },
 
   extract: {
-    block: 'block',
-    evmlogs: 'evmlogs',
-    apetax: 'apetax',
-    vault: 'vault',
-    strategy: 'strategy',
-    harvest: 'harvest',
-    transfer: 'transfer',
-    risk: 'risk',
-    meta: 'meta',
-    waveydb: 'waveydb'
-  },
-
-  compute: {
-    tvl: 'tvl',
-    apy: 'apy',
-    harvestApr: 'harvest-apr'
+    block: { queue: 'extract', name: 'block' },
+    evmlog: { queue: 'extract', name: 'evmlog' },
+    snapshot: { queue: 'extract', name: 'snapshot' },
+    timeseries: { queue: 'extract', name: 'timeseries' },
+    waveydb: { queue: 'extract', name: 'waveydb' },
+    apetax: { queue: 'extract', name: 'apetax' },
   },
 
   load: {
-    block: 'block',
-    erc20: 'erc20',
-    transfer: 'transfer',
-    vault: 'vault',
-    vaultDebt: 'vault-debt',
-    withdrawalQueue: 'withdrawal-queue',
-    strategy: 'strategy',
-    strategyLenderStatus: 'strategy-lender-status',
-    harvest: 'harvest',
-    riskGroup: 'risk',
-    tvl: 'tvl',
-    apy: 'apy',
-    apr: 'apr',
-    sparkline: {
-      tvl: 'sparkline-tvl',
-      apy: 'sparkline-apy',
-      apr: 'sparkline-apr'
-    },
-    monitor: 'monitor'
+    block: { queue: 'load', name: 'block' },
+    output: { queue: 'load', name: 'output' },
+    monitor: { queue: 'load', name: 'monitor' },
+    evmlog: { queue: 'load', name: 'evmlog' },
+    snapshot: { queue: 'load', name: 'snapshot' },
+    thing: { queue: 'load', name: 'thing' },
+    price: { queue: 'load', name: 'price' }
   },
 
   probe: {
-    all: 'all'
+    all: { queue: 'probe', name: 'all' }
   }
 }
 
@@ -80,8 +54,17 @@ const bull = { connection: {
   port: (process.env.REDIS_PORT || 6379) as number,
 }}
 
-export function queue(name: string, options?: QueueOptions) {
-  return new Queue(name, {...bull, ...options})
+const queues: { [key: string]: Queue } = {}
+
+export function connect(queueName: string) {
+  return new Queue(queueName, bull)
+}
+
+export async function add(job: Job, data: any, options?: any) {
+  if (!queues[job.queue]) {
+    queues[job.queue] = connect(job.queue)
+  }
+  await queues[job.queue].add(job.name, data, options)
 }
 
 export function worker(queueName: string, handler: (job: any) => Promise<any>) {
@@ -104,8 +87,8 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
   const timer = setInterval(async () => {
     const jobs = await queue.count()
     const targetConcurrency = computeConcurrency(jobs, {
-      min: 1, max: 50,
-      threshold: 200  
+      min: 1, max: (process.env.MQ_CONCURRENCY_MAX_PER_PROCESSOR || 50) as number,
+      threshold: (process.env.MQ_CONCURRENCY_THRESHOLD || 200) as number
     })
 
     if(targetConcurrency > concurrency) {
@@ -142,3 +125,10 @@ export function computeConcurrency(jobs: number, options: ConcurrencyOptions) {
   const concurrency = Math.floor(m * jobs + options.min)
   return Math.min(Math.max(concurrency, options.min), options.max)
 }
+
+async function down() {
+  await Promise.all(Object.values(queues).map(queue => queue.close()))
+}
+
+process.on('SIGINT', down)
+process.on('SIGTERM', down)

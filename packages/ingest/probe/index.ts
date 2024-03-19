@@ -66,16 +66,15 @@ export default class Probe implements Processor {
   private queues: { [key: string]: Queue } = {}
 
   async up() {
-    this.queues[mq.q.fanout] = mq.queue(mq.q.fanout)
-    this.queues[mq.q.extract] = mq.queue(mq.q.extract)
-    this.queues[mq.q.compute] = mq.queue(mq.q.compute)
-    this.queues[mq.q.load] = mq.queue(mq.q.load)
+    this.queues[mq.q.fanout] = mq.connect(mq.q.fanout)
+    this.queues[mq.q.extract] = mq.connect(mq.q.extract)
+    this.queues[mq.q.load] = mq.connect(mq.q.load)
 
     this.worker = mq.worker(mq.q.probe, async job => {
       const label = `👽 ${job.name} ${job.id}`
       console.time(label)
 
-      await this.queues[mq.q.load].add(mq.job.load.monitor, {
+      await mq.add(mq.job.load.monitor, {
         ...await this.probeQueues(),
         ...await this.probeDb(),
         ...await this.probeIngest(),

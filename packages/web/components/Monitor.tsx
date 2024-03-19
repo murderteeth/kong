@@ -6,7 +6,7 @@ import Frosty from './Frosty'
 import { useData } from '@/hooks/useData'
 import AsciiMeter from './AsciiMeter'
 import prettyBytes from 'pretty-bytes'
-import { fPercent } from '@/util/format'
+import { fPercent } from '@/lib/format'
 
 export default function Monitor() {
   const { monitor } = useData()

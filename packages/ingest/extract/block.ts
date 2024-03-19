@@ -1,19 +1,7 @@
-import { Queue } from 'bullmq'
 import { chains, mq, types } from 'lib'
-import { Processor } from 'lib/processor'
 import { latestBlocks, rpcs } from '../rpcs'
 
-export class BlockExtractor implements Processor {
-  queue: Queue | undefined
-
-  async up() {
-    this.queue = mq.queue(mq.q.load)
-  }
-
-  async down() {
-    await this.queue?.close()
-  }
-
+export class BlockExtractor {
   async extract() {
     for(const chain of chains) {
       const rpc = rpcs.next(chain.id)
@@ -24,7 +12,7 @@ export class BlockExtractor implements Processor {
         blockTime: block.timestamp
       }
 
-      await this.queue?.add(mq.job.load.block, {
+      await mq.add(mq.job.load.block, {
         chainId: rpc.chain?.id,
         blockNumber: block.number,
         blockTime: block.timestamp
