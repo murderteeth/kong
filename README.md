@@ -124,3 +124,5 @@ Kong uses viem to interface evms. Because viem is new and changing often, all of
 
 ### the abomination 
 An abomination lurks in the shadows, anon. An immense SQL query that must be refactored! It's a monster. It's a beast. It's a nightmare. It's a work in progress. It's a work of art. It's a work of fiction. It's a work of non-fiction. It's a work of non-fictional fiction. It's a work of fictional non-fiction. It's your quest. Your journey. Your epic. Will you prevail? Will you transcend?
+
+
