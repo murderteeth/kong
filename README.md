@@ -1,5 +1,5 @@
 # Kong
-### Real-time/Historical EVM Indexer x Analytics Beast
+### Real-time/Historical EVM Indexer x Analytics
 
 Kong is an integrated set of services and tools that make it easy to index EVM logs and state, enrich your data with custom hooks, query your data over graphql. Kong is designed to be cheap, reliable, easy to maintain, and simplifies the process of expanding your index.
 
@@ -54,9 +54,13 @@ Kong implements a convention-based relationship between `abis.yaml` and the spec
 
 - "Things" in kong are analogous to "entities" in conventional etl design.
 
-- Use hooks to create things. Use things as indexer sources.
+- Use hooks to create things. 
 
-- Hooks have a convention-based implementation as well. They are co-located with abis, the hook type indicated by the use of `snapshot`, `event`, or `timeseries` in the path name. The hook itself must always be named `hook.ts`. Kong's hook resolver supports "hoisting" so you can, for example, write one transfer event hook to price transfer events across different contracts.
+- Use things as abi sources for indexing.
+
+- Yearn Example. Registry event hooks create vault things. Vault things are used as the source for indexing vault abis. This triggers vault event hooks which create strategy things. Strategy things are then used as the source for indexing strategy abis. And so on.
+
+- Hooks have a convention-based implementation as well. They are co-located with abis, the hook type indicated by the use of `snapshot`, `event`, or `timeseries` in the path name. The hook itself is always named `hook.ts`. Kong's hook resolver supports "hoisting" so you can, for example, write one transfer event hook to price transfer events across different contracts.
 
 - `abis.yaml` supports several options for defining and fine tuning the index.
 
