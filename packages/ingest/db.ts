@@ -57,18 +57,6 @@ export async function firstValue<T>(query: string, params: any[] = [], client?: 
   return result.rows[0] ? result.rows[0][Object.keys(result.rows[0])[0]] as T : undefined
 }
 
-export async function getSparkline(chainId: number, address: string, type: string) {
-  const result = await db.query(`
-    SELECT
-      chain_id as "chainId", address, type, value,
-      FLOOR(EXTRACT(EPOCH FROM time)) AS time
-    FROM sparkline
-    WHERE chain_id = $1 AND address = $2 AND type = $3
-    ORDER BY time ASC;
-  `, [chainId, address, type])
-  return result.rows as types.SparklinePoint[]
-}
-
 export async function getTravelledStrides(chainId: number, address: `0x${string}`, client?: PoolClient) {
   const result = await (client ?? db).query(
     `SELECT strides FROM evmlog_strides WHERE chain_id = $1 AND address = $2 ${client ? 'FOR UPDATE' : ''};`,
@@ -76,6 +64,31 @@ export async function getTravelledStrides(chainId: number, address: `0x${string}
   )
   const stridesJson = result.rows[0]?.strides
   return stridesJson ? StrideSchema.array().parse(JSON.parse(stridesJson)) : undefined
+}
+
+export async function getSparkline(chainId: number, address: string, label: string, component?: string) {
+  const result = await db.query(`
+    SELECT
+      CAST($1 AS int4) AS "chainId",
+      CAST($2 AS text) AS address,
+      CAST($3 AS text) AS label,
+      CAST($4 AS text) AS component,
+      time_bucket(CAST('7 day' AS interval), block_time) AS "blockTime",
+      LAST(value, block_time) AS close
+    FROM output
+    WHERE chain_id = $1 AND address = $2 AND label = $3 AND (component = $4 OR $4 IS NULL)
+    GROUP BY "blockTime"
+    ORDER BY "blockTime" DESC
+    LIMIT 3;
+  `, [chainId, address, label, component])
+  return z.object({
+    chainId: z.number(),
+    address: z.string(),
+    label: z.string(),
+    component: z.string().nullish(),
+    blockTime: z.bigint({ coerce: true }),
+    close: z.number()
+  }).array().parse(result.rows).reverse()
 }
 
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {

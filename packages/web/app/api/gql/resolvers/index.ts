@@ -1,13 +1,12 @@
 import bananas from './bananas'
 import latestBlocks from './latestBlocks'
+import monitor from './monitor'
 import vaults from './vaults'
 import vault from './vault'
-import tvls from './tvls'
-import apys from './apys'
-import harvests from './harvests'
+import strategies from './strategies'
 import transfers from './transfers'
-import monitor from './monitor'
-import riskGroups from './riskGroups'
+import harvests from './harvests'
+import timeseries from './timeseries'
 import { bigintScalar } from './bigintScalar'
 
 const resolvers = {
@@ -15,14 +14,13 @@ const resolvers = {
   Query: {
     bananas,
     latestBlocks,
+    monitor,
     vaults,
     vault,
-    tvls,
-    apys,
-    harvests,
+    strategies,
     transfers,
-    monitor,
-    riskGroups
+    harvests,
+    timeseries
   }
 }
 

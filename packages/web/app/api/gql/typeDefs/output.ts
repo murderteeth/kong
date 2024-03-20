@@ -5,7 +5,7 @@ type Output {
   chainId: Int!
   address: String!
   label: String!
-  component: String!
+  component: String
   value: Float!
   period: String!
   time: BigInt

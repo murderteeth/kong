@@ -181,11 +181,13 @@ yarn workspace ingest test
 
 
 ## Monorepo layout
-Kong resources are managed monorepo style using yarn workspaces.
+Kong resources are managed monorepo style using a yarn workspace.
 
 `.env` - core config
 
-`config/abis.yaml` - custom indexer config
+`config/abis.yaml` - indexer config
+
+`config/abis.local.yaml` - local indexer override (optional)
 
 `packages/db` - postgres migrations (via db-migrate)
 
@@ -201,7 +203,6 @@ Kong resources are managed monorepo style using yarn workspaces.
 
 
 ## Architecture
-Kong's architecture addresses typical indexer issues. The stack is NodeJS, Redis, Postgres, NextJS.
 
 `Ingest` - Ingest is a nodejs service that excutes all the various indexing activities. It's designed to scale horizontally, no need for beefy infra. A single commodity machine running ingest can initialize the historical Yearn index in ~4 hours, executing ~2M messages.
 
@@ -229,13 +230,13 @@ Robust indexing is tough. Here's some observations from the field,
 
 - Bad data unfriendly. Indexers usually handle bad data by reboot or reindex. Unweildy and slow for growing datasets.
 
-- Fragile ETL design\logic. The typical indexer extracts data via rpc, transforms it into a latest-state domain representation, and loads it into a database. This is a perfectly intuitive design, but gets more difficult to manage and change as the domain model gets more complex with time. Consider that in Kong v1 (designed for etl), changing the Vault domain object meant at least 3 logically distinct code changes. With each of those having their own dependants, that means at least 3 things that get tested and exercised before production (in the ideal case).
+- Fragile ETL design\logic. The typical indexer extracts data via rpc, transforms it into a domain representation, and loads it into a database. This is an intuitive design, but gets more difficult to manage and change as the domain model gets more complex. Consider that in Kong v1 (designed as ordinary etl), changing the Vault domain object could mean at least 3 logically distinct code changes. With each of those having their own dependants, that means at least 3 things that get tested and exercised before production.
 
 - Lack of test automation. This makes ETL designs especially difficult to manage and onboard new resources for.
 
 
 ## Greatfully Informed by and borrowed from
-Kong is the result of many hours spent reviewing and contributing on other indexing projects. Kong chest pounds with pride atop these shoulders: ydaemon, yexporter, subsquid, thegraph, various projects by Bob like yprice and eth-balance.
+Kong is the result of hours spent reviewing and contributing on other indexing projects. Kong chest pounds with pride atop these shoulders: ydaemon, yexporter, subsquid, thegraph, various projects by BobTheBuidler like yprice and evm_contract_exporter.
 
 
 ## Dev Notes

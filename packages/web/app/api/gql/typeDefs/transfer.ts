@@ -6,11 +6,11 @@ type Transfer {
   address: String!
   sender: String!
   receiver: String!
-  amount: Float!
-  amountUsd: Float!
-  blockNumber: Int!
-  blockIndex: Int!
+  value: Float!
+  valueUsd: Float
+  blockNumber: BigInt!
   blockTime: BigInt!
+  logIndex: Int!
   transactionHash: String!
 }
 `
