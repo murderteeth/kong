@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { toEventSelector } from 'viem'
 import { priced } from 'lib/math'
-import { fetchOrExtractDecimals } from '../../../../lib'
-import { fetchErc20PriceUsd } from '../../../../../../prices'
+import { fetchOrExtractDecimals } from '../../lib'
+import { fetchErc20PriceUsd } from '../../../../prices'
 
 export const topics = [
   `event Transfer(address indexed sender, address indexed receiver, uint256 value)`
