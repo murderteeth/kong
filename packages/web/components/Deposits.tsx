@@ -18,7 +18,7 @@ function TransferComponent({ transfer }: { transfer: Transfer }) {
   return <div className="w-full flex flex-col items-center justify-between">
     <div className="w-full flex items-center justify-between">
       <div className={`text-xs ${labelColor}`}>{label}</div>
-      <div className={amountColor}>{fUSD(transfer.amountUsd || NaN, { fixed: 2 })}</div>
+      <div className={amountColor}>{fUSD(transfer.valueUsd || NaN, { fixed: 2 })}</div>
     </div>
     <div className="w-full flex items-center justify-between">
       <div className={`text-xs ${labelColor}`}>{'chain'}</div>

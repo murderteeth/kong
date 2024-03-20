@@ -24,12 +24,12 @@ function HarvestComponent({ harvest }: { harvest: Harvest }) {
 
     <div className="w-full flex items-center justify-between">
       <div className="text-xs">{'profit'}</div>
-      <div className="text-xs text-yellow-700">{fUSD(harvest.profitUsd)}</div>
+      <div className="text-xs text-yellow-700">{fUSD(harvest.profitUsd || 0)}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
       <div className="text-xs">{'loss'}</div>
-      <div className="text-xs text-yellow-700">{fUSD(harvest.lossUsd)}</div>
+      <div className="text-xs text-yellow-700">{fUSD(harvest.lossUsd || 0)}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
