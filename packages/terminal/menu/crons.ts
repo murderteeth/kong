@@ -1,21 +1,29 @@
-import { crons, mq, strings } from 'lib'
+import { z } from 'zod'
+import { crons, abisConfig, mq, strings } from 'lib'
 import prompts from 'prompts'
 import { MenuAction } from '.'
+import { CronSchema } from 'lib/crons'
+import { title } from 'process'
 
 export default {
   action,
   menu: { title: 'Crons', value: 'crons' }
 } as MenuAction
 
+const ChoiceSchema = CronSchema.and(z.object({
+  title: z.string(),
+  value: z.string(),
+  scheduled: z.boolean()
+}))
+
 async function action() {
-  type choicetype = typeof crons.default[0] & { title: string, value: any, scheduled: boolean }
-  const choices = [] as choicetype[]
+  const choices = ChoiceSchema.array().parse([])
 
   for(const cron of crons.default) {
     const q = mq.connect(cron.queue)
     const repeatables = await q.getRepeatableJobs()
-    const scheduled = repeatables.some(job => job.name === cron.job)
     await q.close()
+    const scheduled = repeatables.some(job => job.name === cron.job)
     choices.push({ 
       ...cron, 
       title: `${scheduled ? '🟢 enabled' : '🔴 disabled'} - ${cron.name} (${cron.schedule})`,
@@ -24,12 +32,25 @@ async function action() {
     })
   }
 
+  {
+    const q = mq.connect(abisConfig.cron.queue)
+    const repeatables = await q.getRepeatableJobs()
+    await q.close()
+    const scheduled = repeatables.some(job => job.name === abisConfig.cron.job)
+    choices.push(ChoiceSchema.parse({
+      ...abisConfig.cron,
+      title: `${scheduled ? '🟢 enabled' : '🔴 disabled'} - ${abisConfig.cron.name} (${abisConfig.cron.schedule})`,
+      value: abisConfig.cron.name,
+      scheduled
+    }))
+  }
+
   const { name, confirm } = await prompts([
     {
       type: 'select',
       name: 'name',
       message: 'pick a cron',
-      choices: [...choices, { 
+      choices: [...choices, ChoiceSchema.parse({ 
         name: 'all',
         job: 'all',
         queue: 'all',
@@ -37,7 +58,7 @@ async function action() {
         title: '*** toggle all cron ***', 
         value: 'all',
         scheduled: false
-      }]
+      })]
     },
     {
       type: 'confirm',
