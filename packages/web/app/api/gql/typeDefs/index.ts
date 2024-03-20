@@ -1,15 +1,12 @@
 import gql from 'graphql-tag'
-import latestBlock from './latestBlock'
-import strategy from './strategy'
+import lib from './lib'
 import vault from './vault'
-import sparklineItem from './sparklineItem'
-import tvl from './tvl'
-import transfer from './transfer'
+import output from './output'
+import strategy from './strategy'
 import harvest from './harvest'
-import apy from './apy'
-import period from './period'
+import transfer from './transfer'
+import latestBlock from './latestBlock'
 import monitor from './monitor'
-import riskGroup from './riskGroup'
 
 const query = gql`
   scalar BigInt
@@ -29,30 +26,25 @@ const query = gql`
     bananas: String @cacheControl(maxAge: 0)
     latestBlocks(chainId: Int): [LatestBlock] @cacheControl(maxAge: 2)
     monitor: Monitor @cacheControl(maxAge: 2)
-
     vaults(chainId: Int): [Vault]
-    vault(chainId: Int!, address: String!): Vault
-    tvls(chainId: Int!, address: String!, period: Period, limit: Int): [Tvl]
-    apys(chainId: Int!, address: String!, period: Period, limit: Int): [Apy]
-    harvests(chainId: Int, address: String, limit: Int): [Harvest]
+    vault(chainId: Int, address: String): Vault
+    strategies(chainId: Int): [Strategy]
     transfers(chainId: Int, address: String): [Transfer]
-    riskGroups: [RiskGroup]
+    harvests(chainId: Int, address: String, limit: Int): [Harvest]
+    timeseries(chainId: Int!, address: String!, label: String!, component: String, period: String): [Output]
   }
 `
 
 const typeDefs = [
   query,
-  latestBlock, 
-  sparklineItem,
-  period,
-  tvl,
-  apy,
-  strategy, 
-  vault, 
-  harvest,
+  lib,
+  vault,
+  strategy,
   transfer,
-  monitor,
-  riskGroup
+  harvest,
+  output,
+  latestBlock,
+  monitor
 ]
 
 export default typeDefs

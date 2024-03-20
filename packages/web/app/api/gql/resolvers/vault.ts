@@ -1,17 +1,36 @@
-import { getVaults } from '../../db/getVaults'
+import db from '@/app/api/db'
 
-const vault = async (_: any, args: { chainId: number, address: string }) => {
+const vault = async (_: any, args: { chainId: number, address: `0x${string}` }) => {
   const { chainId, address } = args
   try {
-    const result = await getVaults(
-      'WHERE (v.chain_id = $1 AND v.address = $2)',
-      [chainId, address]
-    )
-    if(result.length === 0) return null
-    return result[0]
+
+    const result = await db.query(`
+    SELECT 
+      thing.chain_id,
+      thing.address,
+      snapshot.snapshot,
+      snapshot.hook
+    FROM thing
+    JOIN snapshot 
+      ON thing.chain_id = snapshot.chain_id
+      AND thing.address = snapshot.address
+    WHERE thing.chain_id = $1 
+      AND thing.address = $2
+      AND thing.label = $3`,
+    [chainId, address, 'vault'])
+
+    const [first] = result.rows.map(row => ({
+      chainId: row.chain_id,
+      address: row.address,
+      ...row.snapshot,
+      ...row.hook
+    }))
+
+    return first
+
   } catch (error) {
     console.error(error)
-    throw new Error('!vault')
+    throw new Error('!vaults')
   }
 }
 

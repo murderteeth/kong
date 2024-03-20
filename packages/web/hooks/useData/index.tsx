@@ -74,43 +74,35 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
     chainId
     address
     name
-    apetaxStatus
-    apetaxType
     apiVersion
-    registryStatus
-    tvlUsd
-    tvlSparkline {
-      value
-      time
-    }
-    apyNet
-    apySparkline {
-      value
-      time
-    }
-    defaultQueue {
-      name
-      address
-      apyNet
-    }
-    withdrawalQueue {
-      name
-      address
-      netApr
+    sparklines {
+      tvl {
+        close
+        blockTime
+      }
+      apy {
+        close
+        blockTime
+      }
     }
   }
 
-  tvls(chainId: $chainId, address: $address) {
-    open
-    high
-    low
-    close
+  tvls: timeseries(chainId: $chainId, address: $address, label: "tvl") {
+    chainId
+    address
+    label
+    component
+    value
     period
     time
   }
 
-  apys(chainId: $chainId, address: $address) {
-    average
+  apys: timeseries(chainId: $chainId, address: $address, label: "apy-bwd-delta-pps", component: "net") {
+    chainId
+    address
+    label
+    component
+    value
     period
     time
   }
@@ -120,7 +112,7 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
     address
     sender
     receiver
-    amountUsd
+    valueUsd
     blockTime
     transactionHash
   }
@@ -164,7 +156,7 @@ export default function DataProvider({ children }: { children: ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         query: VAULT_QUERY,
-        variables: { chainId: 1, address: '0x27B5739e22ad9033bcBf192059122d163b60349D' }
+        variables: { chainId: 137, address: '0x305F25377d0a39091e99B975558b1bdfC3975654' }
       })
     }).then(res => res.json()).catch(reason => {
       console.error(reason)
@@ -174,11 +166,12 @@ export default function DataProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
-    setData(DataContextSchema.parse({
+    const update = DataContextSchema.parse({
       ...DEFAULT_CONTEXT,
       ...vault?.data,
       ...status?.data
-    }))
+    })
+    setData(update)
   }, [status, vault, setData])
 
   return <dataContext.Provider value={data}>{children}</dataContext.Provider>

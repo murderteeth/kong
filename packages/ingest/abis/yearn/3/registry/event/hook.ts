@@ -23,8 +23,6 @@ export default async function process(chainId: number, address: `0x${string}`, d
     defaults: erc20
   }))
 
-  const label = vaultType === 1n ? 'vault': 'strategy'
-
   const multicall = await rpcs.next(chainId).multicall({ contracts: [
     {
       address, functionName: 'vaultInfo', args: [vault],
@@ -44,7 +42,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   await mq.add(mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: vault,
-    label,
+    label: 'vault',
     defaults: {
       asset,
       decimals: erc20.decimals,
@@ -54,4 +52,20 @@ export default async function process(chainId: number, address: `0x${string}`, d
       inceptTime
     }
   }))
+
+  if (vaultType === 2n) {
+    await mq.add(mq.job.load.thing, ThingSchema.parse({
+      chainId,
+      address: vault,
+      label: 'strategy',
+      defaults: {
+        asset,
+        decimals: erc20.decimals,
+        apiVersion: apiVersion!.result!,
+        registry: address,
+        inceptBlock,
+        inceptTime
+      }
+    }))
+  }
 }

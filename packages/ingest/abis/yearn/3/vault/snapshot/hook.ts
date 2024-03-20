@@ -4,7 +4,7 @@ import { rpcs } from '../../../../../rpcs'
 import { RiskScoreSchema, ThingSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
 import { mq } from 'lib'
 import { estimateCreationBlock } from 'lib/blocks'
-import db from '../../../../../db'
+import db, { getSparkline } from '../../../../../db'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
@@ -59,8 +59,12 @@ export default async function process(chainId: number, address: `0x${string}`, d
     }))
   }
 
-  // return ResultSchema.parse({ strategies, allocator, debts, fees, risk, meta: { ...meta, token } })
-  return { strategies, allocator, debts, fees, risk, meta: { ...meta, token } }
+  const sparklines = {
+    tvl: await getSparkline(chainId, address, 'tvl'),
+    apy: await getSparkline(chainId, address, 'apy-bwd-delta-pps', 'net')
+  }
+
+  return { strategies, allocator, debts, fees, risk, meta: { ...meta, token }, sparklines }
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {

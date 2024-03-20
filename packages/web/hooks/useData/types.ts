@@ -5,26 +5,9 @@ const LatestBlockSchema = z.object({
   blockNumber: z.bigint({ coerce: true }),
 })
 
-const TVLSparklineSchema = z.object({
-  time: z.number(),
-  value: z.number()
-})
-
-const QueueSchema_v2 = z.object({
-  name: z.string(),
-  address: z.string(),
-  netApr: z.number().nullish()
-})
-
-const QueueSchema_v3 = z.object({
-  name: z.string(),
-  address: z.string(),
-  apyNet: z.number()
-})
-
-const APYSparklineSchema = z.object({
-  time: z.number(),
-  value: z.number()
+export const SparklinePointSchema = z.object({
+  close: z.number(),
+  blockTime: z.bigint({ coerce: true })
 })
 
 export const VaultSchema = z.object({
@@ -32,30 +15,10 @@ export const VaultSchema = z.object({
   address: z.string(),
   name: z.string(),
   apiVersion: z.string(),
-  apetaxType: z.string().nullish(),
-  apetaxStatus: z.string().nullish(),
-  registryStatus: z.string(),
-  tvlUsd: z.number().nullish(),
-  tvlSparkline: z.array(TVLSparklineSchema).default([]),
-  apyNet: z.number().nullish(),
-  apySparkline: z.array(APYSparklineSchema).default([]),
-  defaultQueue: z.array(QueueSchema_v3).default([]),
-  withdrawalQueue: z.array(QueueSchema_v2).default([])
-})
-
-const TVLSchema = z.object({
-  open: z.number(),
-  high: z.number(),
-  low: z.number(),
-  close: z.number(),
-  period: z.string(),
-  time: z.bigint({ coerce: true })
-})
-
-const APYSchema = z.object({
-  average: z.number(),
-  period: z.string(),
-  time: z.bigint({ coerce: true })
+  sparklines: z.object({
+    tvl: z.array(SparklinePointSchema).default([]),
+    apy: z.array(SparklinePointSchema).default([])
+  })
 })
 
 const TransferSchema = z.object({
@@ -63,7 +26,7 @@ const TransferSchema = z.object({
   address: z.string(),
   sender: z.string(),
   receiver: z.string(),
-  amountUsd: z.number(),
+  valueUsd: z.number().nullish(),
   blockTime: z.bigint({ coerce: true }),
   transactionHash: z.string()
 })
@@ -73,8 +36,8 @@ export type Transfer = z.infer<typeof TransferSchema>
 const HarvestSchema = z.object({
   chainId: z.number(),
   address: z.string(),
-  lossUsd: z.number(),
-  profitUsd: z.number(),
+  lossUsd: z.number().nullish(),
+  profitUsd: z.number().nullish(),
   blockTime: z.string(),
   transactionHash: z.string()
 })
@@ -145,11 +108,21 @@ const MonitorSchema = z.object({
 
 type Monitor = z.infer<typeof MonitorSchema>
 
+export const OutputSchema = z.object({
+  chainId: z.number(),
+  address: z.string(),
+  label: z.string(),
+  component: z.string().nullish(),
+  value: z.number(),
+  period: z.string(),
+  time: z.bigint({ coerce: true })
+})
+
 export const DataContextSchema = z.object({
   latestBlocks: z.array(LatestBlockSchema),
   vault: VaultSchema.nullish(),
-  tvls: z.array(TVLSchema).nullish().transform(data => data ?? []),
-  apys: z.array(APYSchema).nullish().transform(data => data ?? []),
+  tvls: z.array(OutputSchema).nullish().transform(data => data ?? []),
+  apys: z.array(OutputSchema).nullish().transform(data => data ?? []),
   transfers: z.array(TransferSchema).nullish().transform(data => data ?? []),
   harvests: z.array(HarvestSchema).nullish().transform(data => data ?? []),
   monitor: MonitorSchema

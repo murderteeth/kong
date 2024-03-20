@@ -25,23 +25,32 @@ const SnapshotSchema = z.object({
 
 export type Snapshot = z.infer<typeof SnapshotSchema>
 
-const RewardSchema = z.object({
-  token: z.string(),
+export const RewardSchema = z.object({
+  token: zhexstring,
   balance: z.bigint(),
   balanceUsd: z.number()
 })
 
 export type Reward = z.infer<typeof RewardSchema>
 
+export const LenderStatusSchema = z.object({
+  name: z.string(),
+  assets: z.bigint(),
+  rate: z.bigint(),
+  address: zhexstring
+})
+
+export type LenderStatus = z.infer<typeof LenderStatusSchema>
+
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const snapshot = SnapshotSchema.parse(data)
   await processTradeFactory(chainId, snapshot)
   const totalDebtUsd = await computeTotalDebtUsd(chainId, snapshot)
   const lenderStatuses = await extractLenderStatuses(chainId, address)
-  const rewards = await computeRewards(chainId, address, snapshot)
+  const claims = await computeRewards(chainId, address, snapshot)
   const risk = await getRiskScore(chainId, address)
   const meta = await getStrategyMeta(chainId, address)
-  return { totalDebtUsd, lenderStatuses, rewards, risk, meta }
+  return { totalDebtUsd, lenderStatuses, claims, risk, meta }
 }
 
 async function processTradeFactory(chainId: number, snapshot: Snapshot) {
@@ -77,7 +86,7 @@ export async function extractLenderStatuses(chainId: number, address: `0x${strin
         'function lendStatuses() view returns (lendStatus[])'
       ]),
       blockNumber
-    })).map(status => ({
+    })).map(status => LenderStatusSchema.parse({
       name: status.name,
       assets: status.assets,
       rate: status.rate,
@@ -87,7 +96,6 @@ export async function extractLenderStatuses(chainId: number, address: `0x${strin
   } catch(error) {
     if(error instanceof ContractFunctionExecutionError) return []
     throw error
-
   }
 }
 

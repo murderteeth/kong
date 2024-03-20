@@ -1,31 +1,31 @@
-import db from '../../db'
+import db from '@/app/api/db'
 
 const transfers = async (_: any, args: { chainId: number, address: string }) => {
   const { chainId, address } = args
   try {
     const result = await db.query(`
-
-SELECT
-  chain_id AS "chainId",
-  address,
-  sender,
-  receiver,
-  amount AS amount,
-  amount_usd AS "amountUsd",
-  block_number AS "blockNumber",
-  block_index AS "blockIndex",
-  block_time AS "blockTime",
-  transaction_hash AS "transactionHash"
-FROM
-  transfer
-WHERE
-  (chain_id = $1 OR $1 IS NULL) AND (address = $2 OR $2 IS NULL)
-  AND amount_usd > 0 AND block_time IS NOT NULL
-ORDER BY
-  chain_id, block_time DESC, block_index DESC
-LIMIT 100;
-
-    `, [chainId, address])
+    SELECT
+      chain_id AS "chainId",
+      address,
+      args->>'sender' as sender,
+      args->>'receiver' as receiver,
+      args->>'value' AS value,
+      args->>'valueUsd' AS "valueUsd",
+      block_number AS "blockNumber",
+      block_time AS "blockTime",
+      log_index AS "logIndex",
+      transaction_hash AS "transactionHash"
+    FROM
+      evmlog
+    WHERE
+      (chain_id = $1 OR $1 IS NULL) AND (address = $2 OR $2 IS NULL)
+      AND event_name = 'Transfer'
+      AND args->>'sender' IS NOT NULL
+      AND args->>'receiver' IS NOT NULL
+    ORDER BY
+      chain_id, block_time DESC, log_index DESC
+    LIMIT 100;`, 
+    [chainId, address])
 
     return result.rows
   } catch (error) {

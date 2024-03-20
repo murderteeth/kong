@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
 import { RiskScoreSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
-import db from '../../../../../db'
+import db, { getSparkline } from '../../../../../db'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
@@ -37,8 +37,13 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const risk = await getRiskScore(chainId, address)
   const meta = await getVaultMeta(chainId, address)
   const token = await getTokenMeta(chainId, data.token)
-  // return ResultSchema.parse({ strategies, withdrawalQueue, debts, risk, meta: { ...meta, token } })
-  return { strategies, withdrawalQueue, debts, risk, meta: { ...meta, token } }
+
+  const sparklines = {
+    tvl: await getSparkline(chainId, address, 'tvl'),
+    apy: await getSparkline(chainId, address, 'apy-bwd-delta-pps', 'net')
+  }
+
+  return { strategies, withdrawalQueue, debts, risk, meta: { ...meta, token }, sparklines }
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {

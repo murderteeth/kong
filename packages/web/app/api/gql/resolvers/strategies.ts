@@ -1,6 +1,6 @@
 import db from '@/app/api/db'
 
-const vaults = async (_: any, args: { chainId?: number }) => {
+const strategies = async (_: any, args: { chainId?: number }) => {
   const { chainId } = args
   try {
 
@@ -14,8 +14,9 @@ const vaults = async (_: any, args: { chainId?: number }) => {
     JOIN snapshot 
       ON thing.chain_id = snapshot.chain_id
       AND thing.address = snapshot.address
-    WHERE thing.label = $1 AND (thing.chain_id = $2 OR $2 IS NULL)`, 
-    ['vault', chainId])
+    WHERE thing.label = $1 AND (thing.chain_id = $2 OR $2 IS NULL)
+    ORDER BY snapshot.hook->>'totalDebtUsd' DESC`, 
+    ['strategy', chainId])
 
     return result.rows.map(row => ({
       chainId: row.chain_id,
@@ -26,8 +27,8 @@ const vaults = async (_: any, args: { chainId?: number }) => {
 
   } catch (error) {
     console.error(error)
-    throw new Error('!vaults')
+    throw new Error('!strategies')
   }
 }
 
-export default vaults
+export default strategies
