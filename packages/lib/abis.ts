@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import path from 'path'
 import { keccak256, toBytes } from 'viem'
 import { zhexstring } from './types'
+import { CronSchema } from './crons'
 
 export const SourceConfigSchema = z.object({
   chainId: z.number(),
@@ -42,13 +43,8 @@ export const AbiConfigSchema = z.object({
 
 export type AbiConfig = z.infer<typeof AbiConfigSchema>
 
-const CronConfigSchema = z.object({
-  start: z.boolean().optional().default(false),
-  schedule: z.string()
-})
-
 const YamlConfigSchema = z.object({
-  cron: CronConfigSchema,
+  cron: CronSchema,
   abis: z.array(AbiConfigSchema)
 })
 

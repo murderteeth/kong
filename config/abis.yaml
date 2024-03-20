@@ -1,7 +1,10 @@
 
 cron: 
+  name: AbiFanout
+  queue: fanout
+  job: abis
+  schedule: '*/15 * * * *'
   start: false
-  schedule: '0-59/30 * * * *'
 
 abis:
   - abiPath: 'yearn/3/registry'
