@@ -14,8 +14,9 @@ function TransferComponent({ transfer }: { transfer: Transfer }) {
   const address = useMemo(() => isDeposit ? transfer.receiver : transfer.sender, [isDeposit, transfer])
   const labelColor = useMemo(() => isDeposit ? 'text-green-500' : 'text-red-500', [isDeposit])
   const amountColor = useMemo(() => isDeposit ? 'text-green-700' : 'text-red-700', [isDeposit])
+  const bgColor = useMemo(() => isDeposit ? 'bg-green-600/10' : 'bg-red-600/10', [isDeposit])
 
-  return <div className="w-full flex flex-col items-center justify-between">
+  return <div className={`w-full flex flex-col items-center justify-between ${bgColor}`}>
     <div className="w-full flex items-center justify-between">
       <div className={`text-xs ${labelColor}`}>{label}</div>
       <div className={amountColor}>{fUSD(transfer.valueUsd || NaN, { fixed: 2 })}</div>

@@ -46,7 +46,7 @@ Kong implements a convention-based relationship between `abis.yaml` and the spec
 
 - Make a path under `ingest/abis`, eg `ingest/abis/yearn/3/registry` 
 
-- Add the contract's abi to the project as abi.json, eg `ingest/abis/yearn/3/registry/abi.json`
+- Add the contract's abi to the project as abi.ts, eg `ingest/abis/yearn/3/registry/abi.ts`
 
 - Update `config/abis.yaml` with the contract's abi path and sources
 
@@ -263,7 +263,7 @@ INSERT INTO migrations (name, run_on) VALUES ('/20231222031425-baseline', CURREN
 This way production thinks it was migrated starting from the baseline and handles future migrations normally.
 
 ### postgres x timescale
-locally you can run postgres and timescale from a docker image, eg using `make postgres`. connect to your local with
+Locally you can run postgres and timescale from a docker image, eg using `docker compose up postgres`. connect to your local with
 ```
 PGPASSWORD=password psql --host=localhost \
   --port=5432 \
@@ -271,7 +271,7 @@ PGPASSWORD=password psql --host=localhost \
   --dbname=user
 ```
 
-timescale has to be manually installed on top of postgres in the render environment. bit of a pain atm
+Timescale has to be manually installed on top of postgres in the render environment:
 - assuming a postgres instance is already running on render
 - in the render dashboard, find the Access Control panel for the pg instance, add your IP
 - connect to the instance using psql from your terminal
@@ -281,7 +281,7 @@ timescale has to be manually installed on top of postgres in the render environm
 
 
 ### viem, https://viem.sh
-Kong uses viem to interface evms. Because viem is new and changing often, all of kong's package.json files are hardcoded with the same viem version. To upgrade viem, manually update all package/package.json files then run `yarn` from root.
+Kong uses viem to interface with rpcs. Because viem is new and changing often, all of kong's package.json files are hardcoded with the same viem version. To upgrade viem, manually update all package/package.json files then run `yarn` from root.
 
 
 ## Production

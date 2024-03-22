@@ -12,14 +12,12 @@ const hookre: { [type in HookType]: RegExp } = {
   timeseries: timeseriesHookRegex
 }
 
-export const defaultRoot = __dirname
-
 export async function requireHooks(path?: string): Promise<ResolveHooks> {
-  const hooks = await __requireHooks(path || defaultRoot, '')
+  const hooks = await __requireHooks(path || __dirname, '')
   return (path: string, type?: HookType) => {
     const abiPathRegex = new RegExp(`^${path}(/|$)`)
     return hooks.filter(h => {
-      return (abiPathRegex.test(h.abiPath) || h.abiPath === '' || path === '')
+      return (abiPathRegex.test(h.abiPath) || path.startsWith(h.abiPath) || path === '')
       && (type ? h.type === type : true)
     })
   }
@@ -38,9 +36,8 @@ async function __requireHooks(startPath: string, nextPath: string): Promise<AbiH
       const fullPath = join(startPath, nextNextPath)
       if (!isHookPath(fullPath)) return
       const { type, abiPath } = parseHookPath(fullPath, startPath)
-      result.push({
-        type, abiPath, module: require(fullPath) as HookModule
-      })
+      const module = await import(fullPath) as HookModule
+      result.push({ type, abiPath, module })
 
     }
   }))
