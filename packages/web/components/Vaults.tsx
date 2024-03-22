@@ -20,18 +20,18 @@ export default function Vaults() {
       <Frosty _key={`total-${stats.total}`} disabled={stats.total < 1}>{pad(stats.total)}</Frosty>
     </div>
 
-    <div className="w-full flex items-center justify-between text-sm">
-      <div>endorsed</div>
+    {/* <div className="w-full flex items-center justify-between text-sm">
+      <div className="text-yellow-700">endorsed</div>
       <Frosty _key={`endorsed-${stats.endorsed}`} disabled={stats.endorsed < 1}>{pad(stats.endorsed)}</Frosty>
     </div>
 
     <div className="w-full flex items-center justify-between text-sm">
-      <div>experimental</div>
+      <div className="text-yellow-700">experimental</div>
       <Frosty _key={`experimental-${stats.experimental}`} disabled={stats.experimental < 1}>{pad(stats.experimental)}</Frosty>
-    </div>
+    </div> */}
 
-    {chains.map((chain, index) => <div key={chain.id} className="w-full flex items-center justify-between text-xs">
-      <div className="whitespace-nowrap">{chain.name.toLowerCase()}</div>
+    {chains.map((chain, index) => <div key={chain.id} className="w-full flex items-center justify-between text-sm">
+      <div className="text-yellow-700 whitespace-nowrap">{chain.name.toLowerCase()}</div>
       <Frosty _key={`${chain.id}-${stats.networks.find(n => n.chainId === chain.id)?.count}`}
         disabled={(stats.networks.find(n => n.chainId === chain.id)?.count || 0) < 1}>
         {pad(stats.networks.find(n => n.chainId === chain.id)?.count || 0)}

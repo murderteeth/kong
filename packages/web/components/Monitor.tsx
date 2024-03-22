@@ -19,11 +19,11 @@ export default function Monitor() {
   }
 
   return <Panel className={'w-full flex flex-col items-start'}>
-    <div className="font-bold text-lg">Message Queue</div>
+    <div className="font-bold text-xl">Message Queue</div>
     {monitor.queues.map((queue, index) => <div key={queue.name} className={`
       w-full flex items-center justify-between gap-2`}>
-      <div className="text-xs whitespace-nowrap">{queue.name}</div>
-      <div className="flex items-center gap-2 text-sm whitespace-nowrap">
+      <div className="text-lg text-yellow-700 whitespace-nowrap">{queue.name}</div>
+      <div className="flex items-center gap-2 text-lg whitespace-nowrap">
         <Frosty _key={`${queue.name}-w-${formatNumber(queue.waiting)}`} disabled={queue.waiting < 1}>
           <span dangerouslySetInnerHTML={{ __html: `w ${formatNumber(queue.waiting)}` }} />
         </Frosty>
@@ -36,7 +36,7 @@ export default function Monitor() {
       </div>
     </div>)}
 
-    <div className="font-bold text-lg mt-4">Ingest</div>
+    {/* <div className="font-bold text-lg mt-4">Ingest</div>
     <div className="w-full flex flex-col items-center justify-between text-xs gap-1">
       <div className="w-full flex items-center justify-between">
         <div className="whitespace-nowrap">cpu</div>
@@ -52,19 +52,19 @@ export default function Monitor() {
           max={monitor.ingest.memory.total}
           label={`${prettyBytes(monitor.ingest.memory.used)} / ${prettyBytes(monitor.ingest.memory.total)}`} />
       </div>
-    </div>
+    </div> */}
 
-    <div className="font-bold text-lg mt-4">Redis</div>
-    <div className="w-full flex flex-col items-center justify-between text-xs gap-1">
+    <div className="font-bold text-xl mt-4">Redis</div>
+    <div className="w-full flex flex-col items-center justify-between gap-1">
       <div className="w-full flex items-center justify-between">
-        <div className="whitespace-nowrap">memory</div>
+        <div className="text-yellow-700 whitespace-nowrap">memory</div>
         <AsciiMeter 
           current={monitor.redis.memory.used}
           max={monitor.redis.memory.total}
           label={`${prettyBytes(monitor.redis.memory.used)} / ${prettyBytes(monitor.redis.memory.total)}`} />
       </div>
       <div className="w-full flex items-center justify-between">
-        <div className="whitespace-nowrap">clients</div>
+        <div className="text-yellow-700 whitespace-nowrap">clients</div>
         <AsciiMeter
           current={monitor.redis.clients}
           max={250}
@@ -72,11 +72,11 @@ export default function Monitor() {
       </div>
     </div>
 
-    <div className="font-bold text-lg mt-4">Postgres</div>
+    <div className="font-bold text-xl mt-4">Postgres</div>
 
-    <div className="w-full flex flex-col items-center justify-between text-xs gap-1">
+    <div className="w-full flex flex-col items-center justify-between gap-1">
       <div className="w-full flex items-center justify-between">
-        <div className="whitespace-nowrap">clients</div>
+        <div className="text-yellow-700 whitespace-nowrap">clients</div>
         <AsciiMeter
           current={monitor.db.clients}
           max={100}
@@ -84,7 +84,7 @@ export default function Monitor() {
       </div>
 
       <div className="w-full flex items-center justify-between">
-        <div className="whitespace-nowrap">disk</div>
+        <div className="text-yellow-700  whitespace-nowrap">disk</div>
         <AsciiMeter
           current={monitor.db.databaseSize}
           max={1 * 1024 * 1024 * 1024}
@@ -92,14 +92,14 @@ export default function Monitor() {
       </div>
 
       <div className="w-full flex items-center justify-between">
-        <div className="whitespace-nowrap">index h/r</div>
+        <div className="text-yellow-700  whitespace-nowrap">index h/r</div>
         <div className="flex items-center gap-2 whitespace-nowrap">
           <Frosty _key={`db-indexhr-${monitor.db.indexHitRate}`}>{fPercent(monitor.db.indexHitRate)}</Frosty>
         </div>
       </div>
 
       <div className="w-full flex items-center justify-between">
-        <div className="whitespace-nowrap">cache h/r</div>
+        <div className="text-yellow-700  whitespace-nowrap">cache h/r</div>
         <div className="flex items-center gap-2 whitespace-nowrap">
           <Frosty _key={`db-cachehr-${monitor.db.cacheHitRate}`}>{fPercent(monitor.db.cacheHitRate)}</Frosty>
         </div>

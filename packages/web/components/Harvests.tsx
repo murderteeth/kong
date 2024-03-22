@@ -13,32 +13,32 @@ function HarvestComponent({ harvest }: { harvest: Harvest }) {
   return <div className="w-full flex flex-col items-center justify-between">
 
     <div className="w-full flex items-center justify-between">
-      <div className="text-xs">{'chain'}</div>
+      <div className="text-yellow-700 text-xs">{'chain'}</div>
       <div className="text-xs text-yellow-700">{harvest.chainId}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
-      <div className="text-xs">{'strategy'}</div>
+      <div className="text-yellow-700 text-xs">{'strategy'}</div>
       <div className="text-xs text-yellow-700">{fEvmAddress(harvest.address)}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
-      <div className="text-xs">{'profit'}</div>
+      <div className="text-yellow-700 text-xs">{'profit'}</div>
       <div className="text-xs text-yellow-700">{fUSD(harvest.profitUsd || 0)}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
-      <div className="text-xs">{'loss'}</div>
+      <div className="text-yellow-700 text-xs">{'loss'}</div>
       <div className="text-xs text-yellow-700">{fUSD(harvest.lossUsd || 0)}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
-      <div className="text-xs">{'tx hash'}</div>
+      <div className="text-yellow-700 text-xs">{'tx hash'}</div>
       <div className="text-xs text-yellow-700">{fEvmAddress(harvest.transactionHash)}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
-      <div className="text-xs">{'time'}</div>
+      <div className="text-yellow-700 text-xs">{'time'}</div>
       <div className="text-xs text-yellow-700">
         <ReactTimeago date={Number(harvest.blockTime) * 1000} />
       </div>
