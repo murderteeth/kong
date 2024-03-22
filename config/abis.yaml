@@ -65,13 +65,10 @@ abis:
     ]
 
   - abiPath: 'yearn/2/vault'
-    sources: [
-      { chainId: 1, address: '0xa354F35829Ae975e850e23e9615b11Da1B3dC4DE', inceptBlock: 13513457 }
-    ]
-    # things: {
-    #   label: 'vault',
-    #   filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
-    # }
+    things: {
+      label: 'vault',
+      filter: [{ field: 'apiVersion', op: '<', value: '3.0.0' }]
+    }
 
   - abiPath: 'yearn/2/strategy'
     things: {
