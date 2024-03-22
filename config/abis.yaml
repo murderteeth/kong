@@ -8,6 +8,7 @@ cron:
 
 abis:
   - abiPath: 'yearn/3/registry'
+    only: true
     sources: [
       { chainId: 137, address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500', inceptBlock: 49100596 }
     ]
@@ -20,6 +21,7 @@ abis:
     ]
 
   - abiPath: 'yearn/3/vault'
+    only: true
     things: {
       label: 'vault',
       filter: [{ field: 'apiVersion', op: '>=', value: '3.0.0' }]

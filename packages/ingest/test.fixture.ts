@@ -13,15 +13,12 @@ dotenv.config({ path: envPath })
 chai.use(chaiAlmost())
 
 export const mochaGlobalSetup = async function() {
-  await rpcs.up()
-  await cache.up()
+  await Promise.all([rpcs.up(), cache.up()])
   console.log('⬆', 'test fixture up')
 }
 
 export const mochaGlobalTeardown = async () => {
-  await db.end()
-  await cache.down()
-  await rpcs.down()
+  await Promise.all([db.end(), rpcs.down(), cache.down()])
   console.log('⬇', 'test fixture down')
 }
 

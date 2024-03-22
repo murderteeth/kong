@@ -1,9 +1,9 @@
-import { promises as fs } from 'fs'
 import _path from 'path'
 
 export async function load(path: string) {
-  const json = await fs.readFile(_path.join(__dirname, 'abis', `${path}/abi.json`), 'utf8')
-  return JSON.parse(json)
+  const abipath = _path.join(__dirname, 'abis', `${path}/abi.ts`)
+  const module = await import(abipath)
+  return module.default
 }
 
 export function events(abi: any) {
