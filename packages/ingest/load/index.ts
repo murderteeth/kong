@@ -3,8 +3,9 @@ import { mq, strider, types } from 'lib'
 import db, { getTravelledStrides, toUpsertSql } from '../db'
 import { Processor } from 'lib/processor'
 import { PoolClient } from 'pg'
-import { ThingSchema, zhexstring } from 'lib/types'
+import { OutputSchema, ThingSchema, zhexstring } from 'lib/types'
 import { Worker } from 'bullmq'
+import { endOfDay } from 'lib/dates'
 
 export default class Load implements Processor {
   worker?: Worker
@@ -28,8 +29,8 @@ export default class Load implements Processor {
     await upsertThing(data),
 
     [mq.job.load.output.name]: async data => data.batch
-    ? await upsertBatch(data.batch, 'output', 'chain_id, address, label, component, block_time')
-    : await upsert(data, 'output', 'chain_id, address, label, component, block_time'),
+    ? await upsertBatchOutput(data.batch)
+    : await upsertOutput(data),
 
     [mq.job.load.price.name]: async data => data.batch 
     ? await upsertBatch(data.batch, 'price', 'chain_id, address, block_number') 
@@ -107,8 +108,20 @@ export async function upsertThing(data: any) {
   }
 }
 
-export async function upsertTvl(data: any) {
-  await upsert(data, 'tvl', 'chain_id, address, block_time', `WHERE EXCLUDED.price_source <> 'none'`)
+export async function upsertOutput(data: any) {
+  const output = { 
+    ...OutputSchema.parse(data), 
+    series_time: endOfDay(data.block_time) 
+  }
+  await upsert(output, 'output', 'chain_id, address, label, component, series_time')
+}
+
+export async function upsertBatchOutput(batch: any[]) {
+  const outputs = OutputSchema.array().parse(batch).map(output => ({
+    ...output, 
+    series_time: endOfDay(output.blockTime)
+  }))
+  await upsertBatch(outputs, 'output', 'chain_id, address, label, component, series_time')
 }
 
 export async function upsert(data: any, table: string, pk: string, where?: string, _client?: PoolClient) {

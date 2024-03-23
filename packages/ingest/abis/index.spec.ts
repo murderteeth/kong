@@ -18,6 +18,8 @@ describe('abis', function() {
       await fs.writeFile(path.join(root, 'x/y/z/event/n/hook.ts'), '')
       await fs.mkdir(path.join(root, 'x/y/z/snapshot'), { recursive: true })
       await fs.writeFile(path.join(root, 'x/y/z/snapshot/hook.ts'), '')
+      await fs.mkdir(path.join(root, 'x/y/z2/event/n'), { recursive: true })
+      await fs.writeFile(path.join(root, 'x/y/z2/event/n/hook.ts'), '')
       await fs.mkdir(path.join(root, 'x/j/k/event/n'), { recursive: true })
       await fs.writeFile(path.join(root, 'x/j/k/event/n/hook.ts'), '')
       await fs.mkdir(path.join(root, 'a/b/event'), { recursive: true })
@@ -54,13 +56,13 @@ describe('abis', function() {
 
     it('resolves paths', async function() {
       const resolveHooks = await requireHooks(root)
-      expect(resolveHooks('')).to.have.length(8)
-      expect(resolveHooks('', 'event')).to.have.length(5)
+      expect(resolveHooks('')).to.have.length(9)
+      expect(resolveHooks('', 'event')).to.have.length(6)
       expect(resolveHooks('', 'snapshot')).to.have.length(1)
       expect(resolveHooks('', 'timeseries')).to.have.length(2)
 
-      expect(resolveHooks('x')).to.have.length(5)
-      expect(resolveHooks('x', 'event')).to.have.length(4)
+      expect(resolveHooks('x')).to.have.length(6)
+      expect(resolveHooks('x', 'event')).to.have.length(5)
       expect(resolveHooks('x', 'snapshot')).to.have.length(1)
       expect(resolveHooks('x', 'timeseries')).to.have.length(0)
 
@@ -68,6 +70,11 @@ describe('abis', function() {
       expect(resolveHooks('x/y/z', 'event')).to.have.length(3)
       expect(resolveHooks('x/y/z', 'snapshot')).to.have.length(1)
       expect(resolveHooks('x/y/z', 'timeseries')).to.have.length(0)
+
+      expect(resolveHooks('x/y/z2')).to.have.length(3)
+      expect(resolveHooks('x/y/z2', 'event')).to.have.length(3)
+      expect(resolveHooks('x/y/z2', 'snapshot')).to.have.length(0)
+      expect(resolveHooks('x/y/z2', 'timeseries')).to.have.length(0)
 
       expect(resolveHooks('x/j/k')).to.have.length(2)
       expect(resolveHooks('x/j/k', 'event')).to.have.length(2)

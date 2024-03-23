@@ -1,7 +1,7 @@
 # Kong
 ### Real-time/Historical EVM Indexer x Analytics
 
-Kong is an integrated set of services and tools that make it easy to index EVM logs and state, enrich your data with custom hooks, query your data over graphql. Kong is designed to be cheap, reliable, easy to maintain, and simplifies the process of expanding your index.
+Kong is an integrated set of services and tools that make it easy to index EVM logs and state, enrich your data with custom hooks, query your data over graphql. Kong is designed to be cheap, reliable, easy to maintain, and simplify the process of updating your index.
 
 Kong comes configured with an index over Yearn Finance's v2 and v3 vault ecosystems.
 
@@ -50,13 +50,13 @@ Kong implements a convention-based relationship between `abis.yaml` and the spec
 
 - Update `config/abis.yaml` with the contract's abi path and sources
 
-- Sources can be static addresses or special domain type, called a "thing" in Kong.
+- Sources can be static addresses or a domain type called a "thing".
 
 - "Things" in kong are analogous to "entities" in conventional etl design.
 
 - Use hooks to create things. 
 
-- Use things as abi sources for indexing.
+- Use things as abi sources for more indexing.
 
 - Yearn Example. Registry event hooks create vault things. Vault things are used as the source for indexing vault abis. This triggers vault event hooks which create strategy things. Strategy things are then used as the source for indexing strategy abis. And so on.
 
@@ -224,15 +224,13 @@ Kong resources are managed monorepo style using a yarn workspace.
 
 
 ## Motivation
-Robust indexing is tough. Here's some observations from the field,
+Robust indexing is tough. Some observations,
 
-- Indexers spend a lot of time waiting for responses from external resources (eg RPCs). That is, performance gains from compiled languages and multi-threading might be marginal at best. Concurrency, not nessarily multi-threading, is the performance unlock.
+- Indexers spend a lot of time waiting for external things to respond. Kong's approach is high concurrency and batching.
 
-- Bad data unfriendly. Indexers usually handle bad data by reboot or reindex. Unweildy and slow for growing datasets.
+- Reindexing is expensive. So Kong optimizes for replayability.
 
-- Fragile ETL design\logic. The typical indexer extracts data via rpc, transforms it into a domain representation, and loads it into a database. This is an intuitive design, but gets more difficult to manage and change as the domain model gets more complex. Consider that in Kong v1 (designed as ordinary etl), changing the Vault domain object could mean at least 3 logically distinct code changes. With each of those having their own dependants, that means at least 3 things that get tested and exercised before production.
-
-- Lack of test automation. This makes ETL designs especially difficult to manage and onboard new resources for.
+- It's hard to separate domain from indexer logic, but crucial for testing and growth. Kong's uses indexer hooks to separate these concerns.
 
 
 ## Greatfully Informed by and borrowed from

@@ -1,7 +1,7 @@
 import { readdir } from 'fs/promises'
 import { join } from 'path'
 import { AbiHook, HookModule, HookType, ResolveHooks } from './types'
-import { removeLeadingAndTrailingSlash } from 'lib/strings'
+import { cutStartAndEndSlash, endSlash } from 'lib/strings'
 
 const eventHookRegex = /\/event\/([^/]+\/)?hook.ts$/
 const snapshotHookRegex = /\/snapshot\/hook.ts$/
@@ -17,8 +17,11 @@ export async function requireHooks(path?: string): Promise<ResolveHooks> {
   return (path: string, type?: HookType) => {
     const abiPathRegex = new RegExp(`^${path}(/|$)`)
     return hooks.filter(h => {
-      return (abiPathRegex.test(h.abiPath) || path.startsWith(h.abiPath) || path === '')
-      && (type ? h.type === type : true)
+      return (
+        abiPathRegex.test(endSlash(h.abiPath)) 
+        || path.startsWith(endSlash(h.abiPath)) 
+        || h.abiPath === '' || path === ''
+      ) && (type ? h.type === type : true)
     })
   }
 }
@@ -55,7 +58,7 @@ export function parseHookPath(fullPath: string, startPath: string): { type: Hook
 }
 
 function parseAbiPath(re: RegExp, fullPath: string, startPath: string) {
-  return removeLeadingAndTrailingSlash(fullPath.replace(re, '').replace(startPath, ''))
+  return cutStartAndEndSlash(fullPath.replace(re, '').replace(startPath, ''))
 }
 
 export function getHookType(fullPath: string): HookType | undefined {
