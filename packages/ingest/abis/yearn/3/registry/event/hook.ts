@@ -32,7 +32,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
       address: vault, functionName: 'apiVersion',
       abi: parseAbi(['function apiVersion() view returns (string)'])
     }
-  ]})
+  ] })
 
   if(multicall.some(r => r.error)) throw new Error(`multicall error, ${JSON.stringify(multicall)}`)
 

@@ -3,11 +3,15 @@ export const camelToSnake = (str: string) => str.replace(/[A-Z]/g, letter => `_$
 
 export const snakeToCamel = (str: string) => str.replace(/(_\w)/g, matches => matches[1].toUpperCase())
 
-export const removeLeadingSlash = (str: string) => str.startsWith('/') ? str.slice(1) : str
+export const startSlash = (str: string) => str.startsWith('/') ? str : `/${str}`
 
-export const removeTrailingSlash = (str: string) => str.endsWith('/') ? str.slice(0, -1) : str
+export const endSlash = (str: string) => str.endsWith('/') ? str : `${str}/`
 
-export const removeLeadingAndTrailingSlash = (str: string) => removeTrailingSlash(removeLeadingSlash(str))
+export const cutStartSlash = (str: string) => str.startsWith('/') ? str.slice(1) : str
+
+export const cutEndSlash = (str: string) => str.endsWith('/') ? str.slice(0, -1) : str
+
+export const cutStartAndEndSlash = (str: string) => cutEndSlash(cutStartSlash(str))
 
 export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
