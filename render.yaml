@@ -7,10 +7,16 @@ databases:
     ipAllowList: []
 
 services:
+  # - type: redis
+  #   name: redis-starter
+  #   region: ohio
+  #   plan: starter
+  #   maxmemoryPolicy: noeviction # recommended policy for queues
+  #   ipAllowList: [] # only allow internal connections
   - type: redis
-    name: redis
+    name: redis-pro
     region: ohio
-    plan: standard # choose a plan with persistence to ensure tasks are not lost upon restart
+    plan: pro
     maxmemoryPolicy: noeviction # recommended policy for queues
     ipAllowList: [] # only allow internal connections
 
@@ -28,12 +34,12 @@ services:
       - key: REDIS_HOST
         fromService:
           type: redis
-          name: redis
+          name: redis-pro
           property: host
       - key: REDIS_PORT
         fromService:
           type: redis
-          name: redis
+          name: redis-pro
           property: port
       - key: POSTGRES_HOST
         fromDatabase:
