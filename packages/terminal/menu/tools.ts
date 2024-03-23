@@ -50,12 +50,26 @@ async function action() {
       }
 
       case 'reset-database': {
-        await db.query('TRUNCATE TABLE evmlog;')
-        await db.query('TRUNCATE TABLE evmlog_strides;')
-        await db.query('TRUNCATE TABLE thing;')
-        await db.query('TRUNCATE TABLE snapshot;')
-        await db.query('TRUNCATE TABLE output;')
-        await db.query('TRUNCATE TABLE price;')
+        await db.query(`
+          TRUNCATE TABLE evmlog;
+          TRUNCATE TABLE evmlog_strides;
+          TRUNCATE TABLE thing;
+          TRUNCATE TABLE snapshot;
+          TRUNCATE TABLE output;
+          TRUNCATE TABLE price;
+        `)
+        await db.query('VACUUM FULL evmlog;')
+        await db.query('REINDEX TABLE evmlog;')
+        await db.query('VACUUM FULL evmlog_strides;')
+        await db.query('REINDEX TABLE evmlog_strides;')
+        await db.query('VACUUM FULL thing;')
+        await db.query('REINDEX TABLE thing;')
+        await db.query('VACUUM FULL snapshot;')
+        await db.query('REINDEX TABLE snapshot;')
+        await db.query('VACUUM FULL output;')
+        await db.query('REINDEX TABLE output;')
+        await db.query('VACUUM FULL price;')
+        await db.query('REINDEX TABLE price;')
         break
       }
     }

@@ -10,7 +10,6 @@ import { extractWithdrawalQueue } from '../2/vault/snapshot/hook'
 import { Data } from '../../../extract/timeseries'
 import { estimateHeight, getBlock } from 'lib/blocks'
 import { first } from '../../../db'
-import { endOfDay } from 'lib/dates'
 
 export default async function _process(chainId: number, address: `0x${string}`, data: Data): Promise<Output[]> {
   console.info('🧮', data.outputLabel, chainId, address, (new Date(Number(data.blockTime) * 1000)).toDateString())
@@ -33,12 +32,11 @@ export default async function _process(chainId: number, address: `0x${string}`, 
   if (!vault) return []
 
   const { source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
-  const artificialBlockTime = endOfDay(data.blockTime)
 
-  return OutputSchema.array().parse([OutputSchema.parse({
-    chainId, address, blockNumber, blockTime: artificialBlockTime, label: data.outputLabel, 
+  return OutputSchema.array().parse([{
+    chainId, address, blockNumber, blockTime: data.blockTime, label: data.outputLabel, 
     component: priceSource, value: tvlUsd
-  })])
+  }])
 }
 
 export async function _compute(vault: Thing, blockNumber: bigint, latest = false) {
