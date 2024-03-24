@@ -10,7 +10,7 @@ services:
   - type: redis
     name: redis-starter
     region: ohio
-    plan: redis-starter 
+    plan: starter 
     maxmemoryPolicy: noeviction # recommended policy for queues
     ipAllowList: [] # only allow internal connections
 
