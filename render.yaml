@@ -1,21 +1,21 @@
-previewsEnabled: true
+previewsEnabled: false
 
 databases:
-  - name: postgres
+  - name: postgres-v-2
     region: ohio
     plan: standard
     ipAllowList: []
 
 services:
   - type: redis
-    name: redis-pro
+    name: redis-pro-v-2
     region: ohio
     plan: pro
     maxmemoryPolicy: noeviction # recommended policy for queues
     ipAllowList: [] # only allow internal connections
 
   - type: worker
-    name: ingest
+    name: ingest-v-2
     region: ohio
     env: node
     plan: standard
@@ -28,30 +28,30 @@ services:
       - key: REDIS_HOST
         fromService:
           type: redis
-          name: redis-pro
+          name: redis-pro-v-2
           property: host
       - key: REDIS_PORT
         fromService:
           type: redis
-          name: redis-pro
+          name: redis-pro-v-2
           property: port
       - key: POSTGRES_HOST
         fromDatabase:
-          name: postgres
+          name: postgres-v-2
           property: host
       - key: POSTGRES_PORT
         fromDatabase:
-          name: postgres
+          name: postgres-v-2
           property: port
       - key: POSTGRES_DATABASE
         fromDatabase:
-          name: postgres
+          name: postgres-v-2
           property: database
       - key: POSTGRES_USER
         fromDatabase:
-          name: postgres
+          name: postgres-v-2
           property: user
       - key: POSTGRES_PASSWORD
         fromDatabase:
-          name: postgres
+          name: postgres-v-2
           property: password
