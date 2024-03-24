@@ -38,7 +38,6 @@ Kong's Yearn index covers the v3 and v2 vault ecosystems:
 
 - Timeseries hooks for computing APY and TVL.
 
-
 ## Index with Kong
 
 ### abis.yaml x ingest/abis
@@ -189,7 +188,7 @@ Kong resources are managed monorepo style using a yarn workspace.
 
 `config/abis.local.yaml` - local indexer override (optional)
 
-`packages/db` - postgres migrations (via db-migrate)
+`packages/db` - postgres migrations (db-migrate)
 
 `packages/ingest` - core indexer logic
 
@@ -199,18 +198,18 @@ Kong resources are managed monorepo style using a yarn workspace.
 
 `packages/terminal` - cli app for interacting with kong at runtime
 
-`packages/web` - kong gqphql api and runtime dash
+`packages/web` - gqphql api and runtime dash
 
 
 ## Architecture
 
-`Ingest` - Ingest is a nodejs service that excutes all the various indexing activities. It's designed to scale horizontally, no need for beefy infra. A single commodity machine running ingest can initialize the historical Yearn index in ~4 hours, executing ~2M messages.
+`Ingest` - Ingest is a nodejs service that orchestrates and excutes all the various indexing activities. It's designed to scale horizontally, no need for beefy infra.
 
-`Message Queue` - Indexing activities are coordinated using BullMQ message queues on Redis. This provides a simple, observable concurrency model, decouples moving parts, and enables the path to easy scaling and non-TS language integration.
+`Message Queue` - Indexing activities are coordinated using BullMQ message queues on Redis. This provides a simple, observable concurrency plane, decouples moving parts, and paves the way to scaling and non-TS language integration.
 
-`Event Source` - Kong stores EVM logs and contract snapshots in postgres without transform, ie event sourcing. Optional hooks perform transform operations _on top of_ of event and snapshot data. In this way, the data model supports enhanced debugging, index replay, and decouples domain modeling from the underlying postgres schema.
+`Event Source` - Kong stores EVM logs and contract snapshots in postgres without transform. Optional hooks perform transform operations _on top of_ of event and snapshot data. In this way, the data model supports enhanced debugging, index replay, and decouples domain modeling from the underlying postgres schema.
 
-`Hooks` - Hooks are custom logic used to enrich the dataset. Hooks come in three flavors: Snapshot, Event, and Timeseries. Hook execution is replayable, ie idempotent.
+`Hooks` - Hooks are custom logic used to enrich the dataset. Hooks come in three flavors: Snapshot, Event, and Timeseries. Hook execution is replayable.
 
 `NextJS\Graphql` - Raw x enriched data are made available over graphql running in a serverless nextjs function call.
 
