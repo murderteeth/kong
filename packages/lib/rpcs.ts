@@ -32,7 +32,9 @@ class pool {
       for(const archive of [true, false]) {
         this.rpcs[this.key(chain, archive)] = {
           clients: Array(this.size).fill(createPublicClient({
-            chain, transport: http(this.http(chain, archive))
+            chain, transport: http(this.http(chain, archive), {
+              batch: { batchSize: 100 }
+            })
           })),
           pointers: { next: 0, recycle: 0 }
         }
@@ -83,4 +85,4 @@ class pool {
   }
 }
 
-export const rpcs = new pool(2, 10 * 60 * 1000)
+export const rpcs = new pool(1, 10 * 60 * 1000)
