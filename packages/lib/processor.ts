@@ -15,6 +15,7 @@ export class ProcessorPool<T extends Processor> implements Processor {
   }
 
   private startRecycling() {
+    if (this.pool.length < 2) return
     this.interval = setInterval(async () => {
       console.log('♻️ ', this.Type.name, this.pointer)
       await this.pool[this.pointer].down?.()

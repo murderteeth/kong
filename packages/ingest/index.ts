@@ -27,7 +27,7 @@ const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
     if (fs.existsSync(indexPath) && exportsProcessor(indexPath)) {
       console.log('⬆', 'processor up', dirent.name)
       const ProcessorClass = require(indexPath).default
-      return new ProcessorPool(ProcessorClass, 2, tenMinutes)
+      return new ProcessorPool(ProcessorClass, 1, tenMinutes)
     }
   }
 }).filter(p => p) as Processor[]
