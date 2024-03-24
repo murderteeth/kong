@@ -28,12 +28,12 @@ services:
       - key: REDIS_HOST
         fromService:
           type: redis
-          name: redis
+          name: redis-starter
           property: host
       - key: REDIS_PORT
         fromService:
           type: redis
-          name: redis
+          name: redis-starter
           property: port
       - key: POSTGRES_HOST
         fromDatabase:
