@@ -8,9 +8,9 @@ databases:
 
 services:
   - type: redis
-    name: redis
+    name: redis-starter
     region: ohio
-    plan: starter # choose a plan with persistence to ensure tasks are not lost upon restart
+    plan: redis-starter 
     maxmemoryPolicy: noeviction # recommended policy for queues
     ipAllowList: [] # only allow internal connections
 
