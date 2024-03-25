@@ -6,9 +6,6 @@ dev:
 	# Set up tmux environment
 	./setup_devenv.sh
 
-	# Give tmux some time to set up panes
-	sleep 2
-
 	# Run commands
 	@tmux send-keys -t devenv:0.0 'yarn workspace web dev' C-m
 	@tmux send-keys -t devenv:0.1 'yarn workspace ingest dev' C-m
