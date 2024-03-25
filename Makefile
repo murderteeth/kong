@@ -3,14 +3,11 @@ dev:
 	@docker compose up -d redis
 	@docker compose up -d postgres
 
-	@tmux new-session -d -s devenv
+	# Set up tmux environment
+	./setup_devenv.sh
 
-	# Layout panes
-	@tmux splitw -v -p 50
-	@tmux selectp -t 0
-	@tmux splitw -h -p 80
-	@tmux selectp -t 2
-	@tmux splitw -h -p 50
+	# Give tmux some time to set up panes
+	sleep 2
 
 	# Run commands
 	@tmux send-keys -t devenv:0.0 'yarn workspace web dev' C-m
