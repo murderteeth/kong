@@ -7,7 +7,7 @@ Kong comes configured with an index over Yearn Finance's v2 and v3 vault ecosyst
 
 
 ## Requirements
-- node, yarn, make, tmux, docker, docker compose, postgresql
+- node, yarn, make, tmux, docker, docker compose, postgresql-client
 - ♥ for zoo animals
 
 
