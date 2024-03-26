@@ -8,9 +8,9 @@ if ! tmux has-session -t devenv 2>/dev/null; then
   tmux new-session -d -s devenv
   
   tmux splitw -v -l 50% -t devenv
-  tmux selectp -t 0 -T devenv
+  tmux selectp -t 0
   tmux splitw -h -l 80% -t devenv
-  tmux selectp -t 2 -T devenv
+  tmux selectp -t 2
   tmux splitw -h -l 50% -t devenv
 else
   echo "Using existing 'devenv' tmux session."
