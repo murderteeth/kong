@@ -8,6 +8,7 @@ const vault = async (_: any, args: { chainId: number, address: `0x${string}` }) 
     SELECT 
       thing.chain_id,
       thing.address,
+      thing.defaults,
       snapshot.snapshot,
       snapshot.hook
     FROM thing
@@ -23,7 +24,8 @@ const vault = async (_: any, args: { chainId: number, address: `0x${string}` }) 
       chainId: row.chain_id,
       address: row.address,
       ...row.snapshot,
-      ...row.hook
+      ...row.hook,
+      ...row.defaults
     }))
 
     return first

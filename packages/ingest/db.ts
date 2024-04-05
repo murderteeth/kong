@@ -88,7 +88,7 @@ export async function getSparkline(chainId: number, address: string, label: stri
     component: z.string().nullish(),
     blockTime: z.bigint({ coerce: true }),
     close: z.number()
-  }).array().parse(result.rows).reverse()
+  }).array().parse(result.rows)
 }
 
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {

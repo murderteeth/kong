@@ -49,7 +49,7 @@ export async function estimateHeight(chainId: number, timestamp: bigint): Promis
   return BigInt(await result)
 }
 
-async function __estimateHeight(chainId: number, timestamp: bigint) {
+export async function __estimateHeight(chainId: number, timestamp: bigint) {
   try {
     return await estimateHeightLlama(chainId, timestamp)
   } catch(error) {
@@ -96,7 +96,7 @@ export async function estimateCreationBlock(chainId: number, contract: `0x${stri
 // use bin search to estimate contract creat block
 // doesn't account for CREATE2 or SELFDESTRUCT
 // adapted from https://github.com/BobTheBuidler/ypricemagic/blob/5ba16b25302b47539b4e5a996554ba4c0a70e7c7/y/contracts.py#L68
-async function __estimateCreationBlock(chainId: number, contract: `0x${string}`): Promise<Block> {
+export async function __estimateCreationBlock(chainId: number, contract: `0x${string}`): Promise<Block> {
   let counter = 0
   const label = `🕊 __estimateCreationBlock ${chainId} ${contract}`
   console.time(label)

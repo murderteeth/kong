@@ -64,7 +64,13 @@ export default async function process(chainId: number, address: `0x${string}`, d
     apy: await getSparkline(chainId, address, 'apy-bwd-delta-pps', 'net')
   }
 
-  return { strategies, allocator, debts, fees, risk, meta: { ...meta, token }, sparklines }
+  return { 
+    strategies, allocator, debts, fees, 
+    risk, meta: { ...meta, token }, 
+    sparklines,
+    tvl: sparklines.tvl[0],
+    apy: sparklines.apy[0]
+  }
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {

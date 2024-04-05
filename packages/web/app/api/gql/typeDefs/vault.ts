@@ -42,7 +42,7 @@ type Vault {
   activation: BigInt
   address: String
   apiVersion: String
-  asset: String
+  asset: Erc20
   availableDepositLimit: BigInt
   chainId: Int
   creditAvailable: BigInt

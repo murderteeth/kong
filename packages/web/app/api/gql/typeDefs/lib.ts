@@ -1,6 +1,14 @@
 import gql from 'graphql-tag'
 
 export default gql`
+type Erc20 {
+  chainId: Int
+  address: String
+  symbol: String
+  name: String
+  decimals: Int
+}
+
 type Reward {
   token: String
   balance: BigInt
