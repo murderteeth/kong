@@ -35,6 +35,11 @@ type Fees {
   performanceFee: Float
 }
 
+type Sparklines {
+  tvl: [SparklinePoint]
+  apy: [SparklinePoint]
+}
+
 type Vault {
   DOMAIN_SEPARATOR: String
   FACTORY: String
@@ -93,5 +98,7 @@ type Vault {
   risk: RiskScore
   meta: VaultMeta
   sparklines: Sparklines
+  tvl: SparklinePoint
+  apy: SparklinePoint
 }
 `

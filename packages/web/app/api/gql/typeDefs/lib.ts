@@ -49,9 +49,4 @@ type SparklinePoint {
   blockTime: BigInt!
   close: Float!
 }
-
-type Sparklines {
-  tvl: [SparklinePoint]
-  apy: [SparklinePoint]
-}
 `
