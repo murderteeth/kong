@@ -35,6 +35,11 @@ type Fees {
   performanceFee: Float
 }
 
+type Sparklines {
+  tvl: [SparklinePoint]
+  apy: [SparklinePoint]
+}
+
 type Vault {
   DOMAIN_SEPARATOR: String
   FACTORY: String
@@ -42,7 +47,7 @@ type Vault {
   activation: BigInt
   address: String
   apiVersion: String
-  asset: String
+  asset: Erc20
   availableDepositLimit: BigInt
   chainId: Int
   creditAvailable: BigInt
@@ -93,5 +98,7 @@ type Vault {
   risk: RiskScore
   meta: VaultMeta
   sparklines: Sparklines
+  tvl: SparklinePoint
+  apy: SparklinePoint
 }
 `

@@ -10,6 +10,16 @@ export const JobSchema = z.object({
 
 export type Job = z.infer<typeof JobSchema>
 
+export const Erc20Schema = z.object({
+  chainId: z.number(),
+  address: zhexstring,
+  name: z.string(),
+  symbol: z.string(),
+  decimals: z.number({ coerce: true })
+})
+
+export type Erc20 = z.infer<typeof Erc20Schema>
+
 export interface LatestBlock {
   chainId: number
   blockNumber: bigint
@@ -149,14 +159,6 @@ export interface WithdrawalQueueItem {
   queueIndex: number
   strategyAddress?: `0x${string}`
   __as_of_block?: bigint
-}
-
-export interface ERC20 {
-  chainId: number
-  address: `0x${string}`
-  symbol: string
-  name: string
-  decimals: number
 }
 
 export interface Transfer {

@@ -44,7 +44,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     address: vault,
     label: 'vault',
     defaults: {
-      asset,
+      asset: erc20,
       decimals: erc20.decimals,
       apiVersion: apiVersion!.result!,
       registry: address,
@@ -59,8 +59,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
       address: vault,
       label: 'strategy',
       defaults: {
-        asset,
-        decimals: erc20.decimals,
+        asset: erc20,
         apiVersion: apiVersion!.result!,
         registry: address,
         inceptBlock,

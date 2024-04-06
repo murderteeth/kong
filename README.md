@@ -66,7 +66,7 @@ Kong implements a convention-based relationship between `abis.yaml` and the spec
 For example,
 ```yaml
 - abiPath: 'yearn/3/registry'
-  only: skip
+  skip: true
   sources: [
     { chainId: 137, address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500', inceptBlock: 49100596 }
   ]
@@ -229,11 +229,11 @@ Robust indexing is tough. Some observations,
 
 - Reindexing is expensive. So Kong optimizes for replayability.
 
-- It's hard to separate domain from indexer logic, but crucial for testing and growth. Kong's uses indexer hooks to separate these concerns.
+- It's hard to separate domain from indexer logic, but crucial for testing and growth. Kong uses indexer hooks to separate these concerns.
 
 
 ## Greatfully Informed by and borrowed from
-Kong is the result of hours spent reviewing and contributing on other indexing projects. Kong chest pounds with pride atop these shoulders: ydaemon, yexporter, subsquid, thegraph, various projects by BobTheBuidler like yprice and evm_contract_exporter.
+Kong is the result of hours spent reviewing and contributing on other indexing projects. Kong chest pounds with pride atop these shoulders: [ydaemon](https://github.com/yearn/ydaemon), [yexporter](https://github.com/yearn/yearn-exporter), (subsquid)[https://github.com/subsquid/squid-sdk], (The Graph)[https://github.com/graphprotocol], various projects by (BobTheBuidler)[https://github.com/BobTheBuidler].
 
 
 ## Dev Notes

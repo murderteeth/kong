@@ -15,6 +15,7 @@ abis:
   - abiPath: 'yearn/3/registry2'
     sources: [
       { chainId: 1, address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af', inceptBlock: 19072527 },
+      { chainId: 100, address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af', inceptBlock: 32902749 },
       { chainId: 137, address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af', inceptBlock: 52488140 },
       { chainId: 42161, address: '0xff31A1B020c868F6eA3f61Eb953344920EeCA3af', inceptBlock: 171850013 },
     ]

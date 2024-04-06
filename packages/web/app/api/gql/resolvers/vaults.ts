@@ -8,6 +8,7 @@ const vaults = async (_: any, args: { chainId?: number }) => {
     SELECT 
       thing.chain_id,
       thing.address,
+      thing.defaults,
       snapshot.snapshot,
       snapshot.hook
     FROM thing
@@ -22,7 +23,8 @@ const vaults = async (_: any, args: { chainId?: number }) => {
       chainId: row.chain_id,
       address: row.address,
       ...row.snapshot,
-      ...row.hook
+      ...row.hook,
+      ...row.defaults
     }))
 
   } catch (error) {

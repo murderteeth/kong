@@ -64,7 +64,13 @@ export default async function process(chainId: number, address: `0x${string}`, d
     apy: await getSparkline(chainId, address, 'apy-bwd-delta-pps', 'net')
   }
 
-  return { strategies, allocator, debts, fees, risk, meta: { ...meta, token }, sparklines }
+  return { 
+    strategies, allocator, debts, fees, 
+    risk, meta: { ...meta, token }, 
+    sparklines,
+    tvl: sparklines.tvl[0],
+    apy: sparklines.apy[0]
+  }
 }
 
 export async function projectStrategies(chainId: number, vault: `0x${string}`, blockNumber?: bigint) {
@@ -180,14 +186,21 @@ export async function extractFeesBps(chainId: number, address: `0x${string}`, sn
       performanceFee: defaultConfig[1]
     }
   } else {
-    const performanceFee = await rpcs.next(chainId).readContract({
-      address,
-      abi: parseAbi(['function performanceFee() view returns (uint16)']),
-      functionName: 'performanceFee'
-    })
-    return {
-      managementFee: 0,
-      performanceFee: performanceFee
+    try {
+      const performanceFee = await rpcs.next(chainId).readContract({
+        address,
+        abi: parseAbi(['function performanceFee() view returns (uint16)']),
+        functionName: 'performanceFee'
+      })
+      return {
+        managementFee: 0,
+        performanceFee: performanceFee
+      }
+    } catch {
+      return {
+        managementFee: 0,
+        performanceFee: 0
+      }
     }
   }
 }

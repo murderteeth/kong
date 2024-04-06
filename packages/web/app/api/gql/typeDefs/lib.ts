@@ -1,6 +1,14 @@
 import gql from 'graphql-tag'
 
 export default gql`
+type Erc20 {
+  chainId: Int
+  address: String
+  symbol: String
+  name: String
+  decimals: Int
+}
+
 type Reward {
   token: String
   balance: BigInt
@@ -40,10 +48,5 @@ type SparklinePoint {
   component: String
   blockTime: BigInt!
   close: Float!
-}
-
-type Sparklines {
-  tvl: [SparklinePoint]
-  apy: [SparklinePoint]
 }
 `

@@ -11,13 +11,8 @@ export default function Vault() {
   const { vault, tvls, apys } = useData()
   if (!(vault && vault.address)) return null
 
-  const tvl = vault.sparklines.tvl.length > 0
-  ? vault.sparklines.tvl[vault.sparklines.tvl.length - 1].close
-  : 0
-
-  const apy = vault.sparklines.apy.length > 0
-  ? vault.sparklines.apy[vault.sparklines.apy.length - 1].close
-  : 0
+  const tvl = vault.sparklines.tvl[0]?.close ?? 0
+  const apy = vault.sparklines.apy[0]?.close ?? 0
 
   return <Panel className="w-full flex flex-col gap-1 border border-yellow-950/50">
     <div className="flex items-center justify-between">
@@ -42,7 +37,7 @@ export default function Vault() {
     <div className="my-1 flex items-center justify-between">
       <div className="flex items-center gap-3 font-bold text-lg">
         <div>{'TVL'}</div>
-        <Minibars series={vault.sparklines.tvl.map(s => s.close)} className="h-5" />
+        <Minibars series={vault.sparklines.tvl.reverse().map(s => s.close)} className="h-5" />
       </div>
       <div className="flex items-center gap-3">
         <Frosty _key={`vault-tvl-${fUSD(tvl)}`}

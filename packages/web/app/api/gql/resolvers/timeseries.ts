@@ -5,12 +5,12 @@ const timeseries = async (_: any, args: {
   chainId: number,
   address: `0x${string}`,
   label: string,
-  component: string,
+  component?: string,
   period?: string
 }) => {
   const { chainId, address, label, component, period } = args
-  try {
 
+  try {
     const result = await db.query(`
     SELECT 
       CAST($1 AS int4) AS "chainId",

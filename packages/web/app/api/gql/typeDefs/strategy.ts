@@ -8,6 +8,8 @@ type StrategyMeta {
 }
 
 type Strategy {
+  chainId: Int
+  address: String
   apiVersion: String
   balanceOfWant: BigInt
   baseFeeOracle: String

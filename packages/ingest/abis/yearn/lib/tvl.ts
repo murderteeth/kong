@@ -1,6 +1,5 @@
 import { z } from 'zod'
-import { Output, OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
-import { fetchOrExtractErc20 } from '.'
+import { Erc20Schema, Output, OutputSchema, Thing, ThingSchema, zhexstring } from 'lib/types'
 import { fetchErc20PriceUsd } from '../../../prices'
 import { rpcs } from '../../../rpcs'
 import { parseAbi } from 'viem'
@@ -43,12 +42,10 @@ export async function _compute(vault: Thing, blockNumber: bigint, latest = false
   const { chainId, address, defaults } = vault
   const { apiVersion, asset } = z.object({ 
     apiVersion: z.string(),
-    asset: zhexstring
+    asset: Erc20Schema
   }).parse(defaults)
 
-  const erc20 = await fetchOrExtractErc20(chainId, asset)
-
-  const { priceUsd, priceSource: source } = await fetchErc20PriceUsd(chainId, erc20.address, blockNumber, latest)
+  const { priceUsd, priceSource: source } = await fetchErc20PriceUsd(chainId, asset.address, blockNumber, latest)
 
   const totalAssets = await rpcs.next(chainId, blockNumber).readContract({
     address, functionName: 'totalAssets',
@@ -62,8 +59,8 @@ export async function _compute(vault: Thing, blockNumber: bigint, latest = false
   ? await extractTotalDelegatedAssets(chainId, address, blockNumber)
   : 0n
 
-  const tvl = priced(totalAssets, erc20.decimals, priceUsd) 
-  - priced(totalDelegatedAssets, erc20.decimals, priceUsd)
+  const tvl = priced(totalAssets, asset.decimals, priceUsd) 
+  - priced(totalDelegatedAssets, asset.decimals, priceUsd)
 
   return { priceUsd, source, tvl }
 }

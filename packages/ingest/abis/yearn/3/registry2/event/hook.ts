@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { mq } from 'lib'
 import { parseAbi, toEventSelector } from 'viem'
 import { rpcs } from 'lib/rpcs'
-import { estimateHeight } from 'lib/blocks'
+import { estimateCreationBlock, estimateHeight } from 'lib/blocks'
 import { ThingSchema, zhexstring } from 'lib/types'
 import { fetchOrExtractErc20 } from '../../../lib'
 
@@ -37,14 +37,21 @@ export default async function process(chainId: number, address: `0x${string}`, d
   if(multicall.some(r => r.error)) throw new Error(`multicall error, ${JSON.stringify(multicall)}`)
 
   const [vaultInfo, apiVersion] = multicall
-  const inceptTime = vaultInfo!.result![3]
-  const inceptBlock = await estimateHeight(chainId, inceptTime)
+  let inceptTime = vaultInfo!.result![3]
+  const inceptBlock = inceptTime > 0 
+  ? await estimateHeight(chainId, inceptTime)
+  : (await estimateCreationBlock(chainId, vault)).number
+
+  inceptTime = inceptTime > 0
+  ? inceptTime
+  : await estimateHeight(chainId, inceptBlock)
+
   await mq.add(mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: vault,
     label: 'vault',
     defaults: {
-      asset,
+      asset: erc20,
       decimals: erc20.decimals,
       apiVersion: apiVersion!.result!,
       registry: address,
@@ -59,8 +66,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
       address: vault,
       label: 'strategy',
       defaults: {
-        asset,
-        decimals: erc20.decimals,
+        asset: erc20,
         apiVersion: apiVersion!.result!,
         registry: address,
         inceptBlock,

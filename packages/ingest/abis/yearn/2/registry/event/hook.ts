@@ -33,8 +33,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     defaults: {
       apiVersion: api_version,
       registry: address,
-      asset: token,
-      decimals: erc20.decimals,
+      asset: erc20,
       inceptBlock,
       inceptTime
     }
