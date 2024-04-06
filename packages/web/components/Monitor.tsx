@@ -87,8 +87,8 @@ export default function Monitor() {
         <div className="text-yellow-700  whitespace-nowrap">disk</div>
         <AsciiMeter
           current={monitor.db.databaseSize}
-          max={1 * 1024 * 1024 * 1024}
-          label={`${prettyBytes(Number(monitor.db.databaseSize))} / ${prettyBytes(1 * 1024 * 1024 * 1024)}`} />
+          max={16 * 1024 * 1024 * 1024}
+          label={`${prettyBytes(Number(monitor.db.databaseSize))} / ${prettyBytes(16 * 1024 * 1024 * 1024)}`} />
       </div>
 
       <div className="w-full flex items-center justify-between">
