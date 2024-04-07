@@ -1,8 +1,9 @@
-import { mainnet, optimism, polygon, fantom, base, arbitrum } from 'viem/chains'
+import { mainnet, optimism, gnosis, polygon, fantom, base, arbitrum } from 'viem/chains'
 
 export const activations = {
   [mainnet.id]: 14353601n,
   [optimism.id]: 4286263n,
+  [gnosis.id]: 21022491n,
   [polygon.id]: 25770160n,
   [fantom.id]: 33001987n,
   [base.id]: 5022n,

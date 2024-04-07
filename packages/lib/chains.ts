@@ -1,8 +1,8 @@
 import * as yaml from 'js-yaml'
 import * as fs from 'fs'
 import path from 'path'
-import { arbitrum, base, fantom, mainnet, optimism, polygon } from 'viem/chains'
-const viemchains = { arbitrum, base, fantom, mainnet, optimism, polygon }
+import { arbitrum, base, fantom, gnosis, mainnet, optimism, polygon } from 'viem/chains'
+const viemchains = { arbitrum, base, fantom, gnosis, mainnet, optimism, polygon }
 
 interface YamlConfig { chains: string [] }
 

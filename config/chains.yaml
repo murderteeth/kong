@@ -2,6 +2,7 @@
 chains: [
   'mainnet',
   'optimism',
+  'gnosis',
   'polygon',
   'fantom',
   'base',
