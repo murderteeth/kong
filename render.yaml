@@ -8,9 +8,9 @@ databases:
 
 services:
   - type: redis
-    name: redis-standard-v-2
+    name: redis-pro-v-2
     region: ohio
-    plan: standard
+    plan: pro
     maxmemoryPolicy: noeviction # recommended policy for queues
     ipAllowList: [] # only allow internal connections
 
@@ -28,7 +28,7 @@ services:
       - key: REDIS_HOST
         fromService:
           type: redis
-          name: redis-standard-v-2
+          name: redis-pro-v-2
           property: host
       - key: REDIS_PORT
         fromService:
