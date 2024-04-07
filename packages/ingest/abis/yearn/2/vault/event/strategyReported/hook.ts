@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { parseAbi, toEventSelector } from 'viem'
-import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../../../../lib'
+import { fetchOrExtractAssetAddress, fetchOrExtractDecimals } from '../../../../lib'
 import { fetchErc20PriceUsd } from '../../../../../../prices'
 import { priced } from 'lib/math'
 import { EvmLog, EvmLogSchema, zhexstring } from 'lib/types'
@@ -39,7 +39,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   })
 
   const decimals = await fetchOrExtractDecimals(chainId, address)
-  const asset = await fetchOrExtractAsset(chainId, address, 'vault', 'token')
+  const asset = await fetchOrExtractAssetAddress(chainId, address, 'vault', 'token')
   const price = await fetchErc20PriceUsd(chainId, asset, harvest.blockNumber)
 
   const previousLog = await first<EvmLog>(EvmLogSchema, `
