@@ -40,6 +40,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const snapshot = SnapshotSchema.parse(data)
   const strategies = await projectStrategies(chainId, address)
   const allocator = await projectDebtAllocator(chainId, address)
+  const roles = await projectRoles(chainId, address)
   const debts = await extractDebts(chainId, address)
   const fees = await extractFeesBps(chainId, address, snapshot)
   const risk = await getRiskScore(chainId, address)
@@ -65,7 +66,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   }
 
   return { 
-    strategies, allocator, debts, fees, 
+    strategies, allocator, roles, debts, fees, 
     risk, meta: { ...meta, token }, 
     sparklines,
     tvl: sparklines.tvl[0],
@@ -80,7 +81,7 @@ export async function projectStrategies(chainId: number, vault: `0x${string}`, b
   SELECT args
   FROM evmlog
   WHERE chain_id = $1 AND address = $2 AND signature = $3 AND (block_number <= $4 OR $4 IS NULL)
-  ORDER BY block_number, log_index ASC`,
+  ORDER BY block_number ASC, log_index ASC`,
   [chainId, vault, topic, blockNumber])
   if(events.rows.length === 0) return []
   const result: `0x${string}`[] = []
@@ -100,11 +101,35 @@ export async function projectDebtAllocator(chainId: number, vault: `0x${string}`
   SELECT args 
   FROM evmlog 
   WHERE chain_id = $1 AND signature = $2 AND args->>'vault' = $3
-  ORDER BY block_number, log_index DESC
+  ORDER BY block_number DESC, log_index DESC
   LIMIT 1`, 
   [chainId, topic, vault])
   if(events.rows.length === 0) return undefined
   return zhexstring.parse(events.rows[0].args.allocator)
+}
+
+export async function projectRoles(chainId: number, vault: `0x${string}`) {
+  const topic = toEventSelector('event RoleSet(address indexed account, uint256 indexed role)')
+  const roles = await db.query(`
+  WITH ranked AS (
+    SELECT 
+      args->>'account' as account,
+      (args->>'role')::int as role_mask,
+      ROW_NUMBER() OVER(PARTITION BY args->'account' ORDER BY block_number DESC, log_index DESC) AS rn
+    FROM evmlog 
+    WHERE 
+      chain_id = $1 
+      AND address = $2
+      AND signature = $3
+    ORDER BY block_number DESC, log_index DESC
+  )
+
+  SELECT account, role_mask FROM ranked WHERE rn = 1;`,
+  [chainId, vault, topic])
+  return z.object({
+    account: zhexstring,
+    role_mask: z.number()
+  }).array().parse(roles.rows)
 }
 
 export async function extractDebts(chainId: number, vault: `0x${string}`) {
