@@ -18,7 +18,7 @@ async function project(chainId: number, tradeHandler: `0x${string}`) {
   SELECT signature, args
   FROM evmlog
   WHERE chain_id = $1 AND address = $2 AND signature = ANY($3)
-  ORDER BY block_number, log_index ASC`,
+  ORDER BY block_number ASC, log_index ASC`,
   [chainId, tradeHandler, topics])
   if(events.rows.length === 0) return []
 

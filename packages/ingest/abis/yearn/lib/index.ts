@@ -10,7 +10,7 @@ export async function extractDecimals(chainId: number, address: `0x${string}`) {
 
 export async function fetchAssetDecimals(chainId: number, address: `0x${string}`) {
   return (await db.query(
-    `SELECT defaults->'asset.decimals' AS decimals FROM thing WHERE chain_id = $1 AND address = $2`, 
+    `SELECT defaults #>> '{asset, decimals}' AS decimals FROM thing WHERE chain_id = $1 AND address = $2`, 
     [chainId, address]
   )).rows[0]?.decimals as number
 }
@@ -23,12 +23,12 @@ export async function fetchOrExtractDecimals(chainId: number, address: `0x${stri
 
 export async function fetchAssetAddress(chainId: number, address: `0x${string}`, label: string) {
   return (await db.query(
-    `SELECT defaults->'asset.address' AS asset FROM thing WHERE chain_id = $1 AND address = $2 AND label = $3`, 
+    `SELECT defaults #>> '{asset, address}' AS address FROM thing WHERE chain_id = $1 AND address = $2 AND label = $3`, 
     [chainId, address, label])
-  ).rows[0]?.asset as `0x${string}`
+  ).rows[0]?.address as `0x${string}`
 }
 
-export async function fetchOrExtractAsset(chainId: number, address: `0x${string}`, label: string, assetField: string) {
+export async function fetchOrExtractAssetAddress(chainId: number, address: `0x${string}`, label: string, assetField: string) {
   const result = await fetchAssetAddress(chainId, address, label)
   if (result) return result
   return await extractAddress(chainId, address, assetField)

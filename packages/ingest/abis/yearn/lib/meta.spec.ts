@@ -24,6 +24,6 @@ describe('abis/yearn/lib/meta', function() {
     expect(meta).to.not.be.undefined
     expect(meta.displayName).to.equal('USD Coin')
     expect(meta.displaySymbol).to.equal('USDC')
-    expect(await getTokenMeta(mainnet.id, zeroAddress)).to.be.undefined
+    expect(await getTokenMeta(mainnet.id, '0x0000000000000000000000000000000000000001')).to.be.undefined
   })
 })

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { toEventSelector } from 'viem'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
-import { fetchOrExtractAsset, fetchOrExtractDecimals } from '../../../lib'
+import { fetchOrExtractAssetAddress, fetchOrExtractDecimals } from '../../../lib'
 
 export const topics = [
   `event Harvested(uint256 profit, uint256 loss, uint256 debtPayment, uint256 debtOutstanding)`
@@ -20,7 +20,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   }).parse(data)
 
   const decimals = await fetchOrExtractDecimals(chainId, address)
-  const asset = await fetchOrExtractAsset(chainId, address, 'strategy', 'want')
+  const asset = await fetchOrExtractAssetAddress(chainId, address, 'strategy', 'want')
   const price = await fetchErc20PriceUsd(chainId, asset, blockNumber)
 
   return {

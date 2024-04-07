@@ -4,7 +4,7 @@ import { ThingSchema, zhexstring } from 'lib/types'
 import { estimateCreationBlock } from 'lib/blocks'
 import { mq } from 'lib'
 import { rpcs } from '../../../../../../rpcs'
-import { extractDecimals, fetchAssetAddress } from '../../../../lib'
+import { extractDecimals, fetchAssetAddress, fetchOrExtractErc20 } from '../../../../lib'
 
 export const topics = [
   `event StrategyAdded(address indexed strategy, uint256 debtRatio, uint256 minDebtPerHarvest, uint256 maxDebtPerHarvest, uint256 performanceFee)`,
@@ -30,6 +30,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   })
 
   const asset = await fetchAssetAddress(chainId, vault, 'vault')
+  const erc20 = await fetchOrExtractErc20(chainId, asset)
   const decimals = await extractDecimals(chainId, vault)
   const block = await estimateCreationBlock(chainId, newStrategy)
   const inceptBlock = block.number
@@ -40,7 +41,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     label: 'strategy',
     defaults: {
       vault,
-      asset,
+      asset: erc20,
       decimals,
       apiVersion,
       inceptBlock,
