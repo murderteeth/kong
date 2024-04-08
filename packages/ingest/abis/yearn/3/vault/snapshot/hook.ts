@@ -9,6 +9,7 @@ import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
+import { snakeToCamelCols } from 'lib/strings'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -114,7 +115,7 @@ export async function projectRoles(chainId: number, vault: `0x${string}`) {
   WITH ranked AS (
     SELECT 
       args->>'account' as account,
-      (args->>'role')::int as role_mask,
+      (args->>'role')::bigint as role_mask,
       ROW_NUMBER() OVER(PARTITION BY args->'account' ORDER BY block_number DESC, log_index DESC) AS rn
     FROM evmlog 
     WHERE 
@@ -126,10 +127,11 @@ export async function projectRoles(chainId: number, vault: `0x${string}`) {
 
   SELECT account, role_mask FROM ranked WHERE rn = 1;`,
   [chainId, vault, topic])
+
   return z.object({
     account: zhexstring,
-    role_mask: z.number()
-  }).array().parse(roles.rows)
+    roleMask: z.bigint({ coerce: true })
+  }).array().parse(snakeToCamelCols(roles.rows))
 }
 
 export async function extractDebts(chainId: number, vault: `0x${string}`) {

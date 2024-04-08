@@ -40,6 +40,11 @@ type Sparklines {
   apy: [SparklinePoint]
 }
 
+type Role {
+  account: String!
+  roleMask: BigInt!
+}
+
 type Vault {
   DOMAIN_SEPARATOR: String
   FACTORY: String
@@ -100,5 +105,6 @@ type Vault {
   sparklines: Sparklines
   tvl: SparklinePoint
   apy: SparklinePoint
+  roles: [Role]
 }
 `
