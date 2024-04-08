@@ -7,6 +7,7 @@ import harvest from './harvest'
 import transfer from './transfer'
 import latestBlock from './latestBlock'
 import monitor from './monitor'
+import accountRole from './accountRole'
 
 const query = gql`
   scalar BigInt
@@ -32,6 +33,8 @@ const query = gql`
     transfers(chainId: Int, address: String): [Transfer]
     harvests(chainId: Int, address: String, limit: Int): [Harvest]
     timeseries(chainId: Int!, address: String!, label: String!, component: String, period: String): [Output]
+    accountRoles(chainId: Int, account: String!): [AccountRole]
+    accountVaults(chainId: Int, account: String!): [Vault]
   }
 `
 
@@ -44,7 +47,8 @@ const typeDefs = [
   harvest,
   output,
   latestBlock,
-  monitor
+  monitor,
+  accountRole
 ]
 
 export default typeDefs
