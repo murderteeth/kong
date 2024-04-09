@@ -7,6 +7,23 @@ type StrategyMeta {
   protocols: [String]
 }
 
+type Apr {
+  gross: Float
+  net: Float
+}
+
+type ReportDetail {
+  chainId: Int
+  address: String
+  blockNumber: BigInt
+  blockTime: BigInt
+  profit: BigInt
+  profitUsd: Float
+  loss: BigInt
+  lossUsd: Float
+  apr: Apr
+}
+
 type Strategy {
   chainId: Int
   address: String
@@ -47,6 +64,7 @@ type Strategy {
   fullProfitUnlockDate: BigInt
   isShutdown: Boolean
   lastReport: BigInt
+  lastReportDetail: ReportDetail
   management: String
   pendingManagement: String
   performanceFee: Int

@@ -29,29 +29,29 @@ export const HarvestSchema = z.object({
 export type Harvest = z.infer<typeof HarvestSchema>
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
-  const harvest = HarvestSchema.parse({
+  const latestHarvest = HarvestSchema.parse({
     chainId, address, blockTime: await getBlockTime(chainId, data.blockNumber), ...data
   })
 
   const decimals = await fetchOrExtractDecimals(chainId, address)
   const asset = await fetchOrExtractAssetAddress(chainId, address, 'strategy', 'asset')
-  const price = await fetchErc20PriceUsd(chainId, asset, harvest.blockNumber)
+  const price = await fetchErc20PriceUsd(chainId, asset, latestHarvest.blockNumber)
 
   const previousLog = await first<EvmLog>(EvmLogSchema, `
   SELECT * from evmlog 
   WHERE chain_id = $1 AND address = $2 AND signature = $3 AND block_number < $4 
   ORDER BY block_number DESC, log_index DESC LIMIT 1`,
-  [chainId, address, topics[0], harvest.blockNumber])
+  [chainId, address, topics[0], latestHarvest.blockNumber])
   const previousHarvest = previousLog ? HarvestSchema.parse(previousLog) : undefined
   const apr = multicall3.supportsBlock(chainId, data.blockNumber)
-  ? await computeApr(harvest, previousHarvest)
+  ? await computeApr(latestHarvest, previousHarvest)
   : { gross: 0, net: 0 }
 
   return {
-    profitUsd: priced(harvest.args.profit, decimals, price.priceUsd),
-    lossUsd: priced(harvest.args.loss, decimals, price.priceUsd),
-    protocolFeesUsd: priced(harvest.args.protocolFees, decimals, price.priceUsd),
-    performanceFeesUsd: priced(harvest.args.performanceFees, decimals, price.priceUsd),
+    profitUsd: priced(latestHarvest.args.profit, decimals, price.priceUsd),
+    lossUsd: priced(latestHarvest.args.loss, decimals, price.priceUsd),
+    protocolFeesUsd: priced(latestHarvest.args.protocolFees, decimals, price.priceUsd),
+    performanceFeesUsd: priced(latestHarvest.args.performanceFees, decimals, price.priceUsd),
     priceUsd: price.priceUsd,
     priceSource: price.priceSource,
     apr
@@ -67,6 +67,7 @@ export async function totalDebt(harvest: Harvest) {
       blockNumber: harvest.blockNumber
     }) as bigint
   } catch(error) {
+    console.error('🤬', '!totalDebt')
     return 0n
   }
 }

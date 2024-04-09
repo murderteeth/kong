@@ -10,7 +10,7 @@ import { rpcs } from '../../../rpcs'
 import { compare } from 'compare-versions'
 import * as snapshot__v2 from '../2/vault/snapshot/hook'
 import * as snapshot__v3 from '../3/vault/snapshot/hook'
-import { extractFeesBps } from '../2/vault/event/strategyReported/hook'
+import { extractFeesBps } from '../2/strategy/event/hook'
 
 export const APYSchema = z.object({
   chainId: z.number(),

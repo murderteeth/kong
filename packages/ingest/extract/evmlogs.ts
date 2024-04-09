@@ -57,13 +57,9 @@ export class EvmLogsExtractor {
 
       let hookResult = {}
       for (const hook of topical) {
-        try {
-          hookResult = {
-            ...hookResult,
-            ...await hook.module.default(chainId, address, log)
-          }
-        } catch(error) {
-          console.warn('🚨', 'hook fail', error)
+        hookResult = {
+          ...hookResult,
+          ...await hook.module.default(chainId, address, log)
         }
       }
 

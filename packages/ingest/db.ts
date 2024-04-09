@@ -81,6 +81,7 @@ export async function getSparkline(chainId: number, address: string, label: stri
     ORDER BY "blockTime" DESC
     LIMIT 3;
   `, [chainId, address, label, component])
+ 
   return z.object({
     chainId: z.number(),
     address: z.string(),
