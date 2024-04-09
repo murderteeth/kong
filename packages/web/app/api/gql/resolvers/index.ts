@@ -10,6 +10,7 @@ import timeseries from './timeseries'
 import { bigintScalar } from './bigintScalar'
 import accountRoles from './accountRoles'
 import accountVaults from './accountVaults'
+import accountStrategies from './accountStrategies'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -24,7 +25,8 @@ const resolvers = {
     harvests,
     timeseries,
     accountRoles,
-    accountVaults
+    accountVaults,
+    accountStrategies
   }
 }
 

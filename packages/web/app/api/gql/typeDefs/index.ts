@@ -35,6 +35,7 @@ const query = gql`
     timeseries(chainId: Int!, address: String!, label: String!, component: String, period: String): [Output]
     accountRoles(chainId: Int, account: String!): [AccountRole]
     accountVaults(chainId: Int, account: String!): [Vault]
+    accountStrategies(chainId: Int, account: String!): [Strategy]
   }
 `
 
