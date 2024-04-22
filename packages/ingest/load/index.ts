@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { mq, strider, types } from 'lib'
-import db, { getTravelledStrides, toUpsertSql } from '../db'
+import db, { firstRow, getTravelledStrides, toUpsertSql } from '../db'
 import { Processor } from 'lib/processor'
 import { PoolClient } from 'pg'
-import { OutputSchema, ThingSchema, zhexstring } from 'lib/types'
+import { OutputSchema, SnapshotSchema, ThingSchema, zhexstring } from 'lib/types'
 import { Worker } from 'bullmq'
 import { endOfDay } from 'lib/dates'
 
@@ -23,7 +23,8 @@ export default class Load implements Processor {
     await upsertEvmLog(data),
 
     [mq.job.load.snapshot.name]: async data => 
-    await upsert(data, 'snapshot', 'chain_id, address'),
+    await upsertSnapshot(data),
+    //await upsert(data, 'snapshot', 'chain_id, address'),
 
     [mq.job.load.thing.name]: async data => 
     await upsertThing(data),
@@ -76,6 +77,33 @@ export async function upsertEvmLog(data: any) {
     )
 
     await client.query('COMMIT')
+  } catch(error) {
+    await client.query('ROLLBACK')
+    throw error
+
+  } finally {
+    client.release()
+  }
+}
+
+export async function upsertSnapshot(data: any) {
+  const snapshot = SnapshotSchema.parse(data)
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+    const { snapshot: currentSnapshot, hook: currentHook } = (await firstRow(
+      'SELECT snapshot, hook FROM snapshot WHERE chain_id = $1 AND address = $2 FOR UPDATE', 
+      [snapshot.chainId, snapshot.address],
+      client
+    )) ?? { snapshot: {}, hook: {} }
+
+    snapshot.snapshot = { ...currentSnapshot, ...snapshot.snapshot }
+    snapshot.hook = { ...currentHook, ...snapshot.hook }
+    await upsert(snapshot, 'snapshot', 'chain_id, address', undefined, client)
+
+    await client.query('COMMIT')
+
   } catch(error) {
     await client.query('ROLLBACK')
     throw error

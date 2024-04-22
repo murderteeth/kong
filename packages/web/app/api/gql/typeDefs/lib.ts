@@ -49,4 +49,9 @@ type SparklinePoint {
   blockTime: BigInt!
   close: Float!
 }
+
+type ReportApr {
+  gross: Float
+  net: Float
+}
 `

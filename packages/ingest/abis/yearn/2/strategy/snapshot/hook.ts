@@ -8,9 +8,10 @@ import * as things from '../../../../../things'
 import { mq } from 'lib'
 import { estimateCreationBlock } from 'lib/blocks'
 import { fetchOrExtractErc20 } from '../../../lib'
-import db from '../../../../../db'
+import db, { firstRow } from '../../../../../db'
 import { getRiskScore } from '../../../lib/risk'
 import { getStrategyMeta } from '../../../lib/meta'
+import vaultAbi from '../../vault/abi'
 
 const borkedVaults = [
   '0x718AbE90777F5B778B52D553a5aBaa148DD0dc5D'
@@ -19,7 +20,6 @@ const borkedVaults = [
 const SnapshotSchema = z.object({
   vault: zhexstring,
   want: zhexstring,
-  totalDebt: z.bigint({ coerce: true }).optional(),
   tradeFactory: zhexstring.optional()
 })
 
@@ -45,12 +45,13 @@ export type LenderStatus = z.infer<typeof LenderStatusSchema>
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const snapshot = SnapshotSchema.parse(data)
   await processTradeFactory(chainId, snapshot)
-  const totalDebtUsd = await computeTotalDebtUsd(chainId, snapshot)
+  const { totalDebt, totalDebtUsd } = await extractTotalDebtFromSnapshot(chainId, address, snapshot)
   const lenderStatuses = await extractLenderStatuses(chainId, address)
+  const lastReportDetail = await fetchLastReportDetail(chainId, address)
   const claims = await computeRewards(chainId, address, snapshot)
   const risk = await getRiskScore(chainId, address)
   const meta = await getStrategyMeta(chainId, address)
-  return { totalDebtUsd, lenderStatuses, claims, risk, meta }
+  return { totalDebt, totalDebtUsd, lenderStatuses, lastReportDetail, claims, risk, meta }
 }
 
 async function processTradeFactory(chainId: number, snapshot: Snapshot) {
@@ -68,13 +69,29 @@ async function processTradeFactory(chainId: number, snapshot: Snapshot) {
   }))
 }
 
-async function computeTotalDebtUsd(chainId: number, snapshot: Snapshot) {
-  if (borkedVaults.includes(getAddress(snapshot.vault))) return 0
-  if (snapshot.want === zeroAddress) return 0
-  if (!snapshot.totalDebt) return 0
-  const { priceUsd } = await fetchErc20PriceUsd(chainId, snapshot.want)
-  const erc20 = await fetchOrExtractErc20(chainId, snapshot.want)
-  return priced(snapshot.totalDebt, erc20.decimals, priceUsd)
+async function extractTotalDebtFromSnapshot(chainId: number, strategy: `0x${string}`, snapshot: Snapshot) {
+  return await extractTotalDebt(chainId, snapshot.vault, strategy, snapshot.want)
+}
+
+export async function extractTotalDebt(chainId: number, vault: `0x${string}`, strategy: `0x${string}`, want: `0x${string}`, blockNumber?: bigint) {
+  if (borkedVaults.includes(getAddress(vault))) return {
+    totalDebt: 0n,
+    totalDebtUsd: 0
+  }
+
+  const status = await rpcs.next(chainId).readContract({
+    address: vault, abi: vaultAbi, functionName: 'strategies',
+    args: [strategy],
+    blockNumber
+  })
+
+  const { priceUsd } = await fetchErc20PriceUsd(chainId, want, blockNumber)
+  const erc20 = await fetchOrExtractErc20(chainId, want)
+
+  return {
+    totalDebt: status.totalDebt,
+    totalDebtUsd: priced(status.totalDebt, erc20.decimals, priceUsd)
+  }
 }
 
 export async function extractLenderStatuses(chainId: number, address: `0x${string}`, blockNumber?: bigint) {
@@ -137,4 +154,45 @@ async function extractBalances(chainId: number, strategy: `0x${string}`, tradeab
   const multicall = await rpcs.next(chainId).multicall({ contracts })
   if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
   return tradeables.map((t, i) => multicall[i].result!)
+}
+
+async function fetchLastReportDetail(chainId: number, address: `0x${string}`) {
+  const row = await firstRow(`
+  SELECT *
+  FROM evmlog
+  WHERE chain_id = $1
+    AND address = $2
+    AND event_name = 'Harvested'
+  ORDER BY block_number DESC, log_index DESC
+  LIMIT 1;`, [chainId, address])
+
+  if (!row) return undefined
+
+  return z.object({
+    chainId: z.number(),
+    address: zhexstring,
+    blockNumber: z.bigint({ coerce: true }),
+    blockTime: z.bigint({ coerce: true }),
+    apr: z.object({
+      gross: z.number(),
+      net: z.number()
+    }),
+    profit: z.bigint({ coerce: true }),
+    loss: z.bigint({ coerce: true }),
+    debtPayment: z.bigint({ coerce: true }),
+    debtOutstanding: z.bigint({ coerce: true }),
+    profitUsd: z.number(),
+    lossUsd: z.number(),
+    debtPaymentUsd: z.number(),
+    debtOutstandingUsd: z.number()
+
+  }).parse({
+    chainId: row.chain_id,
+    address: row.address,
+    blockNumber: row.block_number,
+    blockTime: row.block_time,
+    ...row.args,
+    ...row.hook
+
+  })
 }
