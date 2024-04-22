@@ -11,6 +11,8 @@ import { bigintScalar } from './bigintScalar'
 import accountRoles from './accountRoles'
 import accountVaults from './accountVaults'
 import accountStrategies from './accountStrategies'
+import vaultReports from './vaultReports'
+import strategyReports from './strategyReports'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -20,7 +22,9 @@ const resolvers = {
     monitor,
     vaults,
     vault,
+    vaultReports,
     strategies,
+    strategyReports,
     transfers,
     harvests,
     timeseries,

@@ -8,6 +8,8 @@ import transfer from './transfer'
 import latestBlock from './latestBlock'
 import monitor from './monitor'
 import accountRole from './accountRole'
+import vaultReport from './vaultReport'
+import strategyReport from './strategyReport'
 
 const query = gql`
   scalar BigInt
@@ -29,7 +31,9 @@ const query = gql`
     monitor: Monitor @cacheControl(maxAge: 2)
     vaults(chainId: Int): [Vault]
     vault(chainId: Int, address: String): Vault
+    vaultReports(chainId: Int!, address: String!): [VaultReport]
     strategies(chainId: Int): [Strategy]
+    strategyReports(chainId: Int!, address: String!): [StrategyReport]
     transfers(chainId: Int, address: String): [Transfer]
     harvests(chainId: Int, address: String, limit: Int): [Harvest]
     timeseries(chainId: Int!, address: String!, label: String!, component: String, period: String): [Output]
@@ -43,7 +47,9 @@ const typeDefs = [
   query,
   lib,
   vault,
+  vaultReport,
   strategy,
+  strategyReport,
   transfer,
   harvest,
   output,
