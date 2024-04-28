@@ -33,6 +33,7 @@ const query = gql`
     vault(chainId: Int, address: String): Vault
     vaultReports(chainId: Int!, address: String!): [VaultReport]
     strategies(chainId: Int): [Strategy]
+    strategy(chainId: Int, address: String): Strategy
     strategyReports(chainId: Int!, address: String!): [StrategyReport]
     transfers(chainId: Int, address: String): [Transfer]
     harvests(chainId: Int, address: String, limit: Int): [Harvest]

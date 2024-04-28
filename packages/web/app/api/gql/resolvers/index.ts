@@ -13,6 +13,7 @@ import accountVaults from './accountVaults'
 import accountStrategies from './accountStrategies'
 import vaultReports from './vaultReports'
 import strategyReports from './strategyReports'
+import strategy from './strategy'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -24,6 +25,7 @@ const resolvers = {
     vault,
     vaultReports,
     strategies,
+    strategy,
     strategyReports,
     transfers,
     harvests,
