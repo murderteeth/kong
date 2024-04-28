@@ -79,7 +79,7 @@ export async function extractTotalDebt(chainId: number, vault: `0x${string}`, st
     totalDebtUsd: 0
   }
 
-  const status = await rpcs.next(chainId).readContract({
+  const status = await rpcs.next(chainId, blockNumber).readContract({
     address: vault, abi: vaultAbi, functionName: 'strategies',
     args: [strategy],
     blockNumber
