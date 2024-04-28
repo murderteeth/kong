@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { toEventSelector } from 'viem'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
-import { fetchOrExtractAssetAddress, fetchOrExtractDecimals } from '../../../lib'
+import { fetchOrExtractAssetAddress, fetchOrExtractDecimals, throwOnMulticallError } from '../../../lib'
 import { extractTotalDebt } from '../snapshot/hook'
 import { rpcs } from '../../../../../rpcs'
 import { first } from '../../../../../db'
@@ -70,9 +70,7 @@ async function extractVaultAndWant(chainId: number, strategy: `0x${string}`) {
     { address: strategy, abi: strategyAbi, functionName: 'want' }
   ]})
 
-  if (multicall.some(result => result.status !== 'success')) {
-    throw new Error('!multicall.success')
-  }
+  throwOnMulticallError(multicall)
 
   return {
     vault: multicall[0].result!,

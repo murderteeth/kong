@@ -88,12 +88,19 @@ export async function extractErc20(chainId: number, address: `0x${string}`) {
     { address, functionName: 'symbol', abi: parseAbi(['function symbol() view returns (string)']) },
     { address, functionName: 'decimals', abi: parseAbi(['function decimals() view returns (uint256)']) }
   ] })
-  if (multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+  throwOnMulticallError(multicall)
   return {
     chainId,
     address,
     name: multicall[0].result!,
     symbol: multicall[1].result!,
     decimals: multicall[2].result!
+  }
+}
+
+export function throwOnMulticallError(multicall: any[]) {
+  if (multicall.some(result => result.status !== 'success')) {
+    const first = multicall.find(result => result.status !== 'success')
+    throw new Error(`!multicall.success\n\n${JSON.stringify(first, null, 2)}`)
   }
 }

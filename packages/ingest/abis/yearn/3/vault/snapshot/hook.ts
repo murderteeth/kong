@@ -10,6 +10,7 @@ import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
 import { snakeToCamelCols } from 'lib/strings'
+import { throwOnMulticallError } from '../../../lib'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -180,7 +181,7 @@ export async function extractDebts(chainId: number, vault: `0x${string}`) {
         }
       ]})
 
-      if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+      throwOnMulticallError(multicall)
       const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result!
       const targetDebtRatio = allocator ? Number(multicall[1].result!) : undefined
       const maxDebtRatio = allocator ? Number(multicall[2].result!) : undefined
