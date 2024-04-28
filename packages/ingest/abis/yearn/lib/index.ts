@@ -20,7 +20,7 @@ export async function fetchOrExtractDecimals(chainId: number, address: `0x${stri
   if (result) return result
   try {
     return Number(await extractDecimals(chainId, address))
-  } finally {
+  } catch(_) {
     // assume address belongs to a v2 strategy
     const want = await extractAddress(chainId, address, 'want')
     return Number(await extractDecimals(chainId, want))
