@@ -64,11 +64,11 @@ async function fetchPreviousHarvest(harvest: Harvest) {
   return HarvestSchema.parse(previousLog)
 }
 
-async function extractVaultAndWant(chainId: number, strategy: `0x${string}`) {
-  const multicall = await rpcs.next(chainId).multicall({ contracts: [
+async function extractVaultAndWant(chainId: number, strategy: `0x${string}`, blockNumber?: bigint) {
+  const multicall = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     { address: strategy, abi: strategyAbi, functionName: 'vault' },
     { address: strategy, abi: strategyAbi, functionName: 'want' }
-  ]})
+  ], blockNumber })
 
   throwOnMulticallError(multicall)
 
@@ -79,7 +79,7 @@ async function extractVaultAndWant(chainId: number, strategy: `0x${string}`) {
 }
 
 async function extractDebtFromStrategy(chainId: number, strategy: `0x${string}`, blockNumber?: bigint) {
-  const { vault, want } = await extractVaultAndWant(chainId, strategy)
+  const { vault, want } = await extractVaultAndWant(chainId, strategy, blockNumber)
   return await extractTotalDebt(chainId, vault, strategy, want, blockNumber)
 }
 
@@ -91,7 +91,7 @@ async function extractDelegatedAssets(chainId: number, strategy: `0x${string}`, 
 }
 
 async function extractFees(chainId: number, strategy: `0x${string}`, blockNumber: bigint) {
-  const { vault } = await extractVaultAndWant(chainId, strategy)
+  const { vault } = await extractVaultAndWant(chainId, strategy, blockNumber)
   const bps = await extractFeesBps(chainId, vault, blockNumber)
   return {
     performance: math.div(bps.performance, 10_000n),
