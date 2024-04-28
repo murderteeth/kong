@@ -24,18 +24,18 @@ async function fetchLastReportDetail(chainId: number, address: `0x${string}`) {
     address: zhexstring,
     blockNumber: z.bigint({ coerce: true }),
     blockTime: z.bigint({ coerce: true }),
-    apr: z.object({
-      gross: z.number(),
-      net: z.number()
-    }),
     profit: z.bigint({ coerce: true }),
     loss: z.bigint({ coerce: true }),
     protocolFees: z.bigint({ coerce: true }),
     performanceFees: z.bigint({ coerce: true }),
-    profitUsd: z.number(),
-    lossUsd: z.number(),
-    protocolFeesUsd: z.number(),
-    performanceFeesUsd: z.number()
+    apr: z.object({
+      gross: z.number(),
+      net: z.number()
+    }).default({ gross: 0, net: 0 }),
+    profitUsd: z.number().default(0),
+    lossUsd: z.number().default(0),
+    protocolFeesUsd: z.number().default(0),
+    performanceFeesUsd: z.number().default(0)
 
   }).parse({
     chainId: row.chain_id,
