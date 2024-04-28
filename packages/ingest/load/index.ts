@@ -120,7 +120,7 @@ export async function upsertThing(data: any) {
   try {
     await client.query('BEGIN')
     const currentDefaults: any = (await client.query(
-      'SELECT defaults FROM thing WHERE chain_id = $1 AND address = $2 AND label = $3 FOR UPDATE', 
+      'SELECT defaults FROM thing WHERE chain_id = $1 AND address = $2 AND label = $3 FOR UPDATE',
       [thing.chainId, thing.address, thing.label]))
       .rows[0]?.defaults
     if (currentDefaults) thing.defaults = { ...currentDefaults, ...thing.defaults }
