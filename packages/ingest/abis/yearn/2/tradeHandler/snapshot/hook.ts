@@ -2,6 +2,7 @@ import { parseAbi, toEventSelector } from 'viem'
 import { rpcs } from '../../../../../rpcs'
 import { Tradeable, TradeableSchema, zhexstring } from 'lib/types'
 import db from '../../../../../db'
+import { throwOnMulticallError } from '../../../lib'
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const tradeables = await fill(chainId, await project(chainId, address))
@@ -51,7 +52,7 @@ async function fill(chainId: number, tradeables: Partial<Tradeable>[]) {
   ]).flat()
 
   const multicall = await rpcs.next(chainId).multicall({ contracts })
-  if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+  throwOnMulticallError(multicall)
 
   return tradeables.map((t, i) => TradeableSchema.parse({
     ...t,

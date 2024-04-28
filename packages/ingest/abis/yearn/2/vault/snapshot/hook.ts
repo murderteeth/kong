@@ -7,6 +7,7 @@ import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
+import { throwOnMulticallError } from '../../../lib'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -120,7 +121,7 @@ async function extractDebts(chainId: number, vault: `0x${string}`) {
     address: vault, functionName: 'strategies', args: [strategy], abi
   })) })
 
-  if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+  throwOnMulticallError(multicall)
 
   for (let i = 0; i < strategies.length; i++) {
     const [

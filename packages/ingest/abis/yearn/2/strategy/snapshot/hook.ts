@@ -7,7 +7,7 @@ import { rpcs } from '../../../../../rpcs'
 import * as things from '../../../../../things'
 import { mq } from 'lib'
 import { estimateCreationBlock } from 'lib/blocks'
-import { fetchOrExtractErc20 } from '../../../lib'
+import { fetchOrExtractErc20, throwOnMulticallError } from '../../../lib'
 import db, { firstRow } from '../../../../../db'
 import { getRiskScore } from '../../../lib/risk'
 import { getStrategyMeta } from '../../../lib/meta'
@@ -152,7 +152,7 @@ async function extractBalances(chainId: number, strategy: `0x${string}`, tradeab
   }))
 
   const multicall = await rpcs.next(chainId).multicall({ contracts })
-  if(multicall.some(result => result.status !== 'success')) throw new Error('!multicall.success')
+  throwOnMulticallError(multicall)
   return tradeables.map((t, i) => multicall[i].result!)
 }
 
