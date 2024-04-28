@@ -18,7 +18,13 @@ export async function fetchAssetDecimals(chainId: number, address: `0x${string}`
 export async function fetchOrExtractDecimals(chainId: number, address: `0x${string}`) {
   const result = await fetchAssetDecimals(chainId, address)
   if (result) return result
-  return Number(await extractDecimals(chainId, address))
+  try {
+    return Number(await extractDecimals(chainId, address))
+  } finally {
+    // assume address belongs to a v2 strategy
+    const want = await extractAddress(chainId, address, 'want')
+    return Number(await extractDecimals(chainId, want))
+  }
 }
 
 export async function fetchAssetAddress(chainId: number, address: `0x${string}`, label: string) {
