@@ -206,7 +206,7 @@ export async function extractFeesBps(chainId: number, address: `0x${string}`, sn
   if(snapshot.accountant && snapshot.accountant !== zeroAddress) {
     const defaultConfig = await rpcs.next(chainId).readContract({
       address: snapshot.accountant,
-      abi: parseAbi(['function defaultConfig() view returns (uint16, uint16, uint16, uint16, uint16, uint16)']),
+      abi: parseAbi(['function defaultConfig() view returns (uint16, uint16)']),
       functionName: 'defaultConfig'
     })
     return {

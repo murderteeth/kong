@@ -4,6 +4,19 @@ import { AbiConfig, AbiConfigSchema, SourceConfig, SourceConfigSchema } from 'li
 import { getBlockNumber } from 'lib/blocks'
 import { getTravelledStrides } from '../db'
 import { StrideSchema } from 'lib/types'
+import { gnosis, polygon, fantom } from 'viem/chains'
+
+const LOG_STRIDES: {
+  [key: number]: number
+} = {
+  [gnosis.id]: 5_000,
+  [polygon.id]: 3_000,
+  [fantom.id]: 5_000
+}
+
+function getLogStride(chainId: number) {
+  return LOG_STRIDES[chainId] || Number(process.env.LOG_STRIDE || false) || 10_000
+}
 
 export default class EventsFanout {
   async fanout(data: { abi: AbiConfig, source: SourceConfig, replay?: boolean }) {
@@ -20,7 +33,7 @@ export default class EventsFanout {
 
     for (const stride of StrideSchema.array().parse(nextStrides)) {
       console.log('📤', 'stride', chainId, address, stride.from, stride.to)
-      await walklog(stride, async (from, to) => {
+      await walklog({...stride, logStride: getLogStride(chainId)}, async (from, to) => {
         await mq.add(mq.job.extract.evmlog, {
           abiPath, chainId, address, from, to, replay
         })
@@ -30,13 +43,13 @@ export default class EventsFanout {
 }
 
 async function walklog(
-  o: { from: bigint, to: bigint, stride?: bigint, throttle?: number }, 
+  o: { from: bigint, to: bigint, logStride: number }, 
   f: (from: bigint, to: bigint) => Promise<void>
 ) {
-  const stride = o.stride || BigInt(process.env.LOG_STRIDE || 10_000)
-  for (let fromBlock = o.from; fromBlock <= o.to; fromBlock += stride) {
-    const toBlock = fromBlock + stride - 1n < o.to ? fromBlock + stride - 1n : o.to
+  const logStride = BigInt(o.logStride)
+  for (let fromBlock = o.from; fromBlock <= o.to; fromBlock += logStride) {
+    const toBlock = fromBlock + logStride - 1n < o.to ? fromBlock + logStride - 1n : o.to
     await f(fromBlock, toBlock)
-    await setTimeout(o.throttle || 16)
+    await setTimeout(16)
   }
 }
