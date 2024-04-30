@@ -26,7 +26,10 @@ const SnapshotSchema = z.object({
 export type Snapshot = z.infer<typeof SnapshotSchema>
 
 export const RewardSchema = z.object({
-  token: zhexstring,
+  address: zhexstring,
+  name: z.string(),
+  symbol: z.string(),
+  decimals: z.bigint(),
   balance: z.bigint(),
   balanceUsd: z.number()
 })
@@ -124,9 +127,10 @@ async function computeRewards(chainId: number, strategy: `0x${string}`, snapshot
   const result: Reward[] = []
 
   for (const [i, t] of tradeables.entries()) {
+    const erc20 = await fetchOrExtractErc20(chainId, t.token)
     const { priceUsd } = await fetchErc20PriceUsd(chainId, t.token)
     result.push({
-      token: t.token,
+      ...erc20,
       balance: balances[i],
       balanceUsd: priced(balances[i], t.decimals, priceUsd)
     })
