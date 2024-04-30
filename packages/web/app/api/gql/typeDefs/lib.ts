@@ -10,7 +10,11 @@ type Erc20 {
 }
 
 type Reward {
-  token: String
+  chainId: Int,
+  address: String,
+  name: String,
+  symbol: String,
+  decimals: Int,
   balance: BigInt
   balanceUsd: Float
 }

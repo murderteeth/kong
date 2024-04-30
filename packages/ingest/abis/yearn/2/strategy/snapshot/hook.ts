@@ -26,6 +26,7 @@ const SnapshotSchema = z.object({
 export type Snapshot = z.infer<typeof SnapshotSchema>
 
 export const RewardSchema = z.object({
+  chainId: z.number(),
   address: zhexstring,
   name: z.string(),
   symbol: z.string(),
