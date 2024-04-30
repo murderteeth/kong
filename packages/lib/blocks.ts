@@ -32,7 +32,12 @@ export async function getBlock(chainId: number, blockNumber?: bigint): Promise<B
 }
 
 async function __getBlock(chainId: number, blockNumber?: bigint) {
-  return await rpcs.next(chainId).getBlock({ blockNumber })
+  if (blockNumber) {
+    const { number: height } = await getBlock(chainId)
+    return rpcs.next(chainId, useArchiveNode(height, blockNumber)).getBlock({ blockNumber })
+  } else {
+    return await rpcs.next(chainId).getBlock()
+  }
 }
 
 export async function getDefaultStartBlockNumber(chainId: number): Promise<bigint> {
@@ -103,7 +108,7 @@ export async function __estimateCreationBlock(chainId: number, contract: `0x${st
   const height = await rpcs.next(chainId).getBlockNumber()
   let lo = 0n, hi = height, mid = lo + (hi - lo) / 2n
   while (hi - lo > 1n) {
-    const bytecode = await rpcs.next(chainId).getBytecode({ address: contract, blockNumber: mid })
+    const bytecode = await rpcs.next(chainId, useArchiveNode(height, mid)).getBytecode({ address: contract, blockNumber: mid })
     if(!bytecode || bytecode.length === 0) { lo = mid } else { hi = mid }
     mid = lo + (hi - lo) / 2n
     counter++
@@ -111,4 +116,11 @@ export async function __estimateCreationBlock(chainId: number, contract: `0x${st
   console.log('💥', 'estimateCreationBlock', chainId, contract, counter, hi)
   console.timeEnd(label)
   return await getBlock(chainId, hi)
+}
+
+const FULL_NODE_DEPTH = BigInt(process.env.FULL_NODE_DEPTH || 400)
+
+function useArchiveNode(height: bigint, blockNumber?: bigint) {
+  if(!blockNumber) return false
+  return blockNumber < height - FULL_NODE_DEPTH
 }
