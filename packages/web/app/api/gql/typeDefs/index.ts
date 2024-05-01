@@ -3,7 +3,6 @@ import lib from './lib'
 import vault from './vault'
 import output from './output'
 import strategy from './strategy'
-import harvest from './harvest'
 import transfer from './transfer'
 import latestBlock from './latestBlock'
 import monitor from './monitor'
@@ -31,12 +30,11 @@ const query = gql`
     monitor: Monitor @cacheControl(maxAge: 2)
     vaults(chainId: Int): [Vault]
     vault(chainId: Int, address: String): Vault
-    vaultReports(chainId: Int!, address: String!): [VaultReport]
+    vaultReports(chainId: Int, address: String): [VaultReport]
     strategies(chainId: Int): [Strategy]
     strategy(chainId: Int, address: String): Strategy
-    strategyReports(chainId: Int!, address: String!): [StrategyReport]
+    strategyReports(chainId: Int, address: String): [StrategyReport]
     transfers(chainId: Int, address: String): [Transfer]
-    harvests(chainId: Int, address: String, limit: Int): [Harvest]
     timeseries(chainId: Int!, address: String!, label: String!, component: String, period: String): [Output]
     accountRoles(chainId: Int, account: String!): [AccountRole]
     accountVaults(chainId: Int, account: String!): [Vault]
@@ -52,7 +50,6 @@ const typeDefs = [
   strategy,
   strategyReport,
   transfer,
-  harvest,
   output,
   latestBlock,
   monitor,

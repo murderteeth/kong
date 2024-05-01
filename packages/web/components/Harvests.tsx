@@ -3,7 +3,7 @@
 import React from 'react'
 import Panel from './Panel'
 import { useData } from '@/hooks/useData'
-import { fEvmAddress, fUSD } from '@/lib/format'
+import { fEvmAddress, fPercent, fUSD } from '@/lib/format'
 import ReactTimeago from 'react-timeago'
 import { Harvest } from '@/hooks/useData/types'
 
@@ -33,6 +33,11 @@ function HarvestComponent({ harvest }: { harvest: Harvest }) {
     </div>
 
     <div className="w-full flex items-center justify-between">
+      <div className="text-yellow-700 text-xs">{'apr'}</div>
+      <div className="text-xs text-yellow-700">{fPercent(harvest.apr.net || 0)}</div>
+    </div>
+
+    <div className="w-full flex items-center justify-between">
       <div className="text-yellow-700 text-xs">{'tx hash'}</div>
       <div className="text-xs text-yellow-700">{fEvmAddress(harvest.transactionHash)}</div>
     </div>
@@ -47,7 +52,7 @@ function HarvestComponent({ harvest }: { harvest: Harvest }) {
 }
 
 export default function Harvests({ className }: { className?: string }) {
-  const { harvests } = useData()
+  const { strategyReports: harvests } = useData()
   return <Panel className={`flex flex-col ${className}`}>
     <div className="font-bold text-lg">Harvests</div>
     <div className={`grow pr-1 flex flex-col gap-3

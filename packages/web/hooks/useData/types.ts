@@ -38,6 +38,10 @@ const HarvestSchema = z.object({
   address: z.string(),
   lossUsd: z.number().nullish(),
   profitUsd: z.number().nullish(),
+  apr: z.object({
+    gross: z.number(),
+    net: z.number()
+  }),
   blockTime: z.string(),
   transactionHash: z.string()
 })
@@ -124,7 +128,7 @@ export const DataContextSchema = z.object({
   tvls: z.array(OutputSchema).nullish().transform(data => data ?? []),
   apys: z.array(OutputSchema).nullish().transform(data => data ?? []),
   transfers: z.array(TransferSchema).nullish().transform(data => data ?? []),
-  harvests: z.array(HarvestSchema).nullish().transform(data => data ?? []),
+  strategyReports: z.array(HarvestSchema).nullish().transform(data => data ?? []),
   monitor: MonitorSchema
 })
 
@@ -136,7 +140,7 @@ export const DEFAULT_CONTEXT = {
   tvls: [],
   apys: [],
   transfers: [],
-  harvests: [],
+  strategyReports: [],
   monitor: {
     queues: [],
     db: {

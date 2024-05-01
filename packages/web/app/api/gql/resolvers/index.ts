@@ -5,7 +5,6 @@ import vaults from './vaults'
 import vault from './vault'
 import strategies from './strategies'
 import transfers from './transfers'
-import harvests from './harvests'
 import timeseries from './timeseries'
 import { bigintScalar } from './bigintScalar'
 import accountRoles from './accountRoles'
@@ -28,7 +27,6 @@ const resolvers = {
     strategy,
     strategyReports,
     transfers,
-    harvests,
     timeseries,
     accountRoles,
     accountVaults,

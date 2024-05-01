@@ -10,7 +10,7 @@ const transfers = async (_: any, args: { chainId: number, address: string }) => 
       args->>'sender' as sender,
       args->>'receiver' as receiver,
       args->>'value' AS value,
-      args->>'valueUsd' AS "valueUsd",
+      hook->>'valueUsd' AS "valueUsd",
       block_number AS "blockNumber",
       block_time AS "blockTime",
       log_index AS "logIndex",

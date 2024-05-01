@@ -24,7 +24,6 @@ export default class Load implements Processor {
 
     [mq.job.load.snapshot.name]: async data => 
     await upsertSnapshot(data),
-    //await upsert(data, 'snapshot', 'chain_id, address'),
 
     [mq.job.load.thing.name]: async data => 
     await upsertThing(data),
