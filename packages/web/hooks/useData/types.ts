@@ -41,7 +41,7 @@ const HarvestSchema = z.object({
   apr: z.object({
     gross: z.number(),
     net: z.number()
-  }),
+  }).nullish(),
   blockTime: z.string(),
   transactionHash: z.string()
 })

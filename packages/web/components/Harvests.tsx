@@ -34,7 +34,7 @@ function HarvestComponent({ harvest }: { harvest: Harvest }) {
 
     <div className="w-full flex items-center justify-between">
       <div className="text-yellow-700 text-xs">{'apr'}</div>
-      <div className="text-xs text-yellow-700">{fPercent(harvest.apr.net || 0)}</div>
+      <div className="text-xs text-yellow-700">{fPercent(harvest.apr?.net || 0)}</div>
     </div>
 
     <div className="w-full flex items-center justify-between">
