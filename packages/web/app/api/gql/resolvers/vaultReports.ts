@@ -34,6 +34,7 @@ const vaultReports = async (_: any, args: { chainId: number, address: string }) 
       hook->>'protocolFeesUsd' AS "protocolFeesUsd",
       hook->>'totalFeesUsd' AS "totalFeesUsd",
       hook->>'totalRefundsUsd' AS "totalRefundsUsd",
+      hook->'apr' AS "apr",
 
       block_number AS "blockNumber",
       block_time AS "blockTime",

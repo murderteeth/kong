@@ -78,19 +78,19 @@ async function extractVaultAndWant(chainId: number, strategy: `0x${string}`, blo
   }
 }
 
-async function extractDebtFromStrategy(chainId: number, strategy: `0x${string}`, blockNumber?: bigint) {
+export async function extractDebtFromStrategy(chainId: number, strategy: `0x${string}`, blockNumber?: bigint) {
   const { vault, want } = await extractVaultAndWant(chainId, strategy, blockNumber)
   return await extractTotalDebt(chainId, vault, strategy, want, blockNumber)
 }
 
-async function extractDelegatedAssets(chainId: number, strategy: `0x${string}`, blockNumber: bigint) {
+export async function extractDelegatedAssets(chainId: number, strategy: `0x${string}`, blockNumber: bigint) {
   const multicallResult = await rpcs.next(chainId, blockNumber).multicall({ contracts: [
     { address: strategy, abi: strategyAbi, functionName: 'delegatedAssets' }
   ], blockNumber })
   return BigInt(multicallResult[0].result || 0n)
 }
 
-async function extractFees(chainId: number, strategy: `0x${string}`, blockNumber: bigint) {
+export async function extractFees(chainId: number, strategy: `0x${string}`, blockNumber: bigint) {
   const { vault } = await extractVaultAndWant(chainId, strategy, blockNumber)
   const bps = await extractFeesBps(chainId, vault, blockNumber)
   return {

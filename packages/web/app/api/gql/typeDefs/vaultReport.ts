@@ -31,6 +31,7 @@ type VaultReport {
   totalRefundsUsd: Float
   priceUsd: Float,
   priceSource: String,
+  apr: ReportApr
   blockNumber: Int!
   blockTime: BigInt!
   logIndex: Int!
