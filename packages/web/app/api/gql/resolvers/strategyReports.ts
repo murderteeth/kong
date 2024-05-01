@@ -1,6 +1,6 @@
 import db from '@/app/api/db'
 
-const strategyReports = async (_: any, args: { chainId: number, address: string }) => {
+const strategyReports = async (_: any, args: { chainId?: number, address?: string }) => {
   const { chainId, address } = args
   try {
     const result = await db.query(`
@@ -32,7 +32,7 @@ const strategyReports = async (_: any, args: { chainId: number, address: string 
       transaction_hash AS "transactionHash"
     FROM evmlog
     WHERE
-      chain_id = $1 AND address = $2
+      (chain_id = $1 OR $1 IS NULL) AND (address = $2 OR $2 IS NULL)
       AND (event_name = 'Reported' OR event_name = 'Harvested')
     ORDER BY
       block_time DESC, log_index DESC

@@ -117,11 +117,18 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
     transactionHash
   }
 
-  harvests {
+  strategyReports {
     chainId
     address
-    lossUsd
+    profit
     profitUsd
+    loss
+    lossUsd
+    apr {
+      gross
+      net
+    }
+    blockNumber
     blockTime
     transactionHash
   }
