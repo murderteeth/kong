@@ -225,7 +225,7 @@ Kong resources are managed monorepo style using a yarn workspace.
 ## Schema
 
 ### thing
-Thing records are define domain objects tracked by the indexer. 
+Thing records define domain objects tracked by the indexer. 
 
 | column_name | data_type | is_nullable | column_default |
 |-------------|-----------|-------------|----------------|
@@ -234,7 +234,7 @@ Thing records are define domain objects tracked by the indexer.
 | label       | text      | NO          |                |
 | defaults    | jsonb     | YES         |                |
 
-Examples are vaults and strategies, or `select * from thing where label IN ('vault', 'strategy');`.
+Examples are vaults and strategies, ie `select * from thing where label IN ('vault', 'strategy');`.
 
 Various invariant properties of a domain object are stored in the `defaults` json field (eg vault apiVersion).
 
