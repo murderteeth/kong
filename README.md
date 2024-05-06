@@ -222,12 +222,117 @@ Kong resources are managed monorepo style using a yarn workspace.
 ![image](https://github.com/murderteeth/kong/assets/89237203/c9c70016-9de4-418f-a0bb-06b9fd9da549)
 
 
+## Schema
+
+### thing
+Thing records are define domain objects tracked by the indexer. 
+
+| column_name | data_type | is_nullable | column_default |
+|-------------|-----------|-------------|----------------|
+| chain_id    | integer   | NO          |                |
+| address     | text      | NO          |                |
+| label       | text      | NO          |                |
+| defaults    | jsonb     | YES         |                |
+
+Examples are vaults and strategies, or `select * from thing where label IN ('vault', 'strategy');`.
+
+Various invariant properties of a domain object are stored in the `defaults` json field (eg vault apiVersion).
+
+### snapshot
+Recurring snapshots of the various domain objects tracked by the indexer are stored here.
+
+| column_name  | data_type                 | is_nullable | column_default |
+|--------------|---------------------------|-------------|----------------|
+| chain_id     | integer                   | NO          |                |
+| address      | text                      | NO          |                |
+| snapshot     | jsonb                     | YES         |                |
+| hook         | jsonb                     | YES         |                |
+| block_number | bigint                    | NO          |                |
+| block_time   | timestamp with time zone  | YES         |                |
+
+The `snapshot` json field contains a key value collection of all contract fields. Query like this,
+```
+select snapshot #>> '{totalSupply}' from snapshot where chain_id = 1 and address = '0x028eC7330ff87667b6dfb0D94b954c820195336c';
+```
+
+The `hook` json field contains a key value collection of all hook fields. Query like this,
+```
+select hook #>> '{tvl}' from snapshot where chain_id = 1 and address = '0x028eC7330ff87667b6dfb0D94b954c820195336c';
+select hook #>> '{tvl, close}' from snapshot where chain_id = 1 and address = '0x028eC7330ff87667b6dfb0D94b954c820195336c';
+select hook #>> '{apy}' from snapshot where chain_id = 1 and address = '0x028eC7330ff87667b6dfb0D94b954c820195336c';
+select hook #>> '{apy, close}' from snapshot where chain_id = 1 and address = '0x028eC7330ff87667b6dfb0D94b954c820195336c';
+```
+
+### evmlog
+All logs for all domain objects are stored in the evmlog table with limits on Transfers, Approves, Deposits, and Withdraws.
+
+| column_name       | data_type                 | is_nullable | column_default |
+|-------------------|---------------------------|-------------|----------------|
+| chain_id          | integer                   | NO          |                |
+| address           | text                      | NO          |                |
+| event_name        | text                      | NO          |                |
+| signature         | text                      | NO          |                |
+| topics            | ARRAY                     | NO          |                |
+| args              | jsonb                     | YES         |                |
+| hook              | jsonb                     | YES         |                |
+| block_number      | bigint                    | NO          |                |
+| block_time        | timestamp with time zone  | YES         |                |
+| log_index         | integer                   | NO          |                |
+| transaction_hash  | text                      | NO          |                |
+| transaction_index | integer                   | NO          |                |
+
+The `args` json field contains a key value collection of a log's args.
+```
+select
+  args #>> '{gain}',
+  args #>> '{loss}'
+from evmlog
+where
+  chain_id = 1
+  and address = '0x028eC7330ff87667b6dfb0D94b954c820195336c'
+  and event_name = 'StrategyReported'
+order by block_number
+desc limit 1;
+```
+
+The `hook` json field contains a key value collection of the log's hook fields. Query like this,
+```
+select
+  hook #>> '{gainUsd}',
+  hook #>> '{lossUsd}'
+from evmlog
+where
+  chain_id = 1
+  and address = '0x028eC7330ff87667b6dfb0D94b954c820195336c'
+  and event_name = 'StrategyReported'
+order by block_number
+desc limit 1;
+```
+
+
+### evmlog_strides
+The strides table records which blocks have been queried for logs for all of the indexer's domain objects. 
+
+| column_name | data_type | is_nullable | column_default |
+|-------------|-----------|-------------|----------------|
+| chain_id    | integer   | NO          |                |
+| address     | text      | NO          |                |
+| strides     | text      | NO          |                |
+
+The `strides` field is a json formatted string representing ranges of blocks.
+
+A strides array that looks like `[{"from":"19419991","to":"19813291"}]` tells the indexer everything between 19419991 and 19813291 has been indexed.
+
+A strides array that looks like `[{"from":"19419991","to":"19800000"}, {"from":"19800100","to":"19813291"}]` tells the indexer there's a gap between 19800000 and 19800100 that needs to be indexed.
+
+
+
 ## Motivation
 Robust indexing is tough. Some observations,
 
 - Indexers spend a lot of time waiting for external things to respond. Kong's approach is high concurrency and batching.
 
-- Reindexing is expensive. So Kong optimizes for replayability.
+- Reindexing is expensive. Kong is designed for replayability.
 
 - It's hard to separate domain from indexer logic, but crucial for testing and growth. Kong uses indexer hooks to separate these concerns.
 
