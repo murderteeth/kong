@@ -58,38 +58,38 @@ export default async function process(chainId: number, address: `0x${string}`, d
   }
 }
 
-export async function totalDebt(harvest: Harvest) {
+export async function totalAssets(harvest: Harvest) {
   try {
     return await rpcs.next(harvest.chainId, harvest.blockNumber).readContract({
       address: harvest.address,
-      functionName: 'totalDebt',
-      abi: parseAbi(['function totalDebt() view returns (uint256)']),
+      functionName: 'totalAssets',
+      abi: parseAbi(['function totalAssets() view returns (uint256)']),
       blockNumber: harvest.blockNumber
     }) as bigint
   } catch(error) {
-    console.error('🤬', '!totalDebt')
+    console.error('🤬', '!totalAssets')
     return 0n
   }
 }
 
 export async function computeApr(latest: Harvest, previous: Harvest | undefined) {
   if(!previous) return { gross: 0, net: 0 }
-  const latestDebt = await totalDebt(latest)
-  const previousDebt = await totalDebt(previous)
+  const latestAssets = await totalAssets(latest)
+  const previousAssets = await totalAssets(previous)
 
-  if(!(latestDebt && previousDebt)) return { gross: 0, net: 0 }
+  if(!(latestAssets && previousAssets)) return { gross: 0, net: 0 }
 
   const profit = latest.args.profit
   const loss = latest.args.loss
   const fees = latest.args.performanceFees ?? 0n
 
   const grossPerformance = (loss > profit)
-  ? math.div(-loss, previousDebt)
-  : math.div(profit, previousDebt)
+  ? math.div(-loss, previousAssets)
+  : math.div(profit, previousAssets)
 
   const netPerformance = (loss > profit)
-  ? math.div(-loss, previousDebt)
-  : math.div(math.max(profit - fees, 0n), previousDebt)
+  ? math.div(-loss, previousAssets)
+  : math.div(math.max(profit - fees, 0n), previousAssets)
 
   const periodInHours = Number(((latest.blockTime || 0n) - (previous.blockTime || 0n)) / (60n * 60n)) || 1
   const hoursInOneYear = 24 * 365

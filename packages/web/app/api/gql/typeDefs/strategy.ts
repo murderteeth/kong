@@ -40,6 +40,8 @@ type Strategy {
   forceHarvestTriggerOnce: Boolean
   gauge: String
   healthCheck: String
+  inceptTime: BigInt
+  inceptBlock: BigInt
   isActive: Boolean
   isBaseFeeAcceptable: Boolean
   isOriginal: Boolean

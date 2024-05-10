@@ -9,7 +9,8 @@ export type EvmAddress = z.infer<typeof EvmAddressSchema>
 
 export const JobSchema = z.object({
   queue: z.string(),
-  name: z.string()
+  name: z.string(),
+  bychain: z.boolean().default(false).optional()
 })
 
 export type Job = z.infer<typeof JobSchema>

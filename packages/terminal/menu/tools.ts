@@ -1,4 +1,4 @@
-import { mq } from 'lib'
+import { chains, mq } from 'lib'
 import prompts from 'prompts'
 import { MenuAction } from '.'
 import { createClient } from 'redis'
@@ -31,7 +31,8 @@ async function action() {
   if (confirm) {
     switch(tool) {
       case 'flush-failed-jobs': {
-        for(const key of Object.keys(mq.q)) {
+        const keys = [...Object.keys(mq.q), ...chains.map(chain => `extract-${chain.id}`)]
+        for(const key of keys) {
           const queue = mq.connect(key)
           await queue.clean(0, Number.MAX_SAFE_INTEGER, 'failed')
           await queue.close()

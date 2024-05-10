@@ -108,10 +108,18 @@ export async function __estimateCreationBlock(chainId: number, contract: `0x${st
   const height = await rpcs.next(chainId).getBlockNumber()
   let lo = 0n, hi = height, mid = lo + (hi - lo) / 2n
   while (hi - lo > 1n) {
-    const bytecode = await rpcs.next(chainId, useArchiveNode(height, mid)).getBytecode({ address: contract, blockNumber: mid })
-    if(!bytecode || bytecode.length === 0) { lo = mid } else { hi = mid }
-    mid = lo + (hi - lo) / 2n
-    counter++
+    try {
+      const bytecode = await rpcs.next(chainId, useArchiveNode(height, mid)).getBytecode({ address: contract, blockNumber: mid })
+      if(!bytecode || bytecode.length === 0) { lo = mid } else { hi = mid }
+
+    } catch (error) {
+      lo = mid
+
+    } finally {
+      mid = lo + (hi - lo) / 2n
+      counter++
+
+    }
   }
   console.log('💥', 'estimateCreationBlock', chainId, contract, counter, hi)
   console.timeEnd(label)

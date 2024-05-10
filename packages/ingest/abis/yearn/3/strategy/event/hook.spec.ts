@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { HarvestSchema, computeApr, totalDebt } from './hook'
+import { HarvestSchema, computeApr, totalAssets } from './hook'
 import { addresses } from '../../../../../test.fixture'
 
 function mock() {
@@ -19,12 +19,12 @@ function mock() {
 
 describe('abis/yearn/3/strategy/event/hook', function() {
   it('extracts totalDebt', async function() {
-    const debt = await totalDebt(mock())
+    const debt = await totalAssets(mock())
     expect(debt).to.equal(10489089449n)
   })
 
   it('extracts zero totalDebt', async function() {
-    const debt = await totalDebt({...mock(), address: addresses.rando })
+    const debt = await totalAssets({...mock(), address: addresses.rando })
     expect(debt).to.equal(0n)
   })
 

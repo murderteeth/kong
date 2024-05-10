@@ -1,4 +1,3 @@
-import { setTimeout } from 'timers/promises'
 import { math, mq, multicall3 } from 'lib'
 import { AbiConfig, AbiConfigSchema, SourceConfig, SourceConfigSchema } from 'lib/abis'
 import { getBlockNumber, getBlockTime, getDefaultStartBlockNumber } from 'lib/blocks'
@@ -45,7 +44,6 @@ export default class TimeseriesFanout {
         await mq.add(mq.job.extract.timeseries, {
           abiPath, chainId, address, outputLabel, blockTime
         })
-        await setTimeout(16)
       }
     }
   }

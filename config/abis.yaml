@@ -39,6 +39,14 @@ abis:
       label: 'strategy',
       filter: [{ field: 'apiVersion', op: '>=', value: '3.0.0' }]
     }
+    sources: [
+      { chainId: 100, address: '0x1b66B4a3a80eBCFA3eCaBf5580cD9929ABa57bb1', inceptBlock: 32996757 },
+      { chainId: 100, address: '0xA48359e7E970BE9f38fB6D183C57c8d0b28268B9', inceptBlock: 33306010 },
+      { chainId: 100, address: '0x5012C6bf79b3047ECFFf2F212DfFDA4d2128188f', inceptBlock: 32895501 },
+      { chainId: 100, address: '0x94c5786393Ab223e0fC111D7463405F165CE86e3', inceptBlock: 33349837 },
+      { chainId: 100, address: '0x99474363F03D21375dA1aF4C9694cabCF995e02a', inceptBlock: 32895582 },
+      { chainId: 100, address: '0x4B40C9FF9D654Fd7f1E24eD66d8f0f260b199b43', inceptBlock: 32945516 }
+    ]
 
   - abiPath: 'yearn/3/accountant'
     things: {

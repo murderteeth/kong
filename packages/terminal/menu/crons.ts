@@ -1,9 +1,8 @@
 import { z } from 'zod'
-import { crons, abisConfig, mq, strings } from 'lib'
+import { crons, abisConfig, mq, strings, chains } from 'lib'
 import prompts from 'prompts'
 import { MenuAction } from '.'
 import { CronSchema } from 'lib/crons'
-import { title } from 'process'
 
 export default {
   action,
@@ -20,16 +19,34 @@ async function action() {
   const choices = ChoiceSchema.array().parse([])
 
   for(const cron of crons.default) {
-    const q = mq.connect(cron.queue)
-    const repeatables = await q.getRepeatableJobs()
-    await q.close()
-    const scheduled = repeatables.some(job => job.name === cron.job)
-    choices.push({ 
-      ...cron, 
-      title: `${scheduled ? '🟢 enabled' : '🔴 disabled'} - ${cron.name} (${cron.schedule})`,
-      value: cron.name,
-      scheduled
-    })
+    const job = mq.job[cron.queue][cron.job]
+    if (job.bychain) {
+      for (const chain of chains) {
+        const q = mq.connect(`${cron.queue}-${chain.id}`)
+        const repeatables = await q.getRepeatableJobs()
+        await q.close()
+        const scheduled = repeatables.some(job => job.name === cron.job)
+        choices.push({ 
+          ...cron,
+          title: `${scheduled ? '🟢 enabled' : '🔴 disabled'} - ${cron.name}-${chain.id} (${cron.schedule})`,
+          value: `${cron.name}-${chain.id}`,
+          scheduled
+        })
+      }
+
+    } else {
+      const q = mq.connect(cron.queue)
+      const repeatables = await q.getRepeatableJobs()
+      await q.close()
+      const scheduled = repeatables.some(job => job.name === cron.job)
+      choices.push({ 
+        ...cron, 
+        title: `${scheduled ? '🟢 enabled' : '🔴 disabled'} - ${cron.name} (${cron.schedule})`,
+        value: cron.name,
+        scheduled
+      })
+
+    }
   }
 
   {

@@ -104,7 +104,7 @@ export function extractLogArgs(log: any) {
   }
 }
 
-async function fetchLogs(chainId: number, address: `0x${string}`, from: bigint, to: bigint) {
+async function fetchLogs(chainId: number, address: `0x${string}`, from: bigint, to: bigint, eventName?: string) {
   const result = await db.query(`
     SELECT
       chain_id as "chainId",
@@ -120,7 +120,12 @@ async function fetchLogs(chainId: number, address: `0x${string}`, from: bigint, 
       transaction_hash as "transactionHash",
       transaction_index as "transactionIndex"
     FROM evmlog
-    WHERE chain_id = $1 AND address = $2 AND block_number >= $3 AND block_number <= $4
-  `, [chainId, address, from, to])
+    WHERE 
+      chain_id = $1 
+      AND address = $2 
+      AND block_number >= $3 
+      AND block_number <= $4
+      AND (event_name = $5 OR $5 IS NULL)
+  `, [chainId, address, from, to, eventName])
   return EvmLogSchema.array().parse(result.rows)
 }
