@@ -32,15 +32,27 @@ const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   }
 }).filter(p => p) as Processor[]
 
-
 const crons = cronsConfig.default
 .filter(cron => cron.start)
 .map(cron => new Promise((resolve, reject) => {
-  mq.add(mq.job[cron.queue][cron.job], { id: camelToSnake(cron.name) }, {
-    repeat: { pattern: cron.schedule }
-  }).then(() => {
-    console.log('⬆', 'cron up', cron.name)
-  })
+  const job = mq.job[cron.queue][cron.job]
+  if (job.bychain) {
+    for (const chain of chains) {
+      mq.add(job, { id: camelToSnake(cron.name), chainId: chain.id }, {
+        repeat: { pattern: cron.schedule }
+      }).then(() => {
+        console.log('⬆', 'cron up', cron.name, chain.id)
+      })
+    }
+
+  } else {
+    mq.add(job, { id: camelToSnake(cron.name) }, {
+      repeat: { pattern: cron.schedule }
+    }).then(() => {
+      console.log('⬆', 'cron up', cron.name)
+    })
+
+  }
 }))
 
 const abis = abisConfig.cron.start

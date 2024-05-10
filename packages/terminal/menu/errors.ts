@@ -1,4 +1,4 @@
-import { mq } from 'lib'
+import { chains, mq } from 'lib'
 import prompts from 'prompts'
 import { MenuAction } from '.'
 
@@ -14,6 +14,14 @@ async function getQueues() {
     result[queue] = (await q.getJobs('failed')).length
     await q.close()
   }
+
+  for (const chain of chains) {
+    const queue = `extract-${chain.id}`
+    const q = mq.connect(queue)
+    result[queue] = (await q.getJobs('failed')).length
+    await q.close()
+  }
+
   return result
 }
 

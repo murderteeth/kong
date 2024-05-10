@@ -1,5 +1,6 @@
 import { Queue, Worker } from 'bullmq'
 import { Job } from './types'
+import chains from './chains'
 
 export const q = {
   fanout: 'fanout',
@@ -16,12 +17,11 @@ export const job: { [queue: string]: { [job: string]: Job } } = {
   },
 
   extract: {
-    block: { queue: 'extract', name: 'block' },
-    evmlog: { queue: 'extract', name: 'evmlog' },
-    snapshot: { queue: 'extract', name: 'snapshot' },
-    timeseries: { queue: 'extract', name: 'timeseries' },
-    waveydb: { queue: 'extract', name: 'waveydb' },
-    apetax: { queue: 'extract', name: 'apetax' },
+    block: { queue: 'extract', name: 'block', bychain: true },
+    evmlog: { queue: 'extract', name: 'evmlog', bychain: true },
+    snapshot: { queue: 'extract', name: 'snapshot', bychain: true },
+    timeseries: { queue: 'extract', name: 'timeseries', bychain: true },
+    waveydb: { queue: 'extract', name: 'waveydb' }
   },
 
   load: {
@@ -61,10 +61,15 @@ export function connect(queueName: string) {
 }
 
 export async function add(job: Job, data: any, options?: any) {
-  if (!queues[job.queue]) {
-    queues[job.queue] = connect(job.queue)
-  }
-  await queues[job.queue].add(job.name, data, options)
+  const queue = job.bychain ? `${job.queue}-${data.chainId}` : job.queue
+  if (!queues[queue]) { queues[queue] = connect(queue) }
+  await queues[queue].add(job.name, data, options)
+}
+
+export function workers(queueSuffix: string, handler: (job: any) => Promise<any>) {
+  const result: Worker[] = []
+  for (const chain of chains) { result.push(worker(`${queueSuffix}-${chain.id}`, handler)) }
+  return result
 }
 
 export function worker(queueName: string, handler: (job: any) => Promise<any>) {
@@ -111,6 +116,7 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>) {
     await _close()
   }
 
+  console.log('👷‍♂️', 'worker up', queueName)
   return worker
 }
 

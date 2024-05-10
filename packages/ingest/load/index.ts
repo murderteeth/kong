@@ -8,7 +8,7 @@ import { Worker } from 'bullmq'
 import { endOfDay } from 'lib/dates'
 
 export default class Load implements Processor {
-  worker?: Worker
+  worker: Worker | undefined
 
   handlers: Record<string, (data: any) => Promise<any>> = {
     [mq.job.load.block.name]: async data => 
