@@ -11,6 +11,8 @@ export class SnapshotExtractor {
   resolveHooks: ResolveHooks | undefined
 
   async extract(data: { abi: AbiConfig, source: SourceConfig }) {
+    console.log('📸', data.abi.abiPath, data.source.chainId, data.source.address)
+
     if(!this.resolveHooks) this.resolveHooks = await requireHooks()
 
     const { chainId, address } = SourceConfigSchema.parse(data.source)
