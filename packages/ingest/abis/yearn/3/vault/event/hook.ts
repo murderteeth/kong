@@ -100,13 +100,10 @@ async function performanceFee(harvest: Harvest) {
 }
 
 export async function computeApr(latest: Harvest, previous: Harvest | undefined) {
-  console.log('---------------')
-  console.log('compoteApr', latest, previous)
   if(!previous) return { gross: 0, net: 0 }
   const latestDebt = await totalDebt(latest)
   const previousDebt = await totalDebt(previous)
 
-  console.log('compoteApr', latestDebt, previousDebt)
   if(!(latestDebt && previousDebt)) return { gross: 0, net: 0 }
 
   const profit = latest.args.gain
@@ -126,7 +123,5 @@ export async function computeApr(latest: Harvest, previous: Harvest | undefined)
   const gross = grossPerformance * hoursInOneYear / periodInHours
   const net = netPerformance * hoursInOneYear / periodInHours
 
-  console.log('compoteApr', gross, net)
-  console.log('---------------')
   return { gross, net }
 }

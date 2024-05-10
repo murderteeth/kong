@@ -69,6 +69,8 @@ type Vault {
   get_default_queue: [String]
   governance: String
   guardian: String
+  inceptTime: BigInt
+  inceptBlock: BigInt
   isShutdown: Boolean
   lastProfitUpdate: BigInt
   lastReport: BigInt
