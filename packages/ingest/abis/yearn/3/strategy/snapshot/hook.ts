@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { ThingSchema, zhexstring } from 'lib/types'
-import { firstRow, some } from '../../../../../db'
+import { count, firstRow } from '../../../../../db'
 import { mq } from 'lib'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
@@ -14,9 +14,9 @@ export default async function process(chainId: number, address: `0x${string}`, d
 }
 
 async function thing(chainId: number, address: `0x${string}`) {
-  const thinged = await some(`SELECT * FROM thing WHERE chain_id = $1 AND address = $2;`, [chainId, address])
+  const things = await count(`SELECT * FROM thing WHERE chain_id = $1 AND address = $2;`, [chainId, address])
 
-  if (!thinged) {
+  if (things < 2) {
     const multicall = await rpcs.next(chainId).multicall({ contracts: [
       { abi: parseAbi(['function apiVersion() view returns (string)']), address, functionName: 'apiVersion' },
       { abi: parseAbi(['function asset() view returns (address)']), address, functionName: 'asset' },

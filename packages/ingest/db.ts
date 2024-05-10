@@ -43,8 +43,12 @@ function _query<T>(schema: z.ZodType<T>) {
 }
 
 export async function some(query: string, params: any[] = [], client?: PoolClient) {
+  return await count(query, params, client) > 0
+}
+
+export async function count(query: string, params: any[] = [], client?: PoolClient) {
   const result = await (client ?? db).query(query, params)
-  return result.rows.length > 0
+  return result.rows.length
 }
 
 export async function firstRow(query: string, params: any[] = [], client?: PoolClient) {
