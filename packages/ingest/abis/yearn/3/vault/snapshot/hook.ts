@@ -166,25 +166,30 @@ export async function extractDebts(chainId: number, vault: `0x${string}`) {
     allocator: zhexstring.nullish()
   }).parse(snapshot.rows[0] || {})
 
-  if (asset && decimals && strategies && allocator) {
+  if (asset && decimals && strategies) {
     for (const strategy of strategies) {
-      const multicall = await rpcs.next(chainId).multicall({ contracts: [
-        {
-          address: vault, functionName: 'strategies', args: [strategy],
-          abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)'])
-        },
-        {
-          address: allocator || zeroAddress, functionName: 'getStrategyTargetRatio', args: [strategy],
-          abi: parseAbi(['function getStrategyTargetRatio(address) view returns (uint256)'])
-        }, 
-        {
-          address: allocator || zeroAddress, functionName: 'getStrategyMaxRatio', args: [strategy],
-          abi: parseAbi(['function getStrategyMaxRatio(address) view returns (uint256)'])
-        }
-      ]})
+      const contracts: any[] = [{
+        address: vault, functionName: 'strategies', args: [strategy],
+        abi: parseAbi(['function strategies(address) view returns (uint256, uint256, uint256, uint256)'])
+      }]
+
+      if (allocator) {
+        contracts.push(
+          {
+            address: allocator, functionName: 'getStrategyTargetRatio', args: [strategy],
+            abi: parseAbi(['function getStrategyTargetRatio(address) view returns (uint256)'])
+          },
+          {
+            address: allocator, functionName: 'getStrategyMaxRatio', args: [strategy],
+            abi: parseAbi(['function getStrategyMaxRatio(address) view returns (uint256)'])
+          }
+        )
+      }
+
+      const multicall = await rpcs.next(chainId).multicall({ contracts })
 
       throwOnMulticallError(multicall)
-      const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result!
+      const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result! as [bigint, bigint, bigint, bigint]
       const targetDebtRatio = allocator ? Number(multicall[1].result!) : undefined
       const maxDebtRatio = allocator ? Number(multicall[2].result!) : undefined
       const price = await fetchErc20PriceUsd(chainId, asset)
