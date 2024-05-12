@@ -121,7 +121,7 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>, c
     await _close()
   }
 
-  console.log('👿', 'worker up', queueName)
+  console.log('😇', 'worker up', queueName)
   return worker
 }
 
