@@ -45,6 +45,16 @@ type Role {
   roleMask: BigInt!
 }
 
+type Apy {
+  net: Float
+  weeklyNet: Float
+  monthlyNet: Float
+  inceptionNet: Float
+  grossApr: Float
+  blockNumber: String!
+  blockTime: String!
+}
+
 type Vault {
   DOMAIN_SEPARATOR: String
   FACTORY: String
@@ -106,7 +116,7 @@ type Vault {
   meta: VaultMeta
   sparklines: Sparklines
   tvl: SparklinePoint
-  apy: SparklinePoint
+  apy: Apy
   roles: [Role]
 }
 `
