@@ -96,6 +96,48 @@ export async function getSparkline(chainId: number, address: string, label: stri
   }).array().parse(result.rows)
 }
 
+export async function getLatestApy(chainId: number, address: string) {
+  const first = await firstRow(`
+  SELECT
+    chain_id as "chainId",
+    address,
+    label,
+    MAX(CASE WHEN component = 'net' THEN value END) AS net,
+    MAX(CASE WHEN component = 'weeklyNet' THEN value END) AS "weeklyNet",
+    MAX(CASE WHEN component = 'monthlyNet' THEN value END) AS "monthlyNet",
+    MAX(CASE WHEN component = 'inceptionNet' THEN value END) AS "inceptionNet",
+    MAX(CASE WHEN component = 'grossApr' THEN value END) AS "grossApr",
+    block_number as "blockNumber",
+    block_time as "blockTime"
+  FROM output
+  WHERE block_time = (
+      SELECT MAX(block_time) FROM output
+      WHERE chain_id = $1
+      AND address = $2
+      AND label = 'apy-bwd-delta-pps'
+    )
+    AND chain_id = $1
+    AND address = $2
+    AND label = 'apy-bwd-delta-pps'
+  GROUP BY chain_id, address, label, block_number, block_time;
+  `, [chainId, address])
+
+  if (!first) return undefined
+
+  return z.object({
+    chainId: z.number().default(chainId),
+    address: z.string().default(address),
+    label: z.string().default('apy-bwd-delta-pps'),
+    net: z.number().nullish(),
+    weeklyNet: z.number().nullish(),
+    monthlyNet: z.number().nullish(),
+    inceptionNet: z.number().nullish(),
+    grossApr: z.number().nullish(),
+    blockNumber: z.bigint({ coerce: true }),
+    blockTime: z.bigint({ coerce: true })
+  }).parse(first)
+}
+
 export function toUpsertSql(table: string, pk: string, data: any, where?: string) {
   const timestampConversionExceptions = [ 'profit_max_unlock_time' ]
 
