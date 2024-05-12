@@ -253,9 +253,9 @@ export async function extractFees__v2(chainId: number, vault: `0x${string}`, str
 
 async function getFirstTwoHarvestBlocks(vault: Thing) {
   const harvests = await query<EvmLog>(EvmLogSchema, `
-  SELECT * FROM evmlog WHERE chain_id = $1 AND address = $2 AND event_name = $3
+  SELECT * FROM evmlog WHERE chain_id = $1 AND address = $2 AND event_name IN ('StrategyReported', 'Reported')
   ORDER BY block_number, log_index LIMIT 2`, 
-  [vault.chainId, vault.address, vault.label === 'vault' ? 'StrategyReported' : 'Reported'])
+  [vault.chainId, vault.address])
   return harvests.map(h => h.blockNumber)
 }
 
