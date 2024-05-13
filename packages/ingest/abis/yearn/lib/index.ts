@@ -2,7 +2,8 @@ import { z } from 'zod'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
 import db from '../../../db'
-import { zhexstring } from 'lib/types'
+import { RiskScore, ThingSchema, zhexstring } from 'lib/types'
+import { mq } from 'lib'
 
 export async function extractDecimals(chainId: number, address: `0x${string}`) {
   return await extractUint256(chainId, address, 'decimals')
@@ -95,6 +96,17 @@ export async function extractErc20(chainId: number, address: `0x${string}`) {
     name: multicall[0].result!,
     symbol: multicall[1].result!,
     decimals: multicall[2].result!
+  }
+}
+
+export async function thingRisk(risk: RiskScore | undefined) {
+  if (risk) {
+    await mq.add(mq.job.load.thing, ThingSchema.parse({
+      chainId: 0,
+      address: `0x-risk-${risk.label}`,
+      label: 'risk',
+      defaults: risk
+    }))
   }
 }
 

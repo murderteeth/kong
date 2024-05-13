@@ -7,7 +7,7 @@ import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
-import { throwOnMulticallError } from '../../../lib'
+import { thingRisk, throwOnMulticallError } from '../../../lib'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -45,6 +45,8 @@ export default async function process(chainId: number, address: `0x${string}`, d
   }
 
   const apy = await getLatestApy(chainId, address)
+
+  await thingRisk(risk)
 
   return { 
     strategies, 
