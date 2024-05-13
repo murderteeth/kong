@@ -4,13 +4,18 @@ import { count, firstRow } from '../../../../../db'
 import { mq } from 'lib'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
-import { fetchOrExtractErc20, throwOnMulticallError } from '../../../lib'
+import { fetchOrExtractErc20, thingRisk, throwOnMulticallError } from '../../../lib'
 import { estimateCreationBlock } from 'lib/blocks'
+import { getRiskScore } from '../../../lib/risk'
+import { getStrategyMeta } from '../../../lib/meta'
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   await thing(chainId, address)
+  const risk = await getRiskScore(chainId, address)
+  const meta = await getStrategyMeta(chainId, address)
   const lastReportDetail = await fetchLastReportDetail(chainId, address)
-  return { lastReportDetail }
+  await thingRisk(risk)
+  return { risk, meta, lastReportDetail }
 }
 
 async function thing(chainId: number, address: `0x${string}`) {
