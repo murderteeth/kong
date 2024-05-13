@@ -6,6 +6,7 @@ type VaultMeta {
   displaySymbol: String
   description: String
   protocols: [String]
+  token: TokenMeta
 }
 
 type Debt {
