@@ -10,7 +10,7 @@ export async function getRiskScore(chainId: number, address: `0x${string}`) {
 }
 
 async function getRiskGroups(chainId: number): Promise<RiskGroup[]> {
-  return cache.wrap('abis/yearn/lib/risk', async () => {
+  return cache.wrap(`abis/yearn/lib/risk/${chainId}`, async () => {
     return await extractRiskGroups(chainId)
   }, 30 * 60 * 1000)
 }
