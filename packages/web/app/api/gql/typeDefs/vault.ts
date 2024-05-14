@@ -107,6 +107,7 @@ type Vault {
   total_supply: BigInt
   unlockedShares: BigInt
   use_default_queue: Boolean
+  vaultType: Int
   withdraw_limit_module: String
   withdrawalQueue: [String]
   strategies: [String]
