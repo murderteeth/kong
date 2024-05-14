@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ContractFunctionExecutionError, getAddress, parseAbi, zeroAddress } from 'viem'
+import { ContractFunctionExecutionError, getAddress, parseAbi, transactionType, zeroAddress } from 'viem'
 import { ThingSchema, Tradeable, TradeableSchema, zhexstring } from 'lib/types'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
@@ -198,6 +198,7 @@ async function fetchLastReportDetail(chainId: number, address: `0x${string}`) {
     address: row.address,
     blockNumber: row.block_number,
     blockTime: row.block_time,
+    transactionHash: row.transaction_hash,
     ...row.args,
     ...row.hook
 
