@@ -18,6 +18,7 @@ export const HarvestSchema = z.object({
   address: EvmAddressSchema,
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true }),
+  logIndex: z.number(),
   args: z.object({
     strategy: EvmAddressSchema,
     gain: z.bigint({ coerce: true }),
@@ -59,30 +60,16 @@ async function fetchPreviousHarvest(harvest: Harvest) {
   const previousLog = await first<EvmLog>(EvmLogSchema, `
   SELECT * from evmlog 
   WHERE 
-    chain_id = $1 
-    AND address = $2 
-    AND signature = $3 
-    AND block_number < $4
+    chain_id = $1
+    AND address = $2
+    AND signature = $3
+    AND (block_number < $4 OR block_number = $4 AND log_index < $6)
     AND args->>'strategy' = $5
   ORDER BY block_number DESC, log_index DESC 
   LIMIT 1`,
-  [harvest.chainId, harvest.address, topics[0], harvest.blockNumber, harvest.args.strategy])
+  [harvest.chainId, harvest.address, topics[0], harvest.blockNumber, harvest.args.strategy, harvest.logIndex])
   if (!previousLog) return undefined
   return HarvestSchema.parse(previousLog)
-}
-
-async function totalDebt(harvest: Harvest) {
-  try {
-    return await rpcs.next(harvest.chainId, harvest.blockNumber).readContract({
-      address: harvest.args.strategy,
-      functionName: 'totalDebt',
-      abi: parseAbi(['function totalDebt() view returns (uint256)']),
-      blockNumber: harvest.blockNumber
-    }) as bigint
-  } catch(error) {
-    console.error('🤬', '!totalDebt')
-    return 0n
-  }
 }
 
 async function performanceFee(harvest: Harvest) {
@@ -101,22 +88,20 @@ async function performanceFee(harvest: Harvest) {
 
 export async function computeApr(latest: Harvest, previous: Harvest | undefined) {
   if(!previous) return { gross: 0, net: 0 }
-  const latestDebt = await totalDebt(latest)
-  const previousDebt = await totalDebt(previous)
 
-  if(!(latestDebt && previousDebt)) return { gross: 0, net: 0 }
+  if(!(latest.args.current_debt && previous.args.current_debt)) return { gross: 0, net: 0 }
 
   const profit = latest.args.gain
   const loss = latest.args.loss
   const fees = BigInt(await performanceFee(latest))
 
   const grossPerformance = (loss > profit)
-  ? math.div(-loss, previousDebt)
-  : math.div(profit, previousDebt)
+  ? math.div(-loss, previous.args.current_debt)
+  : math.div(profit, previous.args.current_debt)
 
   const netPerformance = (loss > profit)
-  ? math.div(-loss, previousDebt)
-  : math.div(math.max(profit - fees, 0n), previousDebt)
+  ? math.div(-loss, previous.args.current_debt)
+  : math.div(math.max(profit - fees, 0n), previous.args.current_debt)
 
   const periodInHours = Number(((latest.blockTime || 0n) - (previous.blockTime || 0n)) / (60n * 60n)) || 1
   const hoursInOneYear = 24 * 365
