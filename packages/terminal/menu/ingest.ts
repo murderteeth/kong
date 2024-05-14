@@ -19,7 +19,9 @@ async function action() {
         }},
         { title: 'fanout replays', value: {
           job: mq.job.fanout.abis,
-          data: { replay: true }
+          data: { replay: {
+            enabled: true
+          }}
         }},
         { title: 'extract waveydb', value: {
           job: mq.job.extract.waveydb
