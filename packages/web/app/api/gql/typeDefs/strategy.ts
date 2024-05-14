@@ -17,6 +17,7 @@ type ReportDetail {
   address: String
   blockNumber: BigInt
   blockTime: BigInt
+  transactionHash: String
   profit: BigInt
   profitUsd: Float
   loss: BigInt
