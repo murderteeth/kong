@@ -54,6 +54,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
       asset: erc20,
       decimals: erc20.decimals,
       apiVersion: apiVersion!.result!,
+      vaultType,
       registry: address,
       inceptBlock,
       inceptTime

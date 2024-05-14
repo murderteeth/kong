@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ContractFunctionExecutionError, getAddress, parseAbi, transactionType, zeroAddress } from 'viem'
+import { ContractFunctionExecutionError, getAddress, parseAbi, zeroAddress } from 'viem'
 import { ThingSchema, Tradeable, TradeableSchema, zhexstring } from 'lib/types'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
