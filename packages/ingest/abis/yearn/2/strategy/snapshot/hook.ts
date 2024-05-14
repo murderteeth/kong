@@ -179,6 +179,7 @@ async function fetchLastReportDetail(chainId: number, address: `0x${string}`) {
     address: zhexstring,
     blockNumber: z.bigint({ coerce: true }),
     blockTime: z.bigint({ coerce: true }),
+    transactionHash: zhexstring,
     profit: z.bigint({ coerce: true }),
     loss: z.bigint({ coerce: true }),
     debtPayment: z.bigint({ coerce: true }),
