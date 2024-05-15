@@ -54,6 +54,19 @@ type SparklinePoint {
   close: Float!
 }
 
+type ReportDetail {
+  chainId: Int
+  address: String
+  blockNumber: BigInt
+  blockTime: BigInt
+  transactionHash: String
+  profit: BigInt
+  profitUsd: Float
+  loss: BigInt
+  lossUsd: Float
+  apr: Apr
+}
+
 type ReportApr {
   gross: Float
   net: Float

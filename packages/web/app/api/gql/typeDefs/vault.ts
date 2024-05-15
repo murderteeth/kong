@@ -85,6 +85,7 @@ type Vault {
   isShutdown: Boolean
   lastProfitUpdate: BigInt
   lastReport: BigInt
+  lastReportDetail: ReportDetail
   lockedProfit: BigInt
   lockedProfitDegradation: BigInt
   management: String

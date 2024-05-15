@@ -40,6 +40,7 @@ async function thing(chainId: number, address: `0x${string}`) {
         asset: erc20,
         decimals: erc20.decimals,
         apiVersion: apiVersion.result!,
+        vaultType: 2,
         registry: address,
         inceptBlock,
         inceptTime
