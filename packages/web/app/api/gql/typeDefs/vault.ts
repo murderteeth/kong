@@ -112,7 +112,7 @@ type Vault {
   withdraw_limit_module: String
   withdrawalQueue: [String]
   strategies: [String]
-  allocator: String
+  allocators: [String]
   debts: [Debt]
   fees: Fees
   risk: RiskScore
