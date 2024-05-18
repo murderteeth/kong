@@ -11,6 +11,7 @@ import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
 import { snakeToCamelCols } from 'lib/strings'
 import { thingRisk, throwOnMulticallError } from '../../../lib'
+import { Roles } from '../../../lib/types'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -41,9 +42,13 @@ type Snapshot = z.infer<typeof SnapshotSchema>
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
   const snapshot = SnapshotSchema.parse(data)
   const strategies = await projectStrategies(chainId, address)
-  const allocator = await projectDebtAllocator(chainId, address)
   const roles = await projectRoles(chainId, address)
-  const debts = await extractDebts(chainId, address)
+
+
+  const allocators = [...filterAllocators(roles), await projectDebtAllocator(chainId, address)]
+  const [allocator] = allocators
+
+  const debts = await extractDebts(chainId, address, strategies, allocator)
   const fees = await extractFeesBps(chainId, address, snapshot)
   const risk = await getRiskScore(chainId, address)
   const meta = await getVaultMeta(chainId, address)
@@ -72,7 +77,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   await thingRisk(risk)
 
   return { 
-    strategies, allocator, roles, debts, fees, 
+    strategies, allocators, roles, debts, fees, 
     risk, meta: { ...meta, token }, 
     sparklines,
     tvl: sparklines.tvl[0],
@@ -139,7 +144,11 @@ export async function projectRoles(chainId: number, vault: `0x${string}`) {
   }).array().parse(snakeToCamelCols(roles.rows))
 }
 
-export async function extractDebts(chainId: number, vault: `0x${string}`) {
+export function filterAllocators(roles: { account: `0x${string}`, roleMask: bigint }[]) {
+  return roles.filter(r => Number(r.roleMask) & Roles.DEBT_MANAGER).map(r => r.account)
+}
+
+export async function extractDebts(chainId: number, vault: `0x${string}`, strategies: `0x${string}`[], allocator: `0x${string}` | undefined) {
   const results: {
     strategy: `0x${string}`,
     currentDebt: bigint,
@@ -153,19 +162,15 @@ export async function extractDebts(chainId: number, vault: `0x${string}`) {
   const snapshot = await db.query(
     `SELECT
       snapshot->'asset' AS asset,
-      snapshot->'decimals' AS decimals,
-      hook->'strategies' AS strategies,
-      hook->'allocator' AS allocator
+      snapshot->'decimals' AS decimals
     FROM snapshot
     WHERE chain_id = $1 AND address = $2`,
     [chainId, vault]
   )
 
-  const { asset, decimals, strategies, allocator } = z.object({
+  const { asset, decimals } = z.object({
     asset: zhexstring.nullish(),
-    decimals: z.number().nullish(),
-    strategies: zhexstring.array().nullish(),
-    allocator: zhexstring.nullish()
+    decimals: z.number().nullish()
   }).parse(snapshot.rows[0] || {})
 
   if (asset && decimals && strategies) {
