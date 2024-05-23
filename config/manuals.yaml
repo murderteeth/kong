@@ -1,17 +1,11 @@
-manualThings:
+manuals:
   - chainId: 100
     address: '0x1b66B4a3a80eBCFA3eCaBf5580cD9929ABa57bb1'
     label: 'vault'
     defaults: {
       erc4626: true,
       yearn: true,
-      asset: {
-        name: 'Curve EURe-3Crv',
-        symbol: 'crvEUReUSD',
-        address: '0x0CA1C1eC4EBf3CC67a9f545fF90a3795b318cA4a',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0x0CA1C1eC4EBf3CC67a9f545fF90a3795b318cA4a',
       apiVersion: '3.0.2',
       decimals: 18,
       inceptBlock: 32996757,
@@ -24,13 +18,7 @@ manualThings:
     defaults: {
       erc4626: true,
       yearn: true,
-      asset: {
-        name: 'Curve EURe-3Crv',
-        symbol: 'crvEUReUSD',
-        address: '0x0CA1C1eC4EBf3CC67a9f545fF90a3795b318cA4a',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0x0CA1C1eC4EBf3CC67a9f545fF90a3795b318cA4a',
       apiVersion: '3.0.2',
       decimals: 18,
       inceptBlock: 32996757,
@@ -43,13 +31,7 @@ manualThings:
     defaults: {
       erc4626: true,
       yearn: false,
-      asset: {
-        name: 'Monerium EUR emoney',
-        symbol: 'EURe',
-        address: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
       apiVersion: '3.0.1',
       decimals: 18,
       inceptBlock: 33306010,
@@ -62,13 +44,7 @@ manualThings:
     defaults: {
       erc4626: true,
       yearn: false,
-      asset: {
-        name: 'Monerium EUR emoney',
-        symbol: 'EURe',
-        address: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
       apiVersion: '3.0.1',
       decimals: 18,
       inceptBlock: 33349837,
@@ -81,13 +57,7 @@ manualThings:
     defaults: {
       erc4626: true,
       yearn: true,
-      asset: {
-        name: 'Monerium EUR emoney',
-        symbol: 'EURe',
-        address: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
       apiVersion: '3.0.2',
       decimals: 18,
       inceptBlock: 32895582,
@@ -100,13 +70,7 @@ manualThings:
     defaults: {
       erc4626: true,
       yearn: true,
-      asset: {
-        name: 'Monerium EUR emoney',
-        symbol: 'EURe',
-        address: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
       apiVersion: '3.0.2',
       decimals: 18,
       inceptBlock: 32895582,
@@ -119,13 +83,7 @@ manualThings:
     defaults: {
       erc4626: true,
       yearn: true,
-      asset: {
-        name: 'Monerium EUR emoney',
-        symbol: 'EURe',
-        address: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
       apiVersion: '3.0.2',
       decimals: 18,
       inceptBlock: 32945516,
@@ -138,13 +96,7 @@ manualThings:
     defaults: {
       erc4626: true,
       yearn: true,
-      asset: {
-        name: 'Monerium EUR emoney',
-        symbol: 'EURe',
-        address: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
-        chainId: 100,
-        decimals: 18
-      },
+      asset: '0xcB444e90D8198415266c6a2724b7900fb12FC56E',
       apiVersion: '3.0.2',
       decimals: 18,
       inceptBlock: 32945516,

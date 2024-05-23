@@ -24,6 +24,7 @@ type Strategy {
   delegatedAssets: BigInt
   doHealthCheck: Boolean
   emergencyExit: Boolean
+  erc4626: Boolean
   estimatedTotalAssets: BigInt
   forceHarvestTriggerOnce: Boolean
   gauge: String
@@ -72,5 +73,6 @@ type Strategy {
   claims: [Reward]
   risk: RiskScore
   meta: StrategyMeta
+  yearn: Booelan
 }
 `

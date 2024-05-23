@@ -12,7 +12,7 @@ export default class AbisFanout {
         await mq.add(mq.job.fanout.timeseries, _data)
       }
 
-      if(abi.things) {
+      if (abi.things) {
         const _things = await things.get(abi.things)
         for (const _thing of _things) {
           console.info('🤝', 'thing', 'abiPath', abi.abiPath, _thing.chainId, _thing.address)

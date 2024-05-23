@@ -17,7 +17,7 @@ function mock() {
   })
 }
 
-describe.only('abis/yearn/2/strategy/event/Harvested/hook', function() {
+describe('abis/yearn/2/strategy/event/Harvested/hook', function() {
   it('zeros apr on zero debt', async function() {
     const zeroDebt = {...mock(), args: { ...mock().args, profit: 0n } }
     const apr = await computeApr(zeroDebt, mock())

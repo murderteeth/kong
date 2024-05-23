@@ -1,13 +1,14 @@
 import { z } from 'zod'
 import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
-import { RiskScoreSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
+import { RiskScoreSchema, ThingSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
 import db, { getLatestApy, getSparkline } from '../../../../../db'
 import { fetchErc20PriceUsd } from '../../../../../prices'
 import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
-import { thingRisk, throwOnMulticallError } from '../../../lib'
+import { fetchOrExtractErc20, thingRisk, throwOnMulticallError } from '../../../lib'
+import { mq } from 'lib'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -39,6 +40,11 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const meta = await getVaultMeta(chainId, address)
   const token = await getTokenMeta(chainId, data.token)
 
+  const erc20 = await fetchOrExtractErc20(chainId, data.token)
+  await mq.add(mq.job.load.thing, ThingSchema.parse({
+    chainId, address: data.token, label: 'erc20', defaults: erc20
+  }))
+
   const sparklines = {
     tvl: await getSparkline(chainId, address, 'tvl'),
     apy: await getSparkline(chainId, address, 'apy-bwd-delta-pps', 'net')
@@ -49,7 +55,8 @@ export default async function process(chainId: number, address: `0x${string}`, d
   await thingRisk(risk)
 
   return { 
-    strategies, 
+    asset: erc20,
+    strategies,
     withdrawalQueue, 
     debts, 
     risk, 

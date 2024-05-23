@@ -39,9 +39,9 @@ const accountStrategies = async (_: any, args: { chainId?: number, account: `0x$
     return result.rows.map(row => ({
       chainId: row.chain_id,
       address: row.address,
+      ...row.defaults,
       ...row.snapshot,
-      ...row.hook,
-      ...row.defaults
+      ...row.hook
     }))
 
   } catch (error) {

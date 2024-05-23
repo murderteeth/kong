@@ -1,12 +1,12 @@
 import { z } from 'zod'
 import { parseAbi, toEventSelector } from 'viem'
 import { priced } from 'lib/math'
-import { fetchOrExtractAssetAddress, fetchOrExtractDecimals } from '../../../lib'
-import { fetchErc20PriceUsd } from '../../../../../prices'
+import { fetchOrExtractAssetAddress, fetchOrExtractDecimals } from '../../../../lib'
+import { fetchErc20PriceUsd } from '../../../../../../prices'
 import { EvmAddressSchema, EvmLog, EvmLogSchema } from 'lib/types'
 import { getBlockTime } from 'lib/blocks'
-import { first } from '../../../../../db'
-import { rpcs } from '../../../../../rpcs'
+import { first } from '../../../../../../db'
+import { rpcs } from '../../../../../../rpcs'
 import { math } from 'lib'
 
 export const topics = [

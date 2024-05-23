@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { rpcs } from 'lib/rpcs'
 import { parseAbi } from 'viem'
-import db from '../../../db'
+import db, { firstValue } from '../../../db'
 import { RiskScore, ThingSchema, zhexstring } from 'lib/types'
 import { mq } from 'lib'
 

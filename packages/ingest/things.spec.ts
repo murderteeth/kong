@@ -67,6 +67,18 @@ describe('things', function() {
     expect(things[0]).to.deep.equal(this.things[4])
   })
 
+  it('gets things by ~label', async function() {
+    const things = await get({
+      label: 'vault',
+      filter: [{ field: 'label', op: '!=', value: 'mushi' }],
+      skip: false,
+      only: false
+    })
+
+    expect(things.length).to.equal(4)
+    expect(things).to.deep.equal(this.things.slice(0, 4))
+  })
+
   it('knows if things exist', async function() {
     expect(await exist(1, '0x1', 'vault')).to.be.true
     expect(await exist(1, '0xNaN', 'vault')).to.be.false

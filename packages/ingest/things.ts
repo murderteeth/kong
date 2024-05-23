@@ -15,7 +15,9 @@ export async function get(config: ThingsConfig): Promise<Thing[]> {
       if (semver.test(filter.value)) {
         if (!(field && compare(clean(field), filter.value, (filter.op as CompareOperator)))) return false
       } else if (filter.op === '=') {
-        if (field !== filter.value) return false
+        if (String(field) !== String(filter.value)) return false
+      } else if (filter.op === '!=') {
+        if (String(field) === String(filter.value)) return false
       } else {
         throw new Error('not implemented')
       }

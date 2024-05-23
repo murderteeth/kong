@@ -10,7 +10,7 @@ import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
 import { snakeToCamelCols } from 'lib/strings'
-import { thingRisk, throwOnMulticallError } from '../../../lib'
+import { fetchOrExtractErc20, thingRisk, throwOnMulticallError } from '../../../lib'
 import { Roles } from '../../../lib/types'
 
 export const ResultSchema = z.object({
@@ -44,7 +44,6 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const strategies = await projectStrategies(chainId, address)
   const roles = await projectRoles(chainId, address)
 
-
   const allocators = [...filterAllocators(roles), await projectDebtAllocator(chainId, address)]
   const [allocator] = allocators
 
@@ -53,6 +52,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const risk = await getRiskScore(chainId, address)
   const meta = await getVaultMeta(chainId, address)
   const token = await getTokenMeta(chainId, data.asset)
+  const asset = await fetchOrExtractErc20(chainId, data.asset)
 
   if (snapshot.accountant) {
     const incept = await estimateCreationBlock(chainId, snapshot.accountant)
@@ -77,7 +77,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   await thingRisk(risk)
 
   return { 
-    strategies, allocators, roles, debts, fees, 
+    asset, strategies, allocators, roles, debts, fees, 
     risk, meta: { ...meta, token }, 
     sparklines,
     tvl: sparklines.tvl[0],
@@ -195,10 +195,18 @@ export async function extractDebts(chainId: number, vault: `0x${string}`, strate
 
       const multicall = await rpcs.next(chainId).multicall({ contracts })
 
-      throwOnMulticallError(multicall)
-      const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result! as [bigint, bigint, bigint, bigint]
-      const targetDebtRatio = allocator ? Number(multicall[1].result!) : undefined
-      const maxDebtRatio = allocator ? Number(multicall[2].result!) : undefined
+      const [activation, lastReport, currentDebt, maxDebt] = multicall[0].result
+      ? multicall[0].result! as [bigint, bigint, bigint, bigint]
+      : [0n, 0n, 0n, 0n] as [bigint, bigint, bigint, bigint]
+
+      const targetDebtRatio = multicall[1].result
+      ? Number(multicall[1].result)
+      : undefined
+
+      const maxDebtRatio = multicall[2].result 
+      ? Number(multicall[2].result) 
+      : undefined
+
       const price = await fetchErc20PriceUsd(chainId, asset)
 
       results.push({
