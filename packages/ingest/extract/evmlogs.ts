@@ -1,16 +1,14 @@
 import { z } from 'zod'
 import { rpcs } from '../rpcs'
 import { mq } from 'lib'
-import { EvmLogSchema, zhexstring } from 'lib/types'
+import { EvmAddressSchema, EvmLogSchema, zhexstring } from 'lib/types'
 import { getBlockTime, getDefaultStartBlockNumber } from 'lib/blocks'
 import { getAddress } from 'viem'
 import db from '../db'
 import { ResolveHooks } from '../abis/types'
 import { requireHooks } from '../abis'
 import abiutil from '../abiutil'
-
-const blacklist = ['Approval']
-const limitlist = ['Transfer', 'Deposit', 'Withdraw']
+import blacklist from 'lib/blacklist'
 
 export class EvmLogsExtractor {
   resolveHooks: ResolveHooks|undefined
@@ -27,13 +25,17 @@ export class EvmLogsExtractor {
       replay: z.boolean().optional()
     }).parse(data)
 
+    // you will have to do something like
+    // look up the event's abi sig, iterate args for addresses
+    // check each for blacklist
+
     const abi = await abiutil.load(abiPath)
     const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
     const excludeLimitlist = from < defaultStartBlockNumber
 
     const events = excludeLimitlist
-    ? abiutil.exclude([...blacklist, ...limitlist], abiutil.events(abi))
-    : abiutil.exclude(blacklist, abiutil.events(abi))
+    ? abiutil.exclude([...blacklist.events.ignore, ...blacklist.events.limit], abiutil.events(abi))
+    : abiutil.exclude(blacklist.events.ignore, abiutil.events(abi))
 
     const logs = await (async () => {
       if (replay) {
@@ -54,6 +56,21 @@ export class EvmLogsExtractor {
       if(!log.topics[0]) throw new Error('!log.topics[0]')
       const topic = log.topics[0]
       const topical = hooks.filter(h => h.module.topics && h.module.topics.includes(topic))
+      const args = extractLogArgs(log)
+      const blacklisted = containsBlacklistedAddress(chainId, args)
+      if (blacklisted.result) {
+        console.log('🏴‍☠️', 'blacklisted', blacklisted.address)
+        continue
+      }
+
+      for (const value of Object.values(args)) {
+        const parse = EvmAddressSchema.safeParse(value)
+        if (!parse.success) continue
+        if (blacklist.addresses.some(a => a.chainId === chainId && getAddress(a.address) === getAddress(parse.data))) {
+          console.log('🏴‍☠️', 'blacklist', parse.data)
+
+        }
+      }
 
       let hookResult = {}
       for (const hook of topical) {
@@ -68,7 +85,7 @@ export class EvmLogsExtractor {
         chainId,
         address: getAddress(log.address),
         signature: log.topics[0],
-        args: extractLogArgs(log),
+        args,
         hook: hookResult,
         blockTime: await getBlockTime(chainId, log.blockNumber || undefined)
       })
@@ -90,6 +107,17 @@ export class EvmLogsExtractor {
       throw error
     }
   }
+}
+
+export function containsBlacklistedAddress(chainId: number, args: any) {
+  for (const value of Object.values(args)) {
+    const parse = EvmAddressSchema.safeParse(value)
+    if (!parse.success) continue
+    if (blacklist.addresses.some(a => a.chainId === chainId && getAddress(a.address) === getAddress(parse.data))) {
+      return { result: true, address: parse.data }
+    }
+  }
+  return { result: false, address: undefined }
 }
 
 export function extractLogArgs(log: any) {
