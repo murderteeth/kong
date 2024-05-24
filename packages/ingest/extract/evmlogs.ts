@@ -106,10 +106,14 @@ export class EvmLogsExtractor {
 
 export function containsBlacklistedAddress(chainId: number, args: any) {
   for (const value of Object.values(args)) {
-    const parse = EvmAddressSchema.safeParse(value)
-    if (!parse.success) continue
-    if (blacklist.addresses.some(a => a.chainId === chainId && getAddress(a.address) === getAddress(parse.data))) {
-      return { result: true, address: parse.data }
+    try {
+      const parse = EvmAddressSchema.safeParse(value)
+      if (!parse.success) continue
+      if (blacklist.addresses.some(a => a.chainId === chainId && getAddress(a.address) === getAddress(parse.data))) {
+        return { result: true, address: parse.data }
+      }
+    } catch (error) {
+      continue
     }
   }
   return { result: false, address: undefined }
