@@ -22,9 +22,9 @@ const strategies = async (_: any, args: { chainId?: number }) => {
     return result.rows.map(row => ({
       chainId: row.chain_id,
       address: row.address,
+      ...row.defaults,
       ...row.snapshot,
-      ...row.hook,
-      ...row.defaults
+      ...row.hook
     }))
 
   } catch (error) {

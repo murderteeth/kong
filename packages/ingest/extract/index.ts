@@ -6,6 +6,7 @@ import { BlockExtractor } from './block'
 import { WaveyDbExtractor } from './waveydb'
 import { SnapshotExtractor } from './snapshot'
 import { TimeseriesExtractor } from './timeseries'
+import { ManualsExtractor } from './manuals'
 
 export default class Extract implements Processor {
   workers: Worker[] = []
@@ -15,7 +16,8 @@ export default class Extract implements Processor {
     [mq.job.extract.evmlog.name]: new EvmLogsExtractor(),
     [mq.job.extract.waveydb.name]: new WaveyDbExtractor(),
     [mq.job.extract.snapshot.name]: new SnapshotExtractor(),
-    [mq.job.extract.timeseries.name]: new TimeseriesExtractor()
+    [mq.job.extract.timeseries.name]: new TimeseriesExtractor(),
+    [mq.job.extract.manuals.name]: new ManualsExtractor()
   }
 
   async up() {

@@ -17,8 +17,8 @@ const exportsProcessor = (filePath: string): boolean => {
   return regex.test(fileContent)
 }
 
-console.log('🔗', 'chains', `[${chains.map(c => c.name.toLowerCase()).join(' x ')}]`)
-console.log('⚙', 'abis', `[${abisConfig.abis.map(c => c.abiPath).join(' x ')}]`)
+console.log('🔗', 'chain', `[${chains.map(c => c.name.toLowerCase()).join(' x ')}]`)
+console.log('🎯', 'abi target', `[${abisConfig.abis.map(c => c.abiPath).join(' x ')}]`)
 
 const pools = fs.readdirSync(__dirname, { withFileTypes: true }).map(dirent => {
   const tenMinutes = 10 * 60 * 1000

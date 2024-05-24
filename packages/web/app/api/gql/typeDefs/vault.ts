@@ -74,6 +74,7 @@ type Vault {
   deposit_limit: BigInt
   deposit_limit_module: String
   emergencyShutdown: Boolean
+  erc4626: Boolean
   expectedReturn: BigInt
   fullProfitUnlockDate: BigInt
   future_role_manager: String
@@ -121,5 +122,6 @@ type Vault {
   tvl: SparklinePoint
   apy: Apy
   roles: [Role]
+  yearn: Boolean
 }
 `

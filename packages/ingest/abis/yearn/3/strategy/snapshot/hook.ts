@@ -1,65 +1,17 @@
 import { z } from 'zod'
-import { ThingSchema, zhexstring } from 'lib/types'
-import { count, firstRow } from '../../../../../db'
-import { mq } from 'lib'
-import { rpcs } from 'lib/rpcs'
-import { parseAbi } from 'viem'
-import { fetchOrExtractErc20, thingRisk, throwOnMulticallError } from '../../../lib'
-import { estimateCreationBlock } from 'lib/blocks'
+import { zhexstring } from 'lib/types'
+import { firstRow } from '../../../../../db'
+import { fetchOrExtractErc20, thingRisk } from '../../../lib'
 import { getRiskScore } from '../../../lib/risk'
 import { getStrategyMeta } from '../../../lib/meta'
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
-  await thing(chainId, address)
+  const asset = await fetchOrExtractErc20(chainId, data.asset)
   const risk = await getRiskScore(chainId, address)
   const meta = await getStrategyMeta(chainId, address)
   const lastReportDetail = await fetchLastReportDetail(chainId, address)
   await thingRisk(risk)
-  return { risk, meta, lastReportDetail }
-}
-
-async function thing(chainId: number, address: `0x${string}`) {
-  const things = await count(`SELECT * FROM thing WHERE chain_id = $1 AND address = $2;`, [chainId, address])
-
-  if (things < 2) {
-    const multicall = await rpcs.next(chainId).multicall({ contracts: [
-      { abi: parseAbi(['function apiVersion() view returns (string)']), address, functionName: 'apiVersion' },
-      { abi: parseAbi(['function asset() view returns (address)']), address, functionName: 'asset' },
-    ] })
-
-    throwOnMulticallError(multicall)
-    const [apiVersion, asset] = multicall
-    const erc20 = await fetchOrExtractErc20(chainId, asset.result!)
-    const { number: inceptBlock, timestamp: inceptTime } = await estimateCreationBlock(chainId, address)
-
-    await mq.add(mq.job.load.thing, ThingSchema.parse({
-      chainId,
-      address,
-      label: 'vault',
-      defaults: {
-        asset: erc20,
-        decimals: erc20.decimals,
-        apiVersion: apiVersion.result!,
-        vaultType: 2,
-        registry: address,
-        inceptBlock,
-        inceptTime
-      }
-    }))
-
-    await mq.add(mq.job.load.thing, ThingSchema.parse({
-      chainId,
-      address,
-      label: 'strategy',
-      defaults: {
-        asset: erc20,
-        apiVersion: apiVersion.result!,
-        registry: address,
-        inceptBlock,
-        inceptTime
-      }
-    }))
-  }
+  return { asset, risk, meta, lastReportDetail }
 }
 
 async function fetchLastReportDetail(chainId: number, address: `0x${string}`) {

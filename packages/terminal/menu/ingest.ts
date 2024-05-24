@@ -26,6 +26,9 @@ async function action() {
         { title: 'extract waveydb', value: {
           job: mq.job.extract.waveydb
         }},
+        { title: 'extract manauls', value: {
+          job: mq.job.extract.manuals
+        }},
       ]
     },
     {

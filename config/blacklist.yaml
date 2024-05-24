@@ -1,0 +1,4 @@
+
+events:
+  ignore: ['Approval']
+  limit: ['Transfer', 'Deposit', 'Withdraw']
