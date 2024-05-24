@@ -12,7 +12,7 @@ const YamlConfigSchema = z.object({
   addresses: z.array(z.object({
     chainId: z.number(),
     address: EvmAddressSchema
-  }))
+  })).default([])
 })
 
 const yamlPath = (() => {

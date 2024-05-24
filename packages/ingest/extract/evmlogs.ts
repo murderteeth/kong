@@ -9,7 +9,7 @@ import { ResolveHooks } from '../abis/types'
 import { requireHooks } from '../abis'
 import abiutil from '../abiutil'
 import blacklist from 'lib/blacklist'
-import { fetchOrExtractDecimals } from '../abis/yearn/lib'
+import { safeFetchOrExtractDecimals } from '../abis/yearn/lib'
 
 export class EvmLogsExtractor {
   resolveHooks: ResolveHooks|undefined
@@ -25,10 +25,6 @@ export class EvmLogsExtractor {
       to: z.bigint({ coerce: true }),
       replay: z.boolean().optional()
     }).parse(data)
-
-    // you will have to do something like
-    // look up the event's abi sig, iterate args for addresses
-    // check each for blacklist
 
     const abi = await abiutil.load(abiPath)
     const defaultStartBlockNumber = await getDefaultStartBlockNumber(chainId)
@@ -57,8 +53,8 @@ export class EvmLogsExtractor {
       if(!log.topics[0]) { throw new Error('!log.topics[0]') }
 
       const args = extractLogArgs(log)
-      if (await toSmall(chainId, address, args)) {
-        console.log('❌', 'to small', chainId, log.transactionHash)
+      if (await tooSmall(chainId, address, args)) {
+        console.log('❌', 'too small', chainId, log.transactionHash)
         continue
       }
 
@@ -119,9 +115,11 @@ export function containsBlacklistedAddress(chainId: number, args: any) {
   return { result: false, address: undefined }
 }
 
-export async function toSmall(chainId: number, address: EvmAddress, args: any) {
-  const decimals = await fetchOrExtractDecimals(chainId, address)
+export async function tooSmall(chainId: number, address: EvmAddress, args: any) {
+  const { success, decimals } = await safeFetchOrExtractDecimals(chainId, address)
+  if (!success) return false
   const amount =  args.value ?? args.assets ?? args.amount
+  if (amount === undefined) return false
   return math.div(BigInt(amount), 10n ** BigInt(decimals)) < 0.1
 }
 

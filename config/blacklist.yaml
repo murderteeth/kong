@@ -2,7 +2,3 @@
 events:
   ignore: ['Approval']
   limit: ['Transfer', 'Deposit', 'Withdraw']
-
-addresses:
-  - chainId: 137
-    address: '0x08319Fb7cAD5c0CAeDA4AB01b6270Cc560a603eA'

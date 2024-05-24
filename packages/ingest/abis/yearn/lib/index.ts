@@ -9,22 +9,39 @@ export async function extractDecimals(chainId: number, address: `0x${string}`) {
   return await extractUint256(chainId, address, 'decimals')
 }
 
-export async function fetchAssetDecimals(chainId: number, address: `0x${string}`) {
+export async function fetchDecimals(chainId: number, address: `0x${string}`) {
   return (await db.query(
     `SELECT coalesce(defaults #>> '{decimals}', defaults #>> '{asset, decimals}') AS decimals FROM thing WHERE chain_id = $1 AND address = $2`, 
     [chainId, address]
   )).rows[0]?.decimals as number
 }
 
+export async function safeFetchOrExtractDecimals(chainId: number, address: `0x${string}`): Promise<{ success: true, error: undefined, decimals: number } | { success: false, error: any, decimals: undefined }> {
+  try {
+    return {
+      success: true, error: undefined,
+      decimals: await fetchOrExtractDecimals(chainId, address)
+    }
+  } catch(error) {
+    return { success: false, error, decimals: undefined }
+  }
+}
+
 export async function fetchOrExtractDecimals(chainId: number, address: `0x${string}`) {
-  const result = await fetchAssetDecimals(chainId, address)
+  const result = await fetchDecimals(chainId, address)
   if (result) return result
   try {
     return Number(await extractDecimals(chainId, address))
   } catch(_) {
-    // assume address belongs to a v2 strategy
-    const want = await extractAddress(chainId, address, 'want')
-    return Number(await extractDecimals(chainId, want))
+    const multicall = await rpcs.next(chainId).multicall({ contracts: [
+      { address, functionName: 'asset', abi: parseAbi(['function asset() view returns (address)']) },
+      { address, functionName: 'want', abi: parseAbi(['function want() view returns (address)']) }
+    ] })
+
+    const asset = multicall[0].result ?? multicall[1].result ?? undefined
+    if (!asset) throw new Error(`!asset ${address}`)
+
+    return Number(await extractDecimals(chainId, asset))
   }
 }
 

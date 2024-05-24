@@ -7,6 +7,15 @@ cron:
   start: false
 
 abis:
+  - abiPath: 'erc4626'
+    things: {
+      label: 'vault',
+      filter: [
+        { field: 'erc4626', op: '=', value: 'true' },
+        { field: 'yearn', op: '!=', value: 'true' }
+      ]
+    }
+
   - abiPath: 'yearn/3/registry'
     sources: [
       { chainId: 137, address: '0xfF5e3A7C4cBfA9Dd361385c24C3a0A4eE63CE500', inceptBlock: 49100596 }
