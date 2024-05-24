@@ -11,7 +11,7 @@ export async function extractDecimals(chainId: number, address: `0x${string}`) {
 
 export async function fetchAssetDecimals(chainId: number, address: `0x${string}`) {
   return (await db.query(
-    `SELECT defaults #>> '{asset, decimals}' AS decimals FROM thing WHERE chain_id = $1 AND address = $2`, 
+    `SELECT coalesce(defaults #>> '{decimals}', defaults #>> '{asset, decimals}') AS decimals FROM thing WHERE chain_id = $1 AND address = $2`, 
     [chainId, address]
   )).rows[0]?.decimals as number
 }

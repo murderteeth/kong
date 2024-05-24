@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { rpcs } from '../rpcs'
-import { mq } from 'lib'
-import { EvmAddressSchema, EvmLogSchema, zhexstring } from 'lib/types'
+import { math, mq } from 'lib'
+import { EvmAddress, EvmAddressSchema, EvmLogSchema, zhexstring } from 'lib/types'
 import { getBlockTime, getDefaultStartBlockNumber } from 'lib/blocks'
 import { getAddress } from 'viem'
 import db from '../db'
@@ -9,6 +9,7 @@ import { ResolveHooks } from '../abis/types'
 import { requireHooks } from '../abis'
 import abiutil from '../abiutil'
 import blacklist from 'lib/blacklist'
+import { fetchOrExtractDecimals } from '../abis/yearn/lib'
 
 export class EvmLogsExtractor {
   resolveHooks: ResolveHooks|undefined
@@ -53,24 +54,22 @@ export class EvmLogsExtractor {
     const hooks = this.resolveHooks(abiPath, 'event')
     const processedLogs = []
     for (const log of logs) {
-      if(!log.topics[0]) throw new Error('!log.topics[0]')
-      const topic = log.topics[0]
-      const topical = hooks.filter(h => h.module.topics && h.module.topics.includes(topic))
+      if(!log.topics[0]) { throw new Error('!log.topics[0]') }
+
       const args = extractLogArgs(log)
+      if (await toSmall(chainId, address, args)) {
+        console.log('❌', 'to small', chainId, log.transactionHash)
+        continue
+      }
+
       const blacklisted = containsBlacklistedAddress(chainId, args)
       if (blacklisted.result) {
         console.log('🏴‍☠️', 'blacklisted', blacklisted.address)
         continue
       }
 
-      for (const value of Object.values(args)) {
-        const parse = EvmAddressSchema.safeParse(value)
-        if (!parse.success) continue
-        if (blacklist.addresses.some(a => a.chainId === chainId && getAddress(a.address) === getAddress(parse.data))) {
-          console.log('🏴‍☠️', 'blacklist', parse.data)
-
-        }
-      }
+      const topic = log.topics[0]
+      const topical = hooks.filter(h => h.module.topics && h.module.topics.includes(topic))
 
       let hookResult = {}
       for (const hook of topical) {
@@ -118,6 +117,12 @@ export function containsBlacklistedAddress(chainId: number, args: any) {
     }
   }
   return { result: false, address: undefined }
+}
+
+export async function toSmall(chainId: number, address: EvmAddress, args: any) {
+  const decimals = await fetchOrExtractDecimals(chainId, address)
+  const amount =  args.value ?? args.assets ?? args.amount
+  return math.div(BigInt(amount), 10n ** BigInt(decimals)) < 0.1
 }
 
 export function extractLogArgs(log: any) {
