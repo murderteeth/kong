@@ -170,7 +170,7 @@ export async function extractDebts(chainId: number, vault: `0x${string}`, strate
 
   const { asset, decimals } = z.object({
     asset: zhexstring.nullish(),
-    decimals: z.number().nullish()
+    decimals: z.number({ coerce: true }).nullish()
   }).parse(snapshot.rows[0] || {})
 
   if (asset && decimals && strategies) {
