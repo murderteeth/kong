@@ -1,6 +1,5 @@
-import { z } from 'zod'
 import { Data } from '../../../../extract/timeseries'
-import { EvmAddressSchema, Output, OutputSchema, Thing, ThingSchema } from 'lib/types'
+import { Output, OutputSchema, Thing, ThingSchema } from 'lib/types'
 import { first } from '../../../../db'
 import { estimateHeight, getBlock } from 'lib/blocks'
 import { math, multicall3 } from 'lib'
@@ -8,28 +7,9 @@ import { ReadContractParameters } from 'viem'
 import { mainnet } from 'viem/chains'
 import { rpcs } from '../../../../rpcs'
 import abi from '../../abi'
+import { APYSchema } from '../../../yearn/lib/apy'
 
-export const outputLabel = 'apy-bwd-delta-pps-generic'
-
-export const ApySchema = z.object({
-  chainId: z.number(),
-  address: EvmAddressSchema,
-  latest: z.number(),
-  pricePerShare: z.bigint({ coerce: true }),
-  blockNumber: z.bigint({ coerce: true }),
-  blockTime: z.bigint({ coerce: true }),
-  weekly: z.number().nullish(),
-  weeklyPricePerShare: z.bigint({ coerce: true }).nullish(),
-  weeklyBlockNumber: z.bigint({ coerce: true }),
-  monthly: z.number().nullish(),
-  monthlyPricePerShare: z.bigint({ coerce: true }).nullish(),
-  monthlyBlockNumber: z.bigint({ coerce: true }),
-  inception: z.number(),
-  inceptionPricePerShare: z.bigint({ coerce: true }),
-  inceptionBlockNumber: z.bigint({ coerce: true })
-})
-
-export type Apy = z.infer<typeof ApySchema>
+export const outputLabel = 'apy-bwd-delta-pps'
 
 export default async function process(chainId: number, address: `0x${string}`, data: Data): Promise<Output[]> {
   console.info('🧮', data.outputLabel, chainId, address, (new Date(Number(data.blockTime) * 1000)).toDateString())
@@ -59,7 +39,11 @@ export default async function process(chainId: number, address: `0x${string}`, d
   return OutputSchema.array().parse([
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
-      label: data.outputLabel, component: 'latest', value: apy.latest
+      label: data.outputLabel, component: 'net', value: apy.net
+    },
+    {
+      chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
+      label: data.outputLabel, component: 'grossApr', value: apy.grossApr
     },
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
@@ -67,7 +51,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     },
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
-      label: data.outputLabel, component: 'weekly', value: apy.weekly
+      label: data.outputLabel, component: 'weeklyNet', value: apy.weeklyNet
     },
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
@@ -79,7 +63,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     },
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
-      label: data.outputLabel, component: 'monthly', value: apy.monthly
+      label: data.outputLabel, component: 'monthlyNet', value: apy.monthlyNet
     },
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
@@ -91,7 +75,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
     },
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
-      label: data.outputLabel, component: 'inception', value: apy.inception
+      label: data.outputLabel, component: 'inceptionNet', value: apy.inceptionNet
     },
     {
       chainId, address, blockNumber: apy.blockNumber, blockTime: apy.blockTime, 
@@ -109,22 +93,23 @@ export async function _compute(vault: Thing, blockNumber: bigint) {
   const { chainId, address } = vault
   const block = await getBlock(chainId, blockNumber)
 
-  const result = ApySchema.parse({
+  const result = APYSchema.parse({
     chainId,
     address,
-    latest: 0,
+    weeklyNet: undefined,
+    weeklyPricePerShare: undefined,
+    weeklyBlockNumber: 0n,
+    monthlyNet: undefined,
+    monthlyPricePerShare: undefined,
+    monthlyBlockNumber: 0n,
+    inceptionNet: 0,
+    inceptionPricePerShare: 0n,
+    inceptionBlockNumber: vault.defaults.inceptBlock,
+    net: 0,
+    grossApr: 0,
     pricePerShare: 0n,
     blockNumber: block.number,
     blockTime: block.timestamp,
-    weekly: undefined,
-    weeklyPricePerShare: undefined,
-    weeklyBlockNumber: 0n,
-    monthly: undefined,
-    monthlyPricePerShare: undefined,
-    monthlyBlockNumber: 0n,
-    inception: 0,
-    inceptionPricePerShare: 0n,
-    inceptionBlockNumber: vault.defaults.inceptBlock
   })
 
   const ppsParameters = {
@@ -146,35 +131,37 @@ export async function _compute(vault: Thing, blockNumber: bigint) {
 
   const blocksPerDay = (blockNumber - result.weeklyBlockNumber) / 7n
 
-  result.weekly = result.weeklyPricePerShare === undefined ? undefined : compoundAndAnnualizeDelta(
+  result.weeklyNet = result.weeklyPricePerShare === undefined ? undefined : compoundAndAnnualizeDelta(
     { block: result.weeklyBlockNumber, pps: result.weeklyPricePerShare }, 
     { block: blockNumber, pps: result.pricePerShare }, blocksPerDay
   )
 
-  result.monthly = result.monthlyPricePerShare === undefined ? undefined : compoundAndAnnualizeDelta(
+  result.monthlyNet = result.monthlyPricePerShare === undefined ? undefined : compoundAndAnnualizeDelta(
     { block: result.monthlyBlockNumber, pps: result.monthlyPricePerShare },
     { block: blockNumber, pps: result.pricePerShare }, blocksPerDay
   )
 
-  result.inception = compoundAndAnnualizeDelta(
+  result.inceptionNet = compoundAndAnnualizeDelta(
     { block: result.inceptionBlockNumber, pps: result.inceptionPricePerShare },
     { block: blockNumber, pps: result.pricePerShare }, blocksPerDay
   )
 
   const candidates: (number | undefined)[] = []
 	if(chainId !== mainnet.id) {
-		candidates.push(result.weekly, result.monthly, result.inception)
+		candidates.push(result.weeklyNet, result.monthlyNet, result.inceptionNet)
 	} else {
-		candidates.push(result.monthly, result.weekly, result.inception)
+		candidates.push(result.monthlyNet, result.weeklyNet, result.inceptionNet)
 	}
 
-  result.latest = candidates.find(apy => apy !== undefined) ?? (() => { throw new Error('!candidates') })()
+  result.net = candidates.find(apy => apy !== undefined) ?? (() => { throw new Error('!candidates') })()
 
-  // const annualCompoundingPeriods = 52
+  const annualCompoundingPeriods = 52
 
-  // const netApr = result.latest > 0
-  // ? annualCompoundingPeriods * Math.pow(result.latest + 1, 1 / annualCompoundingPeriods) - annualCompoundingPeriods
-  // : 0
+  const netApr = result.net > 0
+  ? annualCompoundingPeriods * Math.pow(result.net + 1, 1 / annualCompoundingPeriods) - annualCompoundingPeriods
+  : 0
+
+  result.grossApr = netApr
 
   return result
 }
