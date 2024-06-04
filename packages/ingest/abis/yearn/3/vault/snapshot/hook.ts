@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { parseAbi, toEventSelector, zeroAddress } from 'viem'
 import { rpcs } from '../../../../../rpcs'
-import { RiskScoreSchema, ThingSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
+import { EvmAddressSchema, RiskScoreSchema, ThingSchema, TokenMetaSchema, VaultMetaSchema, zhexstring } from 'lib/types'
 import { mq } from 'lib'
 import { estimateCreationBlock } from 'lib/blocks'
 import db, { getLatestApy, getSparkline } from '../../../../../db'
@@ -10,7 +10,7 @@ import { priced } from 'lib/math'
 import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
 import { snakeToCamelCols } from 'lib/strings'
-import { fetchOrExtractErc20, thingRisk, throwOnMulticallError } from '../../../lib'
+import { fetchOrExtractErc20, thingRisk } from '../../../lib'
 import { Roles } from '../../../lib/types'
 
 export const ResultSchema = z.object({
@@ -34,7 +34,8 @@ export const ResultSchema = z.object({
 })
 
 export const SnapshotSchema = z.object({
-  accountant: zhexstring.optional()
+  accountant: EvmAddressSchema.optional(),
+  role_manager: EvmAddressSchema.optional()
 })
 
 type Snapshot = z.infer<typeof SnapshotSchema>
@@ -43,6 +44,15 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const snapshot = SnapshotSchema.parse(data)
   const strategies = await projectStrategies(chainId, address)
   const roles = await projectRoles(chainId, address)
+
+  if (snapshot.role_manager) {
+    const account = roles.find(r => r.account === snapshot.role_manager)
+    if (account) {
+      account.roleMask |= BigInt(Roles.ROLE_MANAGER)
+    } else {
+      roles.push({ account: snapshot.role_manager, roleMask: BigInt(Roles.ROLE_MANAGER) })
+    }
+  }
 
   const allocators = [...filterAllocators(roles), await projectDebtAllocator(chainId, address)]
   const [allocator] = allocators
