@@ -15,6 +15,7 @@ import strategyReports from './strategyReports'
 import strategy from './strategy'
 import riskScores from './riskScores'
 import vaultStrategies from './vaultStrategies'
+import vaultAccounts from './vaultAccounts'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -24,6 +25,7 @@ const resolvers = {
     monitor,
     vaults,
     vault,
+    vaultAccounts,
     vaultReports,
     vaultStrategies,
     riskScores,

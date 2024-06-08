@@ -30,6 +30,7 @@ const query = gql`
     monitor: Monitor @cacheControl(maxAge: 2)
     vaults(chainId: Int): [Vault]
     vault(chainId: Int, address: String): Vault
+    vaultAccounts(chainId: Int, vault: String): [AccountRole]
     vaultReports(chainId: Int, address: String): [VaultReport]
     vaultStrategies(chainId: Int, vault: String): [Strategy]
     riskScores: [RiskScore]
