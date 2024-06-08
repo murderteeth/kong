@@ -44,15 +44,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const snapshot = SnapshotSchema.parse(data)
   const strategies = await projectStrategies(chainId, address)
   const roles = await projectRoles(chainId, address)
-
-  if (snapshot.role_manager) {
-    const account = roles.find(r => r.account === snapshot.role_manager)
-    if (account) {
-      account.roleMask |= BigInt(Roles.ROLE_MANAGER)
-    } else {
-      roles.push({ account: snapshot.role_manager, roleMask: BigInt(Roles.ROLE_MANAGER) })
-    }
-  }
+  if (snapshot.role_manager) appendRoleManagerPseudoRole(roles, snapshot.role_manager)
 
   const allocators = [...filterAllocators(roles), await projectDebtAllocator(chainId, address)]
   const [allocator] = allocators
@@ -152,6 +144,18 @@ export async function projectRoles(chainId: number, vault: `0x${string}`) {
     account: zhexstring,
     roleMask: z.bigint({ coerce: true })
   }).array().parse(snakeToCamelCols(roles.rows))
+}
+
+function appendRoleManagerPseudoRole(
+  roles: { account: `0x${string}`, roleMask: bigint }[], 
+  roleManager: `0x${string}`
+) {
+  const account = roles.find(r => r.account === roleManager)
+  if (account) {
+    account.roleMask |= BigInt(Roles.ROLE_MANAGER)
+  } else {
+    roles.push({ account: roleManager, roleMask: BigInt(Roles.ROLE_MANAGER) })
+  }
 }
 
 export function filterAllocators(roles: { account: `0x${string}`, roleMask: bigint }[]) {
