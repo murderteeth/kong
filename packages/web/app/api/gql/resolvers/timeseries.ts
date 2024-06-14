@@ -3,7 +3,7 @@ import { snakeToCamelCols } from '@/lib/strings'
 
 const timeseries = async (_: any, args: { 
   chainId: number,
-  address: `0x${string}`,
+  address?: `0x${string}`,
   label: string,
   component?: string,
   period?: string,
@@ -15,8 +15,8 @@ const timeseries = async (_: any, args: {
   try {
     const result = await db.query(`
     SELECT 
-      CAST($1 AS int4) AS "chainId",
-      CAST($2 AS text) AS address,
+      chain_id AS "chainId",
+      address,
       CAST($3 AS text) AS label,
       CAST($4 AS text) AS component,
       AVG(value) as value,
@@ -24,11 +24,11 @@ const timeseries = async (_: any, args: {
       time_bucket(CAST($5 AS interval), block_time) AS time
     FROM output
     WHERE chain_id = $1 
-      AND address = $2 
+      AND (address = $2 OR $2 IS NULL) 
       AND label = $3 
       AND (component = $4 OR $4 IS NULL)
       AND (block_time < to_timestamp($7) OR $7 IS NULL)
-    GROUP BY time
+    GROUP BY chain_id, address, time
     ORDER BY time ASC
     LIMIT $6`,
     [chainId, address, label, component, period ?? '1 day', Math.min(limit ?? 100, 100), timestamp])
