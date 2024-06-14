@@ -7,9 +7,10 @@ const timeseries = async (_: any, args: {
   label: string,
   component?: string,
   period?: string,
-  limit?: number
+  limit?: number,
+  timestamp?: bigint
 }) => {
-  const { chainId, address, label, component, period, limit } = args
+  const { chainId, address, label, component, period, limit, timestamp } = args
 
   try {
     const result = await db.query(`
@@ -26,10 +27,11 @@ const timeseries = async (_: any, args: {
       AND address = $2 
       AND label = $3 
       AND (component = $4 OR $4 IS NULL)
+      AND (block_time < to_timestamp($7) OR $7 IS NULL)
     GROUP BY time
     ORDER BY time ASC
     LIMIT $6`,
-    [chainId, address, label, component, period || '1 day', Math.min(limit || 100, 100)])
+    [chainId, address, label, component, period ?? '1 day', Math.min(limit ?? 100, 100), timestamp])
 
     return snakeToCamelCols(result.rows)
 
