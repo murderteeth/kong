@@ -9,6 +9,7 @@ import monitor from './monitor'
 import accountRole from './accountRole'
 import vaultReport from './vaultReport'
 import strategyReport from './strategyReport'
+import price from './price'
 
 const query = gql`
   scalar BigInt
@@ -33,6 +34,7 @@ const query = gql`
     vaultAccounts(chainId: Int, vault: String): [AccountRole]
     vaultReports(chainId: Int, address: String): [VaultReport]
     vaultStrategies(chainId: Int, vault: String): [Strategy]
+    prices(chainId: Int, address: String, timestamp: BigInt): [Price]
     riskScores: [RiskScore]
     strategies(chainId: Int): [Strategy]
     strategy(chainId: Int, address: String): Strategy
@@ -54,6 +56,7 @@ const typeDefs = [
   strategyReport,
   transfer,
   output,
+  price,
   latestBlock,
   monitor,
   accountRole
