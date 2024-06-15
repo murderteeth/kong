@@ -17,6 +17,8 @@ import riskScores from './riskScores'
 import vaultStrategies from './vaultStrategies'
 import vaultAccounts from './vaultAccounts'
 import prices from './prices'
+import accountants from './accountants'
+import accountant from './accountant'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -38,7 +40,9 @@ const resolvers = {
     timeseries,
     accountRoles,
     accountVaults,
-    accountStrategies
+    accountStrategies,
+    accountants,
+    accountant
   }
 }
 

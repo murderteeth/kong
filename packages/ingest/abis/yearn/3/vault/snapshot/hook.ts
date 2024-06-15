@@ -12,6 +12,7 @@ import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
 import { snakeToCamelCols } from 'lib/strings'
 import { fetchOrExtractErc20, thingRisk } from '../../../lib'
 import { Roles } from '../../../lib/types'
+import * as things from '../../../../../things'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -57,16 +58,18 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const asset = await fetchOrExtractErc20(chainId, data.asset)
 
   if (snapshot.accountant) {
-    const incept = await estimateCreationBlock(chainId, snapshot.accountant)
-    await mq.add(mq.job.load.thing, ThingSchema.parse({
-      chainId,
-      address: snapshot.accountant,
-      label: 'accountant',
-      defaults: {
-        inceptBlock: incept.number,
-        inceptTime: incept.timestamp
-      }
-    }))
+    if (snapshot.accountant !== zeroAddress && ! await things.exist(chainId, snapshot.accountant, 'accountant')) {
+      const incept = await estimateCreationBlock(chainId, snapshot.accountant)
+      await mq.add(mq.job.load.thing, ThingSchema.parse({
+        chainId,
+        address: snapshot.accountant,
+        label: 'accountant',
+        defaults: {
+          inceptBlock: incept.number,
+          inceptTime: incept.timestamp
+        }
+      }))
+    }
   }
 
   const sparklines = {
