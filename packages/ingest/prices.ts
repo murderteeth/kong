@@ -31,6 +31,7 @@ async function __fetchErc20PriceUsd(chainId: number, token: `0x${string}`, block
 
   if(latest) {
     result = await fetchYDaemonPriceUsd(chainId, token, blockNumber)
+    await mq.add(mq.job.load.price, result)
     if(result) return result
   }
 
