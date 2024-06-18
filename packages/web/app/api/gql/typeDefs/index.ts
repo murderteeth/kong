@@ -11,6 +11,7 @@ import vaultReport from './vaultReport'
 import strategyReport from './strategyReport'
 import price from './price'
 import accountant from './accountant'
+import thing from './thing'
 
 const query = gql`
   scalar BigInt
@@ -47,6 +48,7 @@ const query = gql`
     accountStrategies(chainId: Int, account: String!): [Strategy]
     accountants(chainId: Int!): [Accountant]
     accountant(chainId: Int!, address: String!): Accountant
+    things(chainId: Int, labels: [String]!): [Thing]
   }
 `
 
@@ -63,7 +65,8 @@ const typeDefs = [
   latestBlock,
   monitor,
   accountRole,
-  accountant
+  accountant,
+  thing
 ]
 
 export default typeDefs

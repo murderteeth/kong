@@ -19,6 +19,7 @@ import vaultAccounts from './vaultAccounts'
 import prices from './prices'
 import accountants from './accountants'
 import accountant from './accountant'
+import things from './things'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -42,7 +43,8 @@ const resolvers = {
     accountVaults,
     accountStrategies,
     accountants,
-    accountant
+    accountant,
+    things
   }
 }
 
