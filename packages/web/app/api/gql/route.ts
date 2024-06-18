@@ -1,6 +1,7 @@
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateNextHandler } from '@as-integrations/next'
 import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl'
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import responseCachePlugin from '@apollo/server-plugin-response-cache'
 import typeDefs from './typeDefs'
 import resolvers from './resolvers'
@@ -9,7 +10,10 @@ import { NextRequest } from 'next/server'
 const enableCache = process.env.GQL_ENABLE_CACHE === 'true'
 const defaultCacheMaxAge = Number(process.env.GQL_DEFAULT_CACHE_MAX_AGE || 60 * 5)
 
-const plugins = []
+const plugins = [
+  ApolloServerPluginLandingPageLocalDefault({})
+]
+
 if(enableCache) {
   plugins.push(ApolloServerPluginCacheControl({ defaultMaxAge: defaultCacheMaxAge }))
   plugins.push(responseCachePlugin())
