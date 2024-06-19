@@ -27,7 +27,7 @@ const timeseries = async (_: any, args: {
       AND (address = $2 OR $2 IS NULL) 
       AND label = $3 
       AND (component = $4 OR $4 IS NULL)
-      AND (block_time < to_timestamp($7) OR $7 IS NULL)
+      AND (block_time > to_timestamp($7) OR $7 IS NULL)
     GROUP BY chain_id, address, time
     ORDER BY time ASC
     LIMIT $6`,
