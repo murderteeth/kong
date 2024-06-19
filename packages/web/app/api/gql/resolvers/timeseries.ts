@@ -31,7 +31,7 @@ const timeseries = async (_: any, args: {
     GROUP BY chain_id, address, time
     ORDER BY time ASC
     LIMIT $6`,
-    [chainId, address, label, component, period ?? '1 day', Math.min(limit ?? 100, 100), timestamp])
+    [chainId, address, label, component, period ?? '1 day', limit ?? 100, timestamp])
 
     return snakeToCamelCols(result.rows)
 
