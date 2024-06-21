@@ -216,11 +216,11 @@ export async function extractDebts(chainId: number, vault: `0x${string}`, strate
       ? multicall[0].result! as [bigint, bigint, bigint, bigint]
       : [0n, 0n, 0n, 0n] as [bigint, bigint, bigint, bigint]
 
-      const targetDebtRatio = multicall[1].result
+      const targetDebtRatio = multicall[1]?.result
       ? Number(multicall[1].result)
       : undefined
 
-      const maxDebtRatio = multicall[2].result 
+      const maxDebtRatio = multicall[2]?.result 
       ? Number(multicall[2].result) 
       : undefined
 
