@@ -9,6 +9,7 @@ import { getRiskScore } from '../../../lib/risk'
 import { getTokenMeta, getVaultMeta } from '../../../lib/meta'
 import { fetchOrExtractErc20, thingRisk, throwOnMulticallError } from '../../../lib'
 import { mq } from 'lib'
+import { compare } from 'compare-versions'
 
 export const ResultSchema = z.object({
   strategies: z.array(zhexstring),
@@ -33,9 +34,10 @@ export const ResultSchema = z.object({
 })
 
 export default async function process(chainId: number, address: `0x${string}`, data: any) {
+  const oldold = compare(data.apiVersion, '0.3.1', '<=')
   const strategies = await projectStrategies(chainId, address)
   const withdrawalQueue = await extractWithdrawalQueue(chainId, address)
-  const debts = await extractDebts(chainId, address)
+  const debts = oldold ? [] : await extractDebts(chainId, address)
   const risk = await getRiskScore(chainId, address)
   const meta = await getVaultMeta(chainId, address)
   const token = await getTokenMeta(chainId, data.token)

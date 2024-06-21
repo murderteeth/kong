@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { __estimateHeight } from './blocks'
 
-describe.only('blocks', function() {
+describe('blocks', function() {
   it('estimates block height', async function() {
     this.timeout(5_000)
     const result = await __estimateHeight(1, 1716356553n)
