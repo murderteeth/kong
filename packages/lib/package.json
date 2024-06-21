@@ -9,7 +9,6 @@
     "posttest": "echo 'docker compose down' && docker compose down"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.7.0",
     "bullmq": "^4.7.3",
     "cache-manager": "^5.2.3",
     "cache-manager-redis-yet": "^4.1.2",

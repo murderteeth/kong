@@ -55,21 +55,7 @@ export async function estimateHeight(chainId: number, timestamp: bigint): Promis
 }
 
 export async function __estimateHeight(chainId: number, timestamp: bigint) {
-  try {
-    return await estimateHeightLlama(chainId, timestamp)
-  } catch(error) {
-    console.warn('🚨', 'estimateHeightLlama failed, trying estimateHeightManual')
-    return await estimateHeightManual(chainId, timestamp)
-  }
-}
-
-async function estimateHeightLlama(chainId: number, timestamp: bigint) {
-	const chain = (rpcs.next(chainId).chain?.name as string).toLowerCase()
-	const response = await fetch(`https://coins.llama.fi/block/${chain}/${timestamp}`, {
-		headers: {accept: 'application/json'}
-	});
-	const { height } = await response.json();
-	return height;
+  return await estimateHeightManual(chainId, timestamp)
 }
 
 async function estimateHeightManual(chainId: number, timestamp: bigint) {
