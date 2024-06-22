@@ -69,7 +69,7 @@ export async function _compute(vault: Thing, blockNumber: bigint, latest = false
   return { priceUsd, source, tvl }
 }
 
-async function extractTotalDelegatedAssets(chainId: number, vault: `0x${string}`, blockNumber: bigint) {
+export async function extractTotalDelegatedAssets(chainId: number, vault: `0x${string}`, blockNumber: bigint) {
   const strategies = await extractWithdrawalQueue(chainId, vault, blockNumber)
   const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
   return delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)
