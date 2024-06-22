@@ -20,6 +20,7 @@ import prices from './prices'
 import accountants from './accountants'
 import accountant from './accountant'
 import things from './things'
+import tvls from './tvls'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -39,6 +40,7 @@ const resolvers = {
     strategyReports,
     transfers,
     timeseries,
+    tvls,
     accountRoles,
     accountVaults,
     accountStrategies,
