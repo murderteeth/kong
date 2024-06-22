@@ -87,7 +87,7 @@ const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
     }
   }
 
-  tvls: timeseries(chainId: $chainId, address: $address, label: "tvl") {
+  tvls: timeseries(chainId: $chainId, address: $address, label: "tvl", component: "tvl") {
     chainId
     address
     label
