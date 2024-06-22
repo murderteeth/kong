@@ -216,7 +216,7 @@ export async function getVaults(where: string, values: any[]) {
 
   const results = vaults.map((vault: any) => {
     const apy = outputs.filter((m: any) => m.label === 'apy-bwd-delta-pps' && m.chain_id === vault.chainId && m.address === vault.address)
-    const tvl = outputs.filter((m: any) => m.label === 'tvl' && m.chain_id === vault.chainId && m.address === vault.address)
+    const tvl = outputs.filter((m: any) => m.label === 'tvl' && m.component === 'tvl' && m.chain_id === vault.chainId && m.address === vault.address)
     const price = outputs.filter((m: any) => m.label === 'price' && m.chain_id === vault.chainId && m.address === vault.address)
     return {
       ...vault,

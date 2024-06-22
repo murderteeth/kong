@@ -30,11 +30,14 @@ export default async function _process(chainId: number, address: `0x${string}`, 
 
   if (!vault) return []
 
-  const { source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
+  const { priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
 
   return OutputSchema.array().parse([{
     chainId, address, blockNumber, blockTime: data.blockTime, label: data.outputLabel, 
-    component: priceSource, value: tvlUsd
+    component: 'tvl', value: tvlUsd
+  }, {
+    chainId, address, blockNumber, blockTime: data.blockTime, label: 'price', 
+    component: priceSource, value: priceUsd
   }])
 }
 
@@ -66,7 +69,7 @@ export async function _compute(vault: Thing, blockNumber: bigint, latest = false
   return { priceUsd, source, tvl }
 }
 
-async function extractTotalDelegatedAssets(chainId: number, vault: `0x${string}`, blockNumber: bigint) {
+export async function extractTotalDelegatedAssets(chainId: number, vault: `0x${string}`, blockNumber: bigint) {
   const strategies = await extractWithdrawalQueue(chainId, vault, blockNumber)
   const delegatedAssets = await extractDelegatedAssets(chainId, strategies, blockNumber)
   return delegatedAssets.reduce((acc, { delegatedAssets }) => acc + delegatedAssets, 0n)

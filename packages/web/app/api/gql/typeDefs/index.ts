@@ -12,6 +12,7 @@ import strategyReport from './strategyReport'
 import price from './price'
 import accountant from './accountant'
 import thing from './thing'
+import tvl from './tvl'
 
 const query = gql`
   scalar BigInt
@@ -43,6 +44,7 @@ const query = gql`
     strategyReports(chainId: Int, address: String): [StrategyReport]
     transfers(chainId: Int, address: String): [Transfer]
     timeseries(chainId: Int!, address: String, label: String!, component: String, period: String, limit: Int, timestamp: BigInt): [Output]
+    tvls(chainId: Int!, address: String, period: String, limit: Int, timestamp: BigInt): [Tvl]
     accountRoles(chainId: Int, account: String!): [AccountRole]
     accountVaults(chainId: Int, account: String!): [Vault]
     accountStrategies(chainId: Int, account: String!): [Strategy]
@@ -61,6 +63,7 @@ const typeDefs = [
   strategyReport,
   transfer,
   output,
+  tvl,
   price,
   latestBlock,
   monitor,

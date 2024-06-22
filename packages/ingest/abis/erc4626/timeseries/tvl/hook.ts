@@ -30,11 +30,14 @@ export default async function _process(chainId: number, address: `0x${string}`, 
 
   if (!vault) return []
 
-  const { source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
+  const { priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
 
   return OutputSchema.array().parse([{
     chainId, address, blockNumber, blockTime: data.blockTime, label: data.outputLabel, 
-    component: priceSource, value: tvlUsd
+    component: 'tvl', value: tvlUsd
+  }, {
+    chainId, address, blockNumber, blockTime: data.blockTime, label: 'price', 
+    component: priceSource, value: priceUsd
   }])
 }
 
@@ -53,7 +56,7 @@ export async function _compute(vault: Thing, blockNumber: bigint, latest = false
 
   if(totalAssets === 0n) return { priceUsd, source, tvl: 0 }
 
-   const tvl = priced(totalAssets, decimals, priceUsd) 
+  const tvl = priced(totalAssets, decimals, priceUsd) 
 
   return { priceUsd, source, tvl }
 }
