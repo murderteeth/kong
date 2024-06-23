@@ -25,7 +25,7 @@ const tvls = async (_: any, args: {
       SELECT 
         o.chain_id,
         o.address,
-        AVG(o.value) AS value,
+        COALESCE(NULLIF(AVG(NULLIF(o.value, 0)), NULL), 0) AS value,
         CAST($3 AS text) AS period,
         MAX(o.block_number) AS block_number,
         time_bucket(CAST($3 AS interval), o.block_time) AS time,
