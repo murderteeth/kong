@@ -12,54 +12,48 @@ const tvls = async (_: any, args: {
 
   try {
     const result = await db.query(`
+    WITH asset_info AS (
+      SELECT 
+        chain_id, 
+        address, 
+        defaults->>'asset' AS asset_address 
+      FROM thing 
+      WHERE chain_id = $1 
+        AND address = $2
+    ),
+    tvl_data AS (
+      SELECT 
+        o.chain_id,
+        o.address,
+        AVG(o.value) AS value,
+        CAST($3 AS text) AS period,
+        MAX(o.block_number) AS block_number,
+        time_bucket(CAST($3 AS interval), o.block_time) AS time,
+        a.asset_address
+      FROM output o
+      JOIN asset_info a ON o.chain_id = a.chain_id AND o.address = a.address
+      WHERE o.chain_id = $1 
+        AND (o.address = $2 OR $2 IS NULL) 
+        AND o.label = 'tvl'
+        AND o.component = 'tvl'
+        AND (o.block_time > to_timestamp($4) OR $4 IS NULL)
+      GROUP BY o.chain_id, o.address, time, a.asset_address
+      ORDER BY time ASC
+      LIMIT $5
+    )
     SELECT 
-      A.chain_id,
-      A.address,
-      A.value AS value,
-      B.value AS price,
-      B.component AS price_source,
-      A.period,
-      A.time
-    FROM (
-      SELECT 
-        chain_id,
-        address,
-        AVG(value) AS value,
-        CAST($3 AS text) AS period,
-        MAX(block_number) AS block_number,
-        time_bucket(CAST($3 AS interval), block_time) AS time
-      FROM output
-      WHERE chain_id = $1 
-        AND (address = $2 OR $2 IS NULL) 
-        AND label = 'tvl'
-        AND component = 'tvl'
-        AND (block_time > to_timestamp($4) OR $4 IS NULL)
-      GROUP BY chain_id, address, time
-      ORDER BY time ASC
-      LIMIT $5
-    ) A
-    LEFT JOIN (
-      SELECT 
-        chain_id,
-        address,
-        AVG(value) AS value,
-        MAX(component) AS component,
-        CAST($3 AS text) AS period,
-        MAX(block_number) AS block_number,
-        time_bucket(CAST($3 AS interval), block_time) AS time
-      FROM output
-      WHERE chain_id = $1 
-        AND (address = $2 OR $2 IS NULL) 
-        AND label = 'price'
-        AND (block_time > to_timestamp($4) OR $4 IS NULL)
-      GROUP BY chain_id, address, time
-      ORDER BY time ASC
-      LIMIT $5
-    ) B
-    ON A.chain_id = B.chain_id
-      AND A.address = B.address
-      AND A.block_number = B.block_number
-    `,
+      t.chain_id,
+      t.address,
+      t.value,
+      t.period,
+      t.block_number,
+      t.time,
+      COALESCE(p.price_usd, 0) AS price_usd,
+      COALESCE(p.price_source, 'na') AS price_source
+    FROM tvl_data t
+    LEFT JOIN price p ON t.chain_id = p.chain_id 
+      AND t.asset_address = p.address 
+      AND t.block_number = p.block_number`,
     [chainId, address, period ?? '1 day', timestamp, limit ?? 100])
 
     return snakeToCamelCols(result.rows)

@@ -30,14 +30,11 @@ export default async function _process(chainId: number, address: `0x${string}`, 
 
   if (!vault) return []
 
-  const { priceUsd, source: priceSource, tvl: tvlUsd } = await _compute(vault, blockNumber, latest)
+  const { tvl } = await _compute(vault, blockNumber, latest)
 
   return OutputSchema.array().parse([{
     chainId, address, blockNumber, blockTime: data.blockTime, label: data.outputLabel, 
-    component: 'tvl', value: tvlUsd
-  }, {
-    chainId, address, blockNumber, blockTime: data.blockTime, label: 'price', 
-    component: priceSource, value: priceUsd
+    component: 'tvl', value: tvl
   }])
 }
 
