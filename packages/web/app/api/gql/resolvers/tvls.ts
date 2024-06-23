@@ -25,7 +25,7 @@ const tvls = async (_: any, args: {
       SELECT 
         o.chain_id,
         o.address,
-        COALESCE(NULLIF(AVG(NULLIF(o.value, 0)), NULL), 0) AS value,
+        COALESCE(AVG(NULLIF(o.value, 0)), 0) AS value,
         CAST($3 AS text) AS period,
         MAX(o.block_number) AS block_number,
         time_bucket(CAST($3 AS interval), o.block_time) AS time,
@@ -35,7 +35,6 @@ const tvls = async (_: any, args: {
       WHERE o.chain_id = $1 
         AND (o.address = $2 OR $2 IS NULL) 
         AND o.label = 'tvl'
-        AND o.component = 'tvl'
         AND (o.block_time > to_timestamp($4) OR $4 IS NULL)
       GROUP BY o.chain_id, o.address, time, a.asset_address
       ORDER BY time ASC
@@ -51,7 +50,8 @@ const tvls = async (_: any, args: {
       COALESCE(p.price_usd, 0) AS price_usd,
       COALESCE(p.price_source, 'na') AS price_source
     FROM tvl_data t
-    LEFT JOIN price p ON t.chain_id = p.chain_id 
+    LEFT JOIN price p 
+      ON t.chain_id = p.chain_id 
       AND t.asset_address = p.address 
       AND t.block_number = p.block_number`,
     [chainId, address, period ?? '1 day', timestamp, limit ?? 100])
