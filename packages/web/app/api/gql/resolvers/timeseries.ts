@@ -19,7 +19,7 @@ const timeseries = async (_: any, args: {
       address,
       CAST($3 AS text) AS label,
       CAST($4 AS text) AS component,
-      AVG(value) as value,
+      COALESCE(AVG(NULLIF(value, 0)), 0) AS value,
       CAST($5 AS text) AS period,
       time_bucket(CAST($5 AS interval), block_time) AS time
     FROM output

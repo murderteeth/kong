@@ -48,7 +48,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   }))
 
   const sparklines = {
-    tvl: await getSparkline(chainId, address, 'tvl', 'tvl'),
+    tvl: await getSparkline(chainId, address, 'tvl'),
     apy: await getSparkline(chainId, address, 'apy-bwd-delta-pps', 'net')
   }
 
