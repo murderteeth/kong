@@ -5,9 +5,10 @@ type Tvl {
   chainId: Int!
   address: String!
   value: Float!
-  price: Float!
+  priceUsd: Float!
   priceSource: String!
   period: String!
+  blockNumber: Int!
   time: BigInt
 }
 `
