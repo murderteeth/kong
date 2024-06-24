@@ -18,8 +18,8 @@ const tvls = async (_: any, args: {
         address, 
         defaults->>'asset' AS asset_address 
       FROM thing 
-      WHERE chain_id = $1 
-        AND address = $2
+      WHERE chain_id = $1
+        AND (address = $2 OR $2 IS NULL)
     ),
     tvl_data AS (
       SELECT 
