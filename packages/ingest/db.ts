@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { strings, types } from 'lib'
 import { StrideSchema } from 'lib/types'
 import { Pool, PoolClient, types as pgTypes } from 'pg'
-import { snakeToCamelCols, snakeToCamel } from 'lib/strings'
+import { snakeToCamelCols } from 'lib/strings'
 
 // Convert numeric (OID 1700) to float
 pgTypes.setTypeParser(1700, 'text', parseFloat)
