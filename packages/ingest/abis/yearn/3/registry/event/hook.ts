@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { mq } from 'lib'
 import { parseAbi, toEventSelector } from 'viem'
 import { rpcs } from 'lib/rpcs'
-import { estimateHeight } from 'lib/blocks'
+import { estimateCreationBlock } from 'lib/blocks'
 import { ThingSchema, zhexstring } from 'lib/types'
 import { fetchOrExtractErc20 } from '../../../lib'
 
@@ -23,22 +23,13 @@ export default async function process(chainId: number, address: `0x${string}`, d
     defaults: erc20
   }))
 
-  const multicall = await rpcs.next(chainId).multicall({ contracts: [
-    {
-      address, functionName: 'vaultInfo', args: [vault],
-      abi: parseAbi(['function vaultInfo(address) view returns (address, uint96, uint128, uint128, string)'])
-    },
-    {
-      address: vault, functionName: 'apiVersion',
-      abi: parseAbi(['function apiVersion() view returns (string)'])
-    }
-  ] })
+  const apiVersion = await rpcs.next(chainId).readContract({
+    address: vault, functionName: 'apiVersion',
+    abi: parseAbi(['function apiVersion() view returns (string)'])
+  })
 
-  if(multicall.some(r => r.error)) throw new Error(`multicall error, ${JSON.stringify(multicall)}`)
+  const { number: inceptBlock, timestamp: inceptTime } = await estimateCreationBlock(chainId, vault)
 
-  const [vaultInfo, apiVersion] = multicall
-  const inceptTime = vaultInfo!.result![3]
-  const inceptBlock = await estimateHeight(chainId, inceptTime)
   await mq.add(mq.job.load.thing, ThingSchema.parse({
     chainId,
     address: vault,
@@ -48,7 +39,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
       yearn: true,
       asset: erc20.address,
       decimals: erc20.decimals,
-      apiVersion: apiVersion!.result!,
+      apiVersion,
       vaultType,
       registry: address,
       inceptBlock,
@@ -66,7 +57,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
         yearn: true,
         asset: erc20.address,
         decimals: erc20.decimals,
-        apiVersion: apiVersion!.result!,
+        apiVersion,
         registry: address,
         inceptBlock,
         inceptTime
