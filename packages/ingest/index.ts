@@ -1,15 +1,16 @@
 import 'lib/global'
-import fs from 'fs'
+
 import path from 'path'
 import dotenv from 'dotenv'
+const envPath = path.join(__dirname, '../..', '.env')
+dotenv.config({ path: envPath })
+
+import fs from 'fs'
 import { rpcs } from './rpcs'
 import { Processor, ProcessorPool } from 'lib/processor'
 import { cache, chains, abisConfig, crons as cronsConfig, mq } from 'lib'
 import db from './db'
 import { camelToSnake } from 'lib/strings'
-
-const envPath = path.join(__dirname, '../..', '.env')
-dotenv.config({ path: envPath })
 
 const exportsProcessor = (filePath: string): boolean => {
   const fileContent = fs.readFileSync(filePath, 'utf8')
