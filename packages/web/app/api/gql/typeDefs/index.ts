@@ -48,7 +48,7 @@ const query = gql`
     accountRoles(chainId: Int, account: String!): [AccountRole]
     accountVaults(chainId: Int, account: String!): [Vault]
     accountStrategies(chainId: Int, account: String!): [Strategy]
-    accountants(chainId: Int!): [Accountant]
+    accountants(chainId: Int): [Accountant]
     accountant(chainId: Int!, address: String!): Accountant
     things(chainId: Int, labels: [String]!): [Thing]
   }
