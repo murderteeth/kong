@@ -32,14 +32,14 @@ const query = gql`
     bananas: String @cacheControl(maxAge: 0)
     latestBlocks(chainId: Int): [LatestBlock] @cacheControl(maxAge: 2)
     monitor: Monitor @cacheControl(maxAge: 2)
-    vaults(chainId: Int): [Vault]
+    vaults(chainId: Int, apiVersion: String): [Vault]
     vault(chainId: Int, address: String): Vault
     vaultAccounts(chainId: Int, vault: String): [AccountRole]
     vaultReports(chainId: Int, address: String): [VaultReport]
     vaultStrategies(chainId: Int, vault: String): [Strategy]
     prices(chainId: Int, address: String, timestamp: BigInt): [Price]
     riskScores: [RiskScore]
-    strategies(chainId: Int): [Strategy]
+    strategies(chainId: Int, apiVersion: String): [Strategy]
     strategy(chainId: Int, address: String): Strategy
     strategyReports(chainId: Int, address: String): [StrategyReport]
     transfers(chainId: Int, address: String): [Transfer]
