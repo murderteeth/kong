@@ -3,7 +3,7 @@ cron:
   name: AbiFanout
   queue: fanout
   job: abis
-  schedule: '*/15 * * * *'
+  schedule: '0 * * * *'
   start: false
 
 abis:
