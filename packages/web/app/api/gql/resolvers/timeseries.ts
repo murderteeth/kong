@@ -2,7 +2,7 @@ import db from '@/app/api/db'
 import { snakeToCamelCols } from '@/lib/strings'
 
 const timeseries = async (_: any, args: { 
-  chainId: number,
+  chainId?: number,
   address?: `0x${string}`,
   label: string,
   component?: string,
@@ -23,7 +23,7 @@ const timeseries = async (_: any, args: {
       CAST($5 AS text) AS period,
       time_bucket(CAST($5 AS interval), block_time) AS time
     FROM output
-    WHERE chain_id = $1 
+    WHERE (chain_id = $1 OR $1 IS NULL) 
       AND (address = $2 OR $2 IS NULL) 
       AND label = $3 
       AND (component = $4 OR $4 IS NULL)
