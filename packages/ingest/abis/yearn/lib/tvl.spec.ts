@@ -12,7 +12,7 @@ describe('abis/yearn/lib/tvl', function() {
       defaults: {
         apiVersion: '0.4.2',
         registry: '0xe15461b18ee31b7379019dc523231c57d1cbc18c',
-        asset: { chainId: 1, address: addresses.v2.weth, name: 'Wrapped Ether', symbol: 'WETH', decimals: 18 },
+        asset: addresses.v2.weth,
         decimals: 18,
         inceptBlock: 12588794,
         inceptTime: 1623088086
