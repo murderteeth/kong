@@ -3,10 +3,17 @@ import { RiskGroup, RiskGroupSchema, RiskScoreSchema } from 'lib/types'
 import { getAddress } from 'viem'
 
 export async function getRiskScore(chainId: number, address: `0x${string}`) {
-  address = getAddress(address)
-  const groups = await getRiskGroups(chainId)
-  const group = groups.find(g => g.strategies.includes(address))
-  return group ? RiskScoreSchema.parse(group) : undefined
+  try {
+    address = getAddress(address)
+    const groups = await getRiskGroups(chainId)
+    const group = groups.find(g => g.strategies.includes(address))
+    return group ? RiskScoreSchema.parse(group) : undefined
+
+  } catch (error) {
+    console.error('🤬', error)
+    return undefined
+
+  }
 }
 
 async function getRiskGroups(chainId: number): Promise<RiskGroup[]> {
