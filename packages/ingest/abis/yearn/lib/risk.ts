@@ -1,8 +1,8 @@
 import { cache } from 'lib'
-import { RiskGroup, RiskGroupSchema, RiskScoreSchema } from 'lib/types'
+import { RiskGroup, RiskGroupSchema, RiskScore, RiskScoreSchema } from 'lib/types'
 import { getAddress } from 'viem'
 
-export async function getRiskScore(chainId: number, address: `0x${string}`) {
+export async function getRiskScore(chainId: number, address: `0x${string}`) : Promise<RiskScore | undefined> {
   return undefined
 
   // try {
