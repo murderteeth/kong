@@ -15,19 +15,19 @@ import { extractFeesBps } from '../2/strategy/event/hook'
 export const APYSchema = z.object({
   chainId: z.number(),
   address: zhexstring,
-  weeklyNet: z.number().nullish(),
-  weeklyPricePerShare: z.bigint({ coerce: true }).nullish(),
+  weeklyNet: z.number().optional(),
+  weeklyPricePerShare: z.bigint({ coerce: true }).optional(),
   weeklyBlockNumber: z.bigint({ coerce: true }),
-  monthlyNet: z.number().nullish(),
-  monthlyPricePerShare: z.bigint({ coerce: true }).nullish(),
+  monthlyNet: z.number().optional(),
+  monthlyPricePerShare: z.bigint({ coerce: true }).optional(),
   monthlyBlockNumber: z.bigint({ coerce: true }),
-  inceptionNet: z.number(),
-  inceptionPricePerShare: z.bigint({ coerce: true }),
+  inceptionNet: z.number().optional(),
+  inceptionPricePerShare: z.bigint({ coerce: true }).optional(),
   inceptionBlockNumber: z.bigint({ coerce: true }),
-  net: z.number(),
-  grossApr: z.number(),
+  net: z.number().optional(),
+  grossApr: z.number().optional(),
   pricePerShare: z.bigint({ coerce: true }),
-  lockedProfit: z.bigint({ coerce: true }).nullish(),
+  lockedProfit: z.bigint({ coerce: true }).optional(),
   blockNumber: z.bigint({ coerce: true }),
   blockTime: z.bigint({ coerce: true })
 })
@@ -120,29 +120,29 @@ export default async function _process(chainId: number, address: `0x${string}`, 
 
 export async function _compute(vault: Thing, strategies: `0x${string}`[], blockNumber: bigint) {
   const { chainId, address } = vault
-  const inceptionBlockNumber = await getInceptionBlockNumber(vault, blockNumber)
-  if (!inceptionBlockNumber) return undefined
-
   const block = await getBlock(chainId, blockNumber)
 
   const result = APYSchema.parse({
     chainId,
     address,
     weeklyNet: undefined,
-    weeklyPricePerShare: undefined,
+    weeklyPricePerShare: 0n,
     weeklyBlockNumber: 0n,
     monthlyNet: undefined,
-    monthlyPricePerShare: undefined,
+    monthlyPricePerShare: 0n,
     monthlyBlockNumber: 0n,
-    inceptionNet: 0,
+    inceptionNet: undefined,
     inceptionPricePerShare: 0n,
-    inceptionBlockNumber,
-    net: 0,
-    grossApr: 0,
+    inceptionBlockNumber: 0n,
+    net: undefined,
+    grossApr: undefined,
     pricePerShare: 0n,
-    blockNumber: block.number,
+    blockNumber,
     blockTime: block.timestamp,
   })
+
+  const inceptionBlockNumber = await getInceptionBlockNumber(vault, blockNumber)
+  if (!inceptionBlockNumber) return result
 
   const ppsParameters = {
     address, functionName: 'pricePerShare' as never,
