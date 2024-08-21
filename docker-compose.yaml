@@ -7,7 +7,7 @@ services:
       - "6379:6379"
 
   postgres:
-    image: timescale/timescaledb-ha:pg15-latest
+    image: timescale/timescaledb:latest-pg16
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
