@@ -13,6 +13,6 @@ describe('abis/erc4626/timeseries/pps/hook', function() {
       defaults: { decimals: 18 }
     })
     const pps = await _compute(vault, 20585222n)
-    expect(pps.value).to.eq(1104004378540065979n)
+    expect(pps.humanized).to.be.closeTo(1.104004378540065979, 1e-5)
   })
 })

@@ -13,6 +13,6 @@ describe('abis/yearn/2/vault/timeseries/pps/hook', function() {
       defaults: { decimals: 6 }
     })
     const pps = await _compute(vault, 18344466n)
-    expect(pps.value).to.eq(1023043n)
+    expect(pps.humanized).to.be.closeTo(1.023043, 1e-5)
   })
 })

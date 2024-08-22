@@ -6,6 +6,7 @@ import { multicall3 } from 'lib'
 import { ReadContractParameters } from 'viem'
 import { rpcs } from '../../../../rpcs'
 import abi from '../../abi'
+import { div } from 'lib/math'
 
 export const outputLabel = 'pps'
 
@@ -34,7 +35,13 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const pps = await _compute(vault, blockNumber)
   if (!pps) return []
 
-  return OutputSchema.array().parse([{ chainId, address, label: data.outputLabel, ...pps }])
+  return OutputSchema.array().parse([{ 
+    chainId, address, label: data.outputLabel, component: 'raw',
+    blockNumber: pps.number, blockTime: pps.timestamp, value: Number(pps.raw)
+  }, {
+    chainId, address, label: data.outputLabel, component: 'humanized',
+    blockNumber: pps.number, blockTime: pps.timestamp, value: pps.humanized
+  }])
 }
 
 export async function _compute(vault: Thing, blockNumber: bigint) {
@@ -44,6 +51,7 @@ export async function _compute(vault: Thing, blockNumber: bigint) {
     abi, address, functionName: 'convertToAssets',
     args: [10n ** BigInt(vault.defaults.decimals ?? 0n)]
   } as ReadContractParameters
-  const pps = await rpcs.next(chainId, blockNumber).readContract({...ppsParameters, blockNumber}) as bigint
-  return { blockNumber: block.number, blockTime: block.timestamp, value: pps }
+  const raw = await rpcs.next(chainId, blockNumber).readContract({...ppsParameters, blockNumber}) as bigint
+  const humanized = div(raw, 10n ** BigInt(vault.defaults.decimals ?? 0n))
+  return { ...block, raw, humanized }
 }
