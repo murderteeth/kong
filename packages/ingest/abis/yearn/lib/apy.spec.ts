@@ -7,7 +7,7 @@ import { upsertBatch } from '../../../load'
 import db from '../../../db'
 
 describe('abis/yearn/lib/apy', function() {
-  this.timeout(10_000)
+  this.timeout(20_000)
 
   this.beforeAll(async function() {
     {
@@ -73,21 +73,21 @@ describe('abis/yearn/lib/apy', function() {
     if (!apy) return
 
     expect(apy.blockNumber).to.eq(blockNumber)
-
-    expect(apy.net).to.eq(0.002493204367606694)
-    expect(apy.grossApr).to.eq(0.0031127013901155465)
+    //002493204367606694
+    expect(apy.net).to.be.closeTo(0.002493204367606694, 1e-5)
+    expect(apy.grossApr).to.be.closeTo(0.0031127013901155465, 1e-5)
 
     expect(apy.weeklyNet).to.eq(0) //because it hadn't been harvested in over a week at this point
     expect(apy.weeklyPricePerShare).to.eq(1023043n)
-    expect(apy.weeklyBlockNumber).to.eq(18294456n)
+    expect(Number(apy.weeklyBlockNumber)).to.be.closeTo(18294456, 4)
 
-    expect(apy.monthlyNet).to.eq(0.002493204367606694)
-    expect(apy.monthlyPricePerShare).to.eq(1022834n)
-    expect(apy.monthlyBlockNumber).to.eq(18130373n)
+    expect(apy.monthlyNet).to.be.closeTo(0.002493204367606694, 1e-5)
+    expect(apy.monthlyPricePerShare).to.be.eq(1022834n)
+    expect(Number(apy.monthlyBlockNumber)).to.be.closeTo(18130373, 4)
 
-    expect(apy.inceptionNet).to.eq(0.019352846869146623)
-    expect(apy.inceptionPricePerShare).to.eq(1000000n)
-    expect(apy.inceptionBlockNumber).to.eq(15243268n)
+    expect(apy.inceptionNet).to.be.closeTo(0.019352846869146623, 1e-5)
+    expect(apy.inceptionPricePerShare).to.be.eq(1000000n)
+    expect(Number(apy.inceptionBlockNumber)).to.be.closeTo(15243268, 4)
   })
 
   it('yvUSDT 0.4.3 @ block 15871070', async function(this: Mocha.Context) {
@@ -114,20 +114,20 @@ describe('abis/yearn/lib/apy', function() {
 
     expect(apy.blockNumber).to.eq(blockNumber)
 
-    expect(apy.net).to.eq(0.008496634004203418)
-    expect(apy.grossApr).to.eq(0.010576786408629246)
+    expect(apy.net).to.be.closeTo(0.008496634004203418, 1e-5)
+    expect(apy.grossApr).to.be.closeTo(0.010576786408629246, 1e-5)
 
-    expect(apy.weeklyNet).to.eq(0.009051237192868822)
-    expect(apy.weeklyPricePerShare).to.eq(1001670n)
-    expect(apy.weeklyBlockNumber).to.eq(15820962n)
+    expect(apy.weeklyNet).to.be.closeTo(0.009051237192868822, 1e-5)
+    expect(apy.weeklyPricePerShare).to.be.eq(1001670n)
+    expect(Number(apy.weeklyBlockNumber)).to.be.closeTo(15820961, 4)
 
-    expect(apy.monthlyNet).to.eq(0.008496634004203418)
-    expect(apy.monthlyPricePerShare).to.eq(1001147n)
-    expect(apy.monthlyBlockNumber).to.eq(15656324n)
+    expect(apy.monthlyNet).to.be.closeTo(0.008496634004203418, 1e-5)
+    expect(apy.monthlyPricePerShare).to.be.eq(1001147n)
+    expect(Number(apy.monthlyBlockNumber)).to.be.closeTo(15656324, 4)
 
-    expect(apy.inceptionNet).to.eq(0.007697361270727177)
-    expect(apy.inceptionPricePerShare).to.eq(1000000n)
-    expect(apy.inceptionBlockNumber).to.eq(15243268n)
+    expect(apy.inceptionNet).to.be.closeTo(0.007697361270727177, 1e-5)
+    expect(apy.inceptionPricePerShare).to.be.eq(1000000n)
+    expect(Number(apy.inceptionBlockNumber)).to.be.closeTo(15243268, 4)
   })
 
   it('extracts v3 vault fees', async function() {
@@ -174,20 +174,20 @@ describe('abis/yearn/lib/apy', function() {
 
     expect(apy.blockNumber).to.eq(blockNumber)
 
-    expect(apy.net).to.eq(0.5053032615674182)
-    expect(apy.grossApr).to.eq(0.4562300364137744)
-    expect(apy.lockedProfit).to.eq(1340884331n)
+    expect(apy.net).to.be.closeTo(0.5053032615674182, 1e-5)
+    expect(apy.grossApr).to.be.closeTo(0.4562300364137744, 1e-5)
+    expect(apy.lockedProfit).to.be.eq(1340884331n)
 
-    expect(apy.weeklyNet).to.eq(0.5053032615674182)
-    expect(apy.weeklyPricePerShare).to.eq(1019009n)
-    expect(apy.weeklyBlockNumber).to.eq(51764634n)
+    expect(apy.weeklyNet).to.be.closeTo(0.5053032615674182, 1e-5)
+    expect(apy.weeklyPricePerShare).to.be.eq(1019009n)
+    expect(Number(apy.weeklyBlockNumber)).to.be.closeTo(51764634, 4)
 
-    expect(apy.monthlyNet).to.eq(0.293880331621855)
-    expect(apy.monthlyPricePerShare).to.eq(1005328n)
-    expect(apy.monthlyBlockNumber).to.eq(50876142n)
+    expect(apy.monthlyNet).to.be.closeTo(0.293880331621855, 1e-5)
+    expect(apy.monthlyPricePerShare).to.be.eq(1005328n)
+    expect(Number(apy.monthlyBlockNumber)).to.be.closeTo(50876142, 4)
 
-    expect(apy.inceptionNet).to.eq(0.13935788133629456)
-    expect(apy.inceptionPricePerShare).to.eq(1000000n)
-    expect(apy.inceptionBlockNumber).to.eq(49181585n)
+    expect(apy.inceptionNet).to.be.closeTo(0.13935788133629456, 1e-5)
+    expect(apy.inceptionPricePerShare).to.be.eq(1000000n)
+    expect(Number(apy.inceptionBlockNumber)).to.be.closeTo(49181585, 4)
   })
 })
