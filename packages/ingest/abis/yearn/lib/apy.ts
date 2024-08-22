@@ -144,6 +144,8 @@ export async function _compute(vault: Thing, strategies: `0x${string}`[], blockN
   const inceptionBlockNumber = await getInceptionBlockNumber(vault, blockNumber)
   if (!inceptionBlockNumber) return result
 
+  result.inceptionBlockNumber = inceptionBlockNumber
+
   const ppsParameters = {
     address, functionName: 'pricePerShare' as never,
     abi: parseAbi(['function pricePerShare() view returns (uint256)'])
