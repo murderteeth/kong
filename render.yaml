@@ -8,11 +8,18 @@ databases:
 
 services:
   - type: redis
-    name: redis-standard-v-2
+    name: redis-starter-ingest
     region: ohio
-    plan: standard
-    maxmemoryPolicy: noeviction # recommended policy for queues
-    ipAllowList: [] # only allow internal connections
+    plan: starter
+    maxmemoryPolicy: noeviction # recommended for message queues
+    ipAllowList: []
+
+  - type: redis
+    name: redis-starter-gql
+    region: ohio
+    plan: starter
+    maxmemoryPolicy: allkeys-lru # recommended for gql
+    ipAllowList: []
 
   - type: worker
     name: ingest-v-2
@@ -28,10 +35,10 @@ services:
       - key: REDIS_HOST
         fromService:
           type: redis
-          name: redis-standard-v-2
+          name: redis-starter-ingest
           property: host
       - key: REDIS_PORT
         fromService:
           type: redis
-          name: redis-standard-v-2
+          name: redis-starter-ingest
           property: port
