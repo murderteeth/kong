@@ -16,8 +16,8 @@ export default function Ahoy() {
         <div className="text-lg whitespace-pre">{wordmark}</div>
       </div>
       <p className="text-sm">Real-time/historical EVM indexer x Analytics</p>
-      <a href="https://github.com/murderteeth/kong" target="_blank" className="text-xs">{'/github.com/murderteeth/kong'}</a>
-      <a href="/api/gql" target="_blank" className="text-xs">{'/api/gql'}</a>
+      <a href="https://github.com/murderteeth/kong" target="_blank" className="text-xs">{'https://github.com/murderteeth/kong'}</a>
+      <a href="/api/gql" target="_blank" className="text-xs">{'https://kong.yearn.farm/api/gql'}</a>
     </div>
   </div>
 }
