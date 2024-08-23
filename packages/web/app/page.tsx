@@ -1,25 +1,23 @@
-import Monitor from '@/components/Monitor'
 import Ahoy from '@/components/Ahoy'
 import LatestBlocks from '@/components/LatestBlocks'
 import Vaults from '@/components/Vaults'
-import Deposits from '@/components/Deposits'
-import Vault from '@/components/Vault'
-import Harvests from '@/components/Harvests'
+import Filler from '@/components/Filler'
+import MessageQueue from '@/components/MessageQueue'
+import MessageQueueRedis from '@/components/MessageQueueRedis'
+import Postgres from '@/components/Postgres'
 
 export default function Home() {
-  return <main className="w-full min-h-screen sm:h-screen sm:px-8 flex flex-col sm:flex-row gap-2">
-    <div className="w-full sm:w-1/3">
+  return <main className="relative w-full min-h-screen sm:h-screen flex justify-center">
+    <Filler className="hidden sm:block fixed -z-[1] w-[30%] h-screen top-0 left-0 text-purple-950" />
+    <div className="w-full sm:w-[40%] px-4 sm:px-8 flex flex-col items-center justify-start gap-8">
       <Ahoy />
       <LatestBlocks />
-      <Monitor />
-    </div>
-    <div className="w-full sm:w-1/3 flex flex-col items-center justify-start gap-8">
+      <MessageQueue />
+      <MessageQueueRedis />
+      <Postgres />
       <Vaults />
-      <Vault />
+      <div>&nbsp;</div>
     </div>
-    <div className="w-full sm:w-1/3 flex flex-col items-center justify-between">
-      <Deposits className="w-full h-64 sm:h-1/2" />
-      <Harvests className="w-full h-64 sm:h-1/2" />
-    </div>
+    <Filler className="hidden sm:block fixed -z-[1] w-[30%] h-screen top-0 right-0 text-purple-950" />
   </main>
 }

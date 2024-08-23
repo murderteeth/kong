@@ -69,71 +69,6 @@ const STATUS_QUERY = `query Data {
   }
 }`
 
-const VAULT_QUERY = `query Data($chainId: Int!, $address: String!) {
-  vault(chainId: $chainId, address: $address) {
-    chainId
-    address
-    name
-    apiVersion
-    sparklines {
-      tvl {
-        close
-        blockTime
-      }
-      apy {
-        close
-        blockTime
-      }
-    }
-  }
-
-  tvls: timeseries(chainId: $chainId, address: $address, label: "tvl", component: "tvl") {
-    chainId
-    address
-    label
-    component
-    value
-    period
-    time
-  }
-
-  apys: timeseries(chainId: $chainId, address: $address, label: "apy-bwd-delta-pps", component: "net") {
-    chainId
-    address
-    label
-    component
-    value
-    period
-    time
-  }
-
-  transfers {
-    chainId
-    address
-    sender
-    receiver
-    valueUsd
-    blockTime
-    transactionHash
-  }
-
-  strategyReports {
-    chainId
-    address
-    profit
-    profitUsd
-    loss
-    lossUsd
-    apr {
-      gross
-      net
-    }
-    blockNumber
-    blockTime
-    transactionHash
-  }
-}`
-
 export const dataContext = createContext<DataContext>(DEFAULT_CONTEXT)
 
 export const useData = () => useContext(dataContext)
@@ -156,30 +91,13 @@ export default function DataProvider({ children }: { children: ReactNode }) {
     { refreshInterval: parseInt(process.env.NEXT_PUBLIC_DASH_REFRESH || '10_000') }
   )
 
-  const { data: vault } = useSWR(
-    `${endpoint}?vault`,
-    (...args) => fetch(...args, { 
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        query: VAULT_QUERY,
-        variables: { chainId: 137, address: '0x305F25377d0a39091e99B975558b1bdfC3975654' }
-      })
-    }).then(res => res.json()).catch(reason => {
-      console.error(reason)
-      return {}
-    }),
-    { refreshInterval: parseInt(process.env.NEXT_PUBLIC_DASH_REFRESH || '10_000') }
-  )
-
   useEffect(() => {
     const update = DataContextSchema.parse({
       ...DEFAULT_CONTEXT,
-      ...vault?.data,
       ...status?.data
     })
     setData(update)
-  }, [status, vault, setData])
+  }, [status, setData])
 
   return <dataContext.Provider value={data}>{children}</dataContext.Provider>
 }

@@ -124,11 +124,6 @@ export const OutputSchema = z.object({
 
 export const DataContextSchema = z.object({
   latestBlocks: z.array(LatestBlockSchema),
-  vault: VaultSchema.nullish(),
-  tvls: z.array(OutputSchema).nullish().transform(data => data ?? []),
-  apys: z.array(OutputSchema).nullish().transform(data => data ?? []),
-  transfers: z.array(TransferSchema).nullish().transform(data => data ?? []),
-  strategyReports: z.array(HarvestSchema).nullish().transform(data => data ?? []),
   monitor: MonitorSchema
 })
 
@@ -136,11 +131,6 @@ export type DataContext = z.infer<typeof DataContextSchema>
 
 export const DEFAULT_CONTEXT = {
   latestBlocks: [],
-  vault: null,
-  tvls: [],
-  apys: [],
-  transfers: [],
-  strategyReports: [],
   monitor: {
     queues: [],
     db: {
