@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react'
 import chains from '../chains'
-import Panel from './Panel'
 import Frosty from './Frosty'
 import { useData } from '@/hooks/useData'
 
@@ -14,7 +13,7 @@ export default function Vaults() {
     return value.toString().padStart(3, '0')
   }
 
-  return <Panel className={'w-full flex flex-col items-start'}>
+  return <div className={'w-full flex flex-col items-start'}>
     <div className="w-full flex items-center justify-between">
       <div className="font-bold text-lg">Yearn vaults</div>
       <Frosty _key={`total-${stats.total}`} disabled={stats.total < 1}>{pad(stats.total)}</Frosty>
@@ -47,5 +46,5 @@ export default function Vaults() {
         <Frosty _key={`apetax-w-${stats.apetax.withdraw}`} disabled={stats.apetax.withdraw < 1}>{`w ${pad(stats.apetax.withdraw)}`}</Frosty>
       </div>
     </div> */}
-  </Panel>
+  </div>
 }
