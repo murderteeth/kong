@@ -19,7 +19,9 @@ services:
     region: ohio
     plan: starter
     maxmemoryPolicy: allkeys-lru # recommended for gql
-    ipAllowList: [0.0.0.0/0]
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
 
   - type: worker
     name: ingest-v-2
