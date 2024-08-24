@@ -81,7 +81,7 @@ export default class Probe implements Processor {
         ...await this.probeQueues(),
         ...await this.probeDb(),
         ...await this.probeIngest(),
-        ...await this.probeStats()
+        ...await this.probeIndexStats()
       })
 
       console.timeEnd(label)
@@ -177,41 +177,32 @@ export default class Probe implements Processor {
     }
   }
 
-  private async probeStats() {
-    const networkCounts = chains
-    .map(chain => `(SELECT count(*) FROM thing WHERE label = 'vault' AND chain_id = ${chain.id})::int AS network_${chain.id}`)
-    .join(', ')
-
+  private async fetchTotals() {
     const query = `
     WITH counts AS ( SELECT 
-      (SELECT count(*) FROM thing WHERE label = 'vault')::int AS total,
-      (SELECT count(*) FROM thing WHERE label = 'vault' AND defaults->>'status' = 'endorsed')::int AS endorsed,
-      (SELECT count(*) FROM thing WHERE label = 'vault' AND defaults->>'status' = 'experimental')::int AS experimental,
-      ${networkCounts},
-      (SELECT count(*) FROM thing WHERE label = 'vault' AND defaults->>'apetaxStatus' = 'stealth')::int AS apetax_stealth,
-      (SELECT count(*) FROM thing WHERE label = 'vault' AND defaults->>'apetaxStatus' = 'new')::int AS apetax_new,
-      (SELECT count(*) FROM thing WHERE label = 'vault' AND defaults->>'apetaxStatus' = 'active')::int AS apetax_active,
-      (SELECT count(*) FROM thing WHERE label = 'vault' AND defaults->>'apetaxStatus' = 'withdraw')::int AS apetax_withdraw
+      (SELECT count(*) FROM thing)::int AS thing_total,
+      (SELECT count(*) FROM thing WHERE label = 'vault')::int AS thing_vault_total,
+      (SELECT count(*) FROM thing WHERE label = 'strategy')::int AS thing_strategy_total,
+      (SELECT count(*) FROM thing WHERE label = 'erc20')::int AS thing_erc20_total,
+      (SELECT count(*) FROM thing WHERE label = 'debtAllocator')::int AS thing_debtAllocator_total,
+      (SELECT count(*) FROM thing WHERE label = 'accountant')::int AS thing_accountant_total,
+      (SELECT count(*) FROM thing WHERE label = 'tradeHandler')::int AS thing_tradeHandler_total,
+      (SELECT count(*) FROM output)::int AS output_total,
+      (SELECT count(*) FROM evmlog)::int AS evmlog_total
     )
     SELECT * FROM counts;`
+    return (await db.query(query)).rows[0]
+  }
 
-    const data = (await db.query(query)).rows[0]
-    return {
-      stats: {
-        total: data.total,
-        endorsed: data.endorsed,
-        experimental: data.experimental,
-        networks: chains.map(chain => ({
-          chainId: chain.id,
-          count: data[`network_${chain.id}`]
-        })),
-        apetax: {
-          stealth: data.apetax_stealth,
-          new: data.apetax_new,
-          active: data.apetax_active,
-          withdraw: data.apetax_withdraw
-        }
-      }
-    }
+  private async fetchEventCounts() {
+    const query = `SELECT event_name, count(*) FROM evmlog GROUP BY event_name ORDER BY count DESC;`
+    return (await db.query(query)).rows
+  }
+
+  private async probeIndexStats() {
+    return { indexStats: {
+      ...await this.fetchTotals(),
+      eventCounts: await this.fetchEventCounts()
+    }}
   }
 }

@@ -27,7 +27,7 @@ export default function AsciiMeter(
       if (meterRef.current) {
         const { width } = meterRef.current.getBoundingClientRect()
         const newFontSize = width / panels // Adjust font size based on container width and number of panels
-        setFontSize(newFontSize)
+        setFontSize(newFontSize + 1)
       }
     }
 
@@ -50,10 +50,10 @@ export default function AsciiMeter(
     <div ref={meterRef} title={title} className={`relative flex items-center ${className}`}>
       <div className={`
         absolute z-50 top-0 left-0 
-        w-full h-full pl-3 pr-8 
+        w-full h-full px-3
         flex items-center justify-between 
-        text-yellow-400 [text-shadow:_0_0_4px_rgb(0_0_0_/_100%)]`}
-        style={{ fontSize: `${Math.floor(fontSize * .70)}px` }}>
+        text-yellow-500 [text-shadow:_0_0_4px_rgb(0_0_0_/_100%)]`}
+        style={{ fontSize: `${Math.floor(fontSize * .75)}px` }}>
         <div>{leftLabel}</div>
         <div>{rightLabel}</div>
       </div>

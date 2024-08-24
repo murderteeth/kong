@@ -51,21 +51,7 @@ const STATUS_QUERY = `query Data {
       }
     }
 
-    stats {
-      total
-      endorsed
-      experimental
-      networks {
-        chainId
-        count
-      }
-      apetax {
-        stealth
-        new
-        active
-        withdraw
-      }
-    }
+    indexStatsJson
   }
 }`
 

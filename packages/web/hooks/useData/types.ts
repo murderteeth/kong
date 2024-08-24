@@ -95,20 +95,12 @@ const ApetaxSchema = z.object({
   withdraw: z.number()
 })
 
-export const StatsSchema = z.object({
-  total: z.number({ coerce: true }),
-  endorsed: z.number({ coerce: true }),
-  experimental: z.number({ coerce: true }),
-  networks: z.array(NetworksSchema).default([]),
-  apetax: ApetaxSchema
-})
-
 const MonitorSchema = z.object({
   queues: z.array(QueueSchema).default([]),
   db: DbSchema,
   redis: RedisSchema,
   ingest: IngestSchema,
-  stats: StatsSchema
+  indexStatsJson: z.string()
 })
 
 type Monitor = z.infer<typeof MonitorSchema>
@@ -167,17 +159,17 @@ export const DEFAULT_CONTEXT = {
         used: 0
       }
     },
-    stats: {
-      total: 0,
-      endorsed: 0,
-      experimental: 0,
-      networks: [],
-      apetax: {
-        stealth: 0,
-        new: 0,
-        active: 0,
-        withdraw: 0
-      }
-    }
+    indexStatsJson: `{
+      "thing_total": 0,
+      "thing_vault_total": 0,
+      "thing_strategy_total": 0,
+      "thing_erc20_total": 0,
+      "thing_debtAllocator_total": 0,
+      "thing_accountant_total": 0,
+      "thing_tradeHandler_total": 0,
+      "output_total": 0,
+      "evmlog_total": 0,
+      "eventCounts": []
+    }`
   } as Monitor
 } as DataContext

@@ -9,7 +9,7 @@ export default function Frosty(
   return <motion.div key={_key}
     transition={{ease: 'easeInOut', duration: .75}}
     initial={{color: colors.yellow[300]}}
-    animate={{color: disabled ? colors.emerald[950] : colors.yellow[700]}}
+    animate={{color: disabled ? colors.yellow[950] : colors.yellow[700]}}
     className={className}>
       {children}
   </motion.div>
