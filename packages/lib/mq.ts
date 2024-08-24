@@ -86,8 +86,14 @@ export function worker(queueName: string, handler: (job: any) => Promise<any>, c
   }, {
     ...bull,
     concurrency,
-    removeOnComplete: { count: 100 },
-    removeOnFail: { count: 100 }
+    removeOnComplete: { 
+      count: (process.env.MQ_REMOVE_ON_COMPLETE_COUNT ?? 100) as number,
+      age: (process.env.MQ_REMOVE_ON_COMPLETE_AGE ?? 60 * 60) as number
+    },
+    removeOnFail: { 
+      count: (process.env.MQ_REMOVE_ON_FAIL_COUNT ?? 100) as number,
+      age: (process.env.MQ_REMOVE_ON_FAIL_AGE ?? 60 * 60) as number
+    }
   })
 
   const timer = setInterval(async () => {
