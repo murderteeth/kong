@@ -14,8 +14,16 @@ const enableCache = process.env.GQL_ENABLE_CACHE === 'true'
 const defaultCacheMaxAge = Number(process.env.GQL_DEFAULT_CACHE_MAX_AGE || 60 * 5)
 const redisUrl = process.env.GQL_CACHE_REDIS_URL || 'redis://localhost:6379'
 
+const defaultQuery = `query Query {
+  vaults {
+    chainId
+    address
+    name
+  }
+}`
+
 const plugins = [
-  ApolloServerPluginLandingPageLocalDefault({})
+  ApolloServerPluginLandingPageLocalDefault({ document: defaultQuery })
 ]
 
 if(enableCache) {

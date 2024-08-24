@@ -6,7 +6,7 @@ type Monitor {
   redis: RedisInfo!
   db: DbInfo!,
   ingest: IngestInfo!
-  stats: Stats!
+  indexStatsJson: String!
 }
 
 type QueueStatus {
@@ -63,13 +63,5 @@ type IngestMemory {
 type IngestInfo {
   cpu: IngestCpu!
   memory: IngestMemory!
-}
-
-type Stats {
-  total: Int!
-  endorsed: Int!
-  experimental: Int!
-  networks: [NetworkStat]!
-  apetax: ApetaxStat!
 }
 `
