@@ -1,3 +1,4 @@
+import chains from '@/chains'
 import { z } from 'zod'
 
 const LatestBlockSchema = z.object({
@@ -132,7 +133,17 @@ export type DataContext = z.infer<typeof DataContextSchema>
 export const DEFAULT_CONTEXT = {
   latestBlocks: [],
   monitor: {
-    queues: [],
+    queues: [
+      { name: 'fanout', waiting: 0, active: 0, failed: 0 },
+      { name: 'extract', waiting: 0, active: 0, failed: 0 },
+      ...chains.map(chain => ({
+        name: `extract-${chain.id}`,
+        waiting: 0,
+        active: 0,
+        failed: 0
+      })),
+      { name: 'load', waiting: 0, active: 0, failed: 0 }
+    ],
     db: {
       databaseSize: 0,
       indexHitRate: 0,

@@ -30,7 +30,7 @@ export default function Vaults() {
     </div> */}
 
     {chains.map((chain, index) => <div key={chain.id} className="w-full flex items-center justify-between text-sm">
-      <div className="text-yellow-700 whitespace-nowrap">{chain.name.toLowerCase()}</div>
+      <div className="text-emerald-700 whitespace-nowrap">{chain.name.toLowerCase()}</div>
       <Frosty _key={`${chain.id}-${stats.networks.find(n => n.chainId === chain.id)?.count}`}
         disabled={(stats.networks.find(n => n.chainId === chain.id)?.count || 0) < 1}>
         {pad(stats.networks.find(n => n.chainId === chain.id)?.count || 0)}

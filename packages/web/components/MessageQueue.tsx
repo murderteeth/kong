@@ -1,10 +1,12 @@
 'use client'
 
 import { useData } from '@/hooks/useData'
-import Frosty from './Frosty'
+import { useMemo } from 'react'
+import AsciiMeter from './AsciiMeter'
+import { fPercent } from '@/lib/format'
 
 function formatNumber(value: number) {
-  if (value < 1000) return String(value).padStart(3, '0') + '&nbsp;'
+  if (value < 1000) return String(value).padStart(3, '0')
   if (value < 1e6) return String(Math.floor(value / 1e3)).padStart(3, '0') + 'K'
   if (value < 1e9) return String(Math.floor(value / 1e6)).padStart(3, '0') + 'M'
   return String(Math.floor(value / 1e9)).padStart(3, '0') + 'B'
@@ -13,22 +15,27 @@ function formatNumber(value: number) {
 export default function MessageQueue() {
   const { monitor } = useData()
 
-  return <div className={'w-full flex flex-col items-start'}>
-  <div className="font-bold text-xl">Message Queue</div>
-  {monitor.queues.map((queue, index) => <div key={queue.name} className={`
-    w-full flex items-center justify-between gap-2`}>
-    <div className="text-lg text-yellow-700 whitespace-nowrap">{queue.name}</div>
-    <div className="flex items-center gap-2 text-lg whitespace-nowrap">
-      <Frosty _key={`${queue.name}-w-${formatNumber(queue.waiting)}`} disabled={queue.waiting < 1}>
-        <span dangerouslySetInnerHTML={{ __html: `w ${formatNumber(queue.waiting)}` }} />
-      </Frosty>
-      <Frosty _key={`${queue.name}-a-${formatNumber(queue.active)}`} disabled={queue.active < 1}>
-        <span dangerouslySetInnerHTML={{ __html: `a ${formatNumber(queue.active)}` }} />
-      </Frosty>
-      <Frosty _key={`${queue.name}-f-${formatNumber(queue.failed)}`} disabled={queue.failed < 1}>
-        <span dangerouslySetInnerHTML={{ __html: `e ${formatNumber(queue.failed)}` }} />
-      </Frosty>
+  const fails = useMemo(() => {
+    const max = 100 * monitor.queues.length
+    const current = monitor.queues.flatMap(queue => queue.failed).length
+    return { max, current }
+  }, [monitor.queues])
+
+  return <div className={'w-full flex flex-col gap-2'}>
+    <div className="font-bold text-xl">Message Queue</div>
+    <div className="flex flex-col gap-4">
+      {monitor.queues.map((queue, index) => <AsciiMeter
+        key={queue.name}
+        current={queue.active}
+        current2={queue.waiting}
+        max={(queue.name.includes('-')) ? 50 : 100}
+        leftLabel={queue.name}
+        rightLabel={`w ${formatNumber(queue.waiting)}, a ${formatNumber(queue.active)}`} />)}
+      <AsciiMeter
+        current={fails.current}
+        max={fails.max}
+        leftLabel='critical fail'
+        rightLabel={fPercent(Math.floor(fails.current / fails.max))} />
     </div>
-  </div>)}
   </div>
 }

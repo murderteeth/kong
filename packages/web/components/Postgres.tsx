@@ -8,38 +8,33 @@ import { fPercent } from '@/lib/format'
 
 export default function Postgres() {
   const { monitor } = useData()
-  return <div className="w-full flex flex-col">
+  return <div className="w-full flex flex-col gap-2">
     <div className="font-bold text-xl">Postgres</div>
-    <div className="w-full flex flex-col items-center justify-between gap-1">
-      <div className="w-full flex items-center justify-between">
-        <div className="text-yellow-700 whitespace-nowrap">clients</div>
-        <AsciiMeter
-          current={monitor.db.clients}
-          max={100}
-          label={`${monitor.db.clients} / 100`} />
-      </div>
+    <div className="w-full flex flex-col justify-between gap-4">
+      <AsciiMeter
+        current={monitor.db.databaseSize}
+        max={16 * 1024 * 1024 * 1024}
+        leftLabel='disk'
+        rightLabel={`${prettyBytes(Number(monitor.db.databaseSize))} / ${prettyBytes(16 * 1024 * 1024 * 1024)}`} />
 
-      <div className="w-full flex items-center justify-between">
-        <div className="text-yellow-700  whitespace-nowrap">disk</div>
-        <AsciiMeter
-          current={monitor.db.databaseSize}
-          max={16 * 1024 * 1024 * 1024}
-          label={`${prettyBytes(Number(monitor.db.databaseSize))} / ${prettyBytes(16 * 1024 * 1024 * 1024)}`} />
-      </div>
+      <AsciiMeter
+        current={monitor.db.clients}
+        max={100}
+        leftLabel='clients'
+        rightLabel={`${monitor.db.clients} / 100`} />
 
-      <div className="w-full flex items-center justify-between">
-        <div className="text-yellow-700  whitespace-nowrap">index h/r</div>
-        <div className="flex items-center gap-2 whitespace-nowrap">
-          <Frosty _key={`db-indexhr-${monitor.db.indexHitRate}`}>{fPercent(monitor.db.indexHitRate)}</Frosty>
-        </div>
-      </div>
+      <AsciiMeter
+        current={Math.floor(monitor.db.indexHitRate * 100)}
+        max={100}
+        leftLabel='index h/r'
+        rightLabel={fPercent(monitor.db.indexHitRate)} />
 
-      <div className="w-full flex items-center justify-between">
-        <div className="text-yellow-700  whitespace-nowrap">cache h/r</div>
-        <div className="flex items-center gap-2 whitespace-nowrap">
-          <Frosty _key={`db-cachehr-${monitor.db.cacheHitRate}`}>{fPercent(monitor.db.cacheHitRate)}</Frosty>
-        </div>
-      </div>
+      <AsciiMeter
+        current={Math.floor(monitor.db.cacheHitRate * 100)}
+        max={100}
+        leftLabel='cache h/r'
+        rightLabel={fPercent(monitor.db.cacheHitRate)} />
+
     </div>
   </div>
 }
