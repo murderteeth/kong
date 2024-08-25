@@ -17,7 +17,7 @@ export default function MessageQueue() {
 
   const fails = useMemo(() => {
     const max = 100 * monitor.queues.length
-    const current = monitor.queues.flatMap(queue => queue.failed).length
+    const current = monitor.queues.flatMap(queue => queue.failed).reduce((acc, curr) => acc + curr, 0)
     return { max, current }
   }, [monitor.queues])
 
@@ -34,8 +34,8 @@ export default function MessageQueue() {
       <AsciiMeter
         current={fails.current}
         max={fails.max}
-        leftLabel='critical fail'
-        rightLabel={fPercent(Math.floor(fails.current / fails.max))} />
+        leftLabel='fail queue'
+        rightLabel={fPercent(fails.current / fails.max)} />
     </div>
   </div>
 }
