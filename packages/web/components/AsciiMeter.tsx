@@ -26,14 +26,20 @@ export default function AsciiMeter(
     const resizeHandler = () => {
       if (meterRef.current) {
         const { width } = meterRef.current.getBoundingClientRect()
-        const newFontSize = width / panels // Adjust font size based on container width and number of panels
-        setFontSize(newFontSize + 1)
+  
+        // Define a minimum and maximum font size
+        const minFontSize = 12 // Minimum font size in pixels
+        const maxFontSize = 24 // Maximum font size in pixels
+  
+        // Calculate a new font size based on the container width and clamp between min and max
+        const newFontSize = Math.max(minFontSize, Math.min(maxFontSize, (width / panels) * 1.5))
+  
+        setFontSize(newFontSize)
       }
     }
-
+  
     resizeHandler() // Initial resize
     window.addEventListener('resize', resizeHandler) // Add resize event listener
-
     return () => window.removeEventListener('resize', resizeHandler) // Cleanup on unmount
   }, [panels])
 
