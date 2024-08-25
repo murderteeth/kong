@@ -28,7 +28,7 @@ export default function MessageQueue() {
         key={queue.name}
         current={queue.active}
         current2={queue.waiting}
-        max={(queue.name.includes('-')) ? 50 : 100}
+        max={(queue.name.includes('-')) ? 50 : 400}
         leftLabel={queue.name}
         rightLabel={`a ${formatNumber(queue.active)} / w ${formatNumber(queue.waiting)}`} />)}
       <AsciiMeter
