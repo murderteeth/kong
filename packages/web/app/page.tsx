@@ -14,12 +14,12 @@ export default function Home() {
     <div className="w-full sm:w-[542px] px-4 sm:px-8 pt-4 py-8 flex flex-col gap-12 bg-zinc-950">
       <Ahoy />
       <Things />
-      <Evmlogs />
-      <Outputs />
       <MessageQueue />
       <MessageQueueRedis />
       <Postgres />
       <LatestBlocks />
+      <Outputs />
+      <Evmlogs />
     </div>
   </main>
 }

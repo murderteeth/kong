@@ -19,3 +19,12 @@ export function fUSD(amount: number, options?: { fixed?: number, hideUsd?: boole
   if (options?.hideUsd) return result
   return `USD ${result}`
 }
+
+export function fFixed(amount: number, options?: { accuracy?: number, locale?: string  }) {
+  const { accuracy = 2, locale } = options || {}
+  const [whole, fraction] = amount.toFixed(accuracy).split('.')
+  const formattedWhole = new Intl.NumberFormat(locale).format(parseInt(whole))
+  if (accuracy === 0) return formattedWhole
+  const formattedFraction = (fraction || '0'.repeat(accuracy)).slice(0, accuracy)
+  return `${formattedWhole}.${formattedFraction}`
+}
