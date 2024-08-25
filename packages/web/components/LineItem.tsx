@@ -1,7 +1,10 @@
+import { fFixed } from '@/lib/format'
 import Frosty from './Frosty'
 
-export function padLineItemValue(value: number) {
-  return value.toString().padStart(3, '0')
+export function formatLineItemValue(value: number) {
+  const asString = value.toString()
+  if (asString.length < 3) return asString.padStart(3, '0')
+  return fFixed(value, { accuracy: 0 }).toString()
 }
 
 export default function LineItem({
@@ -16,7 +19,7 @@ export default function LineItem({
   return <div className={`w-full flex items-center justify-between text-yellow-700 ${className}`}>
     <div className="whitespace-nowrap">{label}</div>
     <Frosty _key={`thing_vault_total-${value}`} disabled={value < 1}>
-      {padLineItemValue(value)}
+      {formatLineItemValue(value)}
     </Frosty>
   </div>
 }

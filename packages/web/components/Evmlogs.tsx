@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import Frosty from './Frosty'
 import { useData } from '@/hooks/useData'
-import LineItem, { padLineItemValue } from './LineItem'
+import LineItem, { formatLineItemValue } from './LineItem'
 
 const IndexStatsSchema = z.object({
   thing_total: z.number().optional().default(0),
@@ -29,7 +29,7 @@ export default function Evmlogs() {
   return <div className={'w-full flex flex-col items-start'}>
     <div className="w-full flex items-center justify-between">
       <div className="font-bold text-lg">Evmlogs</div>
-      <Frosty _key={`thing_total-${indexStats.evmlog_total}`} disabled={indexStats.evmlog_total < 1}>{padLineItemValue(indexStats.evmlog_total)}</Frosty>
+      <Frosty _key={`thing_total-${indexStats.evmlog_total}`} disabled={indexStats.evmlog_total < 1}>{formatLineItemValue(indexStats.evmlog_total)}</Frosty>
     </div>
 
     {indexStats.eventCounts.map(event => 

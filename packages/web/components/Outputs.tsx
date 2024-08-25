@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import Frosty from './Frosty'
 import { useData } from '@/hooks/useData'
-import { padLineItemValue } from './LineItem'
+import { formatLineItemValue } from './LineItem'
 
 const IndexStatsSchema = z.object({
   thing_total: z.number().optional().default(0),
@@ -29,7 +29,7 @@ export default function Outputs() {
   return <div className={'w-full flex flex-col items-start'}>
     <div className="w-full flex items-center justify-between">
       <div className="font-bold text-lg">Outputs</div>
-      <Frosty _key={`thing_total-${indexStats.output_total}`} disabled={indexStats.output_total < 1}>{padLineItemValue(indexStats.output_total)}</Frosty>
+      <Frosty _key={`thing_total-${indexStats.output_total}`} disabled={indexStats.output_total < 1}>{formatLineItemValue(indexStats.output_total)}</Frosty>
     </div>
   </div>
 }
