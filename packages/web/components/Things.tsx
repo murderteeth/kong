@@ -26,16 +26,22 @@ export default function Things() {
   const { indexStatsJson } = monitor
   const indexStats = IndexStatsSchema.parse(JSON.parse(indexStatsJson))
 
+  const lineItems = [
+    { label: "vaults", value: indexStats.thing_vault_total },
+    { label: "strategies", value: indexStats.thing_strategy_total },
+    { label: "erc20s", value: indexStats.thing_erc20_total },
+    { label: "debt allocators", value: indexStats.thing_debtallocator_total },
+    { label: "accountants", value: indexStats.thing_accountant_total },
+    { label: "trade handlers", value: indexStats.thing_tradehandler_total },
+  ].sort((a, b) => b.value - a.value)
+
   return <div className={'w-full flex flex-col items-start'}>
     <div className="w-full flex items-center justify-between">
       <div className="font-bold text-lg">Things</div>
       <Frosty _key={`thing_total-${indexStats.thing_total}`} disabled={indexStats.thing_total < 1}>{formatLineItemValue(indexStats.thing_total)}</Frosty>
     </div>
-    <LineItem label="vaults" value={indexStats.thing_vault_total} />
-    <LineItem label="strategies" value={indexStats.thing_strategy_total} />
-    <LineItem label="erc20s" value={indexStats.thing_erc20_total} />
-    <LineItem label="debt allocators" value={indexStats.thing_debtallocator_total} />
-    <LineItem label="accountants" value={indexStats.thing_accountant_total} />
-    <LineItem label="trade handlers" value={indexStats.thing_tradehandler_total} />
+    {lineItems.map(({ label, value }) => (
+      <LineItem key={label} label={label} value={value} />
+    ))}
   </div>
 }
