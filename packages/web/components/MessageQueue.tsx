@@ -24,7 +24,7 @@ export default function MessageQueue() {
   return <div className={'w-full flex flex-col gap-2'}>
     <div className="font-bold text-xl">Message Queue</div>
     <div className="flex flex-col gap-4">
-      {monitor.queues.map((queue, index) => <AsciiMeter
+      {monitor.queues.filter(queue => queue.name !== 'extract').map((queue, index) => <AsciiMeter
         key={queue.name}
         current={queue.active}
         current2={queue.waiting}
