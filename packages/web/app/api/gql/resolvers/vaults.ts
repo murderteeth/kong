@@ -30,7 +30,7 @@ const vaults = async (_: any, args: { chainId?: number, apiVersion?: string }) =
 
     if (apiVersion) {
       rows = rows.filter(row => {
-        return !row.apiVersion || compare(row.apiVersion, apiVersion, '>=')
+        return compare(row.apiVersion ?? "0", apiVersion, '>=')
       })
     }
 
