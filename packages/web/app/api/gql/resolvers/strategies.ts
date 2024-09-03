@@ -1,8 +1,8 @@
 import db from '@/app/api/db'
 import { compare } from '@/lib/compare'
 
-const strategies = async (_: any, args: { chainId?: number, apiVersion?: string }) => {
-  const { chainId, apiVersion } = args
+const strategies = async (_: any, args: { chainId?: number, apiVersion?: string, erc4626?: boolean }) => {
+  const { chainId, apiVersion, erc4626 } = args
   try {
 
     const result = await db.query(`
@@ -31,6 +31,12 @@ const strategies = async (_: any, args: { chainId?: number, apiVersion?: string 
     if (apiVersion) {
       rows = rows.filter(row => {
         return !row.apiVersion || compare(row.apiVersion, apiVersion, '>=')
+      })
+    }
+
+    if (erc4626 !== undefined) {
+      rows = rows.filter(row => {
+        return Boolean(row.erc4626 ?? false) === erc4626
       })
     }
 

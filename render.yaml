@@ -1,11 +1,5 @@
 previewsEnabled: false
 
-databases:
-  - name: postgres-v-2
-    region: ohio
-    plan: standard
-    ipAllowList: []
-
 services:
   - type: redis
     name: redis-starter-ingest
