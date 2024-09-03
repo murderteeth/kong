@@ -1,9 +1,8 @@
-
-cron: 
+cron:
   name: AbiFanout
   queue: fanout
   job: abis
-  schedule: '*/15 * * * *'
+  schedule: '*/30 * * * *'
   start: false
 
 abis:
