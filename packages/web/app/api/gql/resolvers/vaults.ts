@@ -17,7 +17,7 @@ const vaults = async (_: any, args: { chainId?: number, apiVersion?: string, erc
       ON thing.chain_id = snapshot.chain_id
       AND thing.address = snapshot.address
     WHERE thing.label = $1 AND (thing.chain_id = $2 OR $2 IS NULL)
-    ORDER BY snapshot.hook->>'tvl' DESC`, 
+    ORDER BY (snapshot.hook->'tvl'->>'close')::numeric DESC`,
     ['vault', chainId])
 
     let rows = result.rows.map(row => ({
