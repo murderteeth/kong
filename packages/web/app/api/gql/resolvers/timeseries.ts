@@ -18,7 +18,7 @@ const timeseries = async (_: any, args: {
       chain_id AS "chainId",
       address,
       CAST($3 AS text) AS label,
-      CAST($4 AS text) AS component,
+      COALESCE(CAST($4 AS text), component) AS component,
       COALESCE(AVG(NULLIF(value, 0)), 0) AS value,
       CAST($5 AS text) AS period,
       time_bucket(CAST($5 AS interval), block_time) AS time
@@ -28,7 +28,7 @@ const timeseries = async (_: any, args: {
       AND label = $3 
       AND (component = $4 OR $4 IS NULL)
       AND (block_time > to_timestamp($7) OR $7 IS NULL)
-    GROUP BY chain_id, address, time
+    GROUP BY chain_id, address, component, time
     ORDER BY time ASC
     LIMIT $6`,
     [chainId, address, label, component, period ?? '1 day', limit ?? 100, timestamp])
