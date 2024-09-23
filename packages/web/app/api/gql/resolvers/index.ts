@@ -21,6 +21,7 @@ import accountants from './accountants'
 import accountant from './accountant'
 import things from './things'
 import tvls from './tvls'
+import allocator from './allocator'
 
 const resolvers = {
   BigInt: bigintScalar,
@@ -46,6 +47,7 @@ const resolvers = {
     accountStrategies,
     accountants,
     accountant,
+    allocator,
     things
   }
 }

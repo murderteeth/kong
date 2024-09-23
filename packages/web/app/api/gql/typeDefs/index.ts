@@ -13,6 +13,7 @@ import price from './price'
 import accountant from './accountant'
 import thing from './thing'
 import tvl from './tvl'
+import allocator from './allocator'
 
 const query = gql`
   scalar BigInt
@@ -32,6 +33,7 @@ const query = gql`
     bananas: String @cacheControl(maxAge: 0)
     latestBlocks(chainId: Int): [LatestBlock] @cacheControl(maxAge: 2)
     monitor: Monitor @cacheControl(maxAge: 2)
+    allocator(chainId: Int!, vault: String!): Allocator
     vaults(chainId: Int, apiVersion: String, erc4626: Boolean): [Vault]
     vault(chainId: Int, address: String): Vault
     vaultAccounts(chainId: Int, vault: String): [AccountRole]
@@ -57,6 +59,7 @@ const query = gql`
 const typeDefs = [
   query,
   lib,
+  allocator,
   vault,
   vaultReport,
   strategy,
