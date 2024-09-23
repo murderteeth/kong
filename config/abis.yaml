@@ -56,7 +56,10 @@ abis:
 
   - abiPath: 'yearn/3/debtManagerFactory'
     sources: [
+      { chainId: 1, address: '0xfCF8c7C43dedd567083B422d6770F23B78D15BDe', inceptBlock: 19381894 },
+      { chainId: 100, address: '0xfCF8c7C43dedd567083B422d6770F23B78D15BDe', inceptBlock: 32902649 },
       { chainId: 137, address: '0x0D1F62247035BBFf16742B0f31e8e2Af3aCd6e67', inceptBlock: 51403739 },
+      { chainId: 8453, address: '0xfCF8c7C43dedd567083B422d6770F23B78D15BDe', inceptBlock: 17616239 }
     ]
 
   - abiPath: 'yearn/3/debtAllocator'
