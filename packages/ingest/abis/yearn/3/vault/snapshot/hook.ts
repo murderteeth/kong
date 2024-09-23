@@ -47,8 +47,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   const roles = await projectRoles(chainId, address)
   if (snapshot.role_manager) appendRoleManagerPseudoRole(roles, snapshot.role_manager)
 
-  const allocators = [...filterAllocators(roles), await projectDebtAllocator(chainId, address)]
-  const [allocator] = allocators
+  const allocator = await projectDebtAllocator(chainId, address)
 
   const debts = await extractDebts(chainId, address, strategies, allocator)
   const fees = await extractFeesBps(chainId, address, snapshot)
@@ -82,7 +81,7 @@ export default async function process(chainId: number, address: `0x${string}`, d
   await thingRisk(risk)
 
   return { 
-    asset, strategies, allocators, roles, debts, fees, 
+    asset, strategies, allocator, roles, debts, fees, 
     risk, meta: { ...meta, token }, 
     sparklines,
     tvl: sparklines.tvl[0],
@@ -159,10 +158,6 @@ function appendRoleManagerPseudoRole(
   } else {
     roles.push({ account: roleManager, roleMask: BigInt(Roles.ROLE_MANAGER) })
   }
-}
-
-export function filterAllocators(roles: { account: `0x${string}`, roleMask: bigint }[]) {
-  return roles.filter(r => Number(r.roleMask) & Roles.DEBT_MANAGER).map(r => r.account)
 }
 
 export async function extractDebts(chainId: number, vault: `0x${string}`, strategies: `0x${string}`[], allocator: `0x${string}` | undefined) {
